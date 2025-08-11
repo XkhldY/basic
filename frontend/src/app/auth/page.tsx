@@ -1,10 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, Briefcase, UserCheck, CheckCircle, Building, Users, Globe, FileText, Award, Code, Upload } from 'lucide-react';
 import { UserType, UnifiedFormData, COMPANY_SIZES, EXPERIENCE_LEVELS } from '@/types/auth';
+import { useAuth } from '@/contexts/AuthContext';
+import { authService } from '@/services/auth';
 
 const AuthPage = () => {
+  const { login } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [userType, setUserType] = useState<UserType>('candidate');
   const [formData, setFormData] = useState<UnifiedFormData>({
@@ -82,14 +87,41 @@ const AuthPage = () => {
 
     setIsSubmitting(true);
     try {
-      // TODO: Implement actual API call
-      console.log('Form submitted:', formData);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('Registration successful!');
-    } catch (error) {
+      let response;
+      if (userType === 'employer') {
+        response = await authService.registerEmployer(formData);
+      } else {
+        response = await authService.registerCandidate(formData);
+      }
+      
+      // Automatically log in the user after successful registration
+      await login(formData.email, formData.password);
+      
+      // Redirect to dashboard or home page
+      router.push('/');
+    } catch (error: any) {
       console.error('Registration failed:', error);
-      alert('Registration failed. Please try again.');
+      const errorMessage = error.response?.data?.detail || error.message || 'Registration failed. Please try again.';
+      alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    if (!loginData.email || !loginData.password) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await login(loginData.email, loginData.password);
+      router.push('/');
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      const errorMessage = error.message || 'Login failed. Please check your credentials.';
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -136,8 +168,17 @@ const AuthPage = () => {
                     className="border-2 border-gray-200 bg-gray-50 focus:border-blue-500 focus:bg-white focus:shadow-lg outline-none rounded-xl pl-12 pr-4 py-4 text-base w-full transition-all duration-300 hover:border-gray-300" 
                   />
                 </div>
-                <button type="button" className="mt-8 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  Login
+                <button 
+                  type="button" 
+                  onClick={handleLogin}
+                  disabled={isSubmitting}
+                  className={`mt-8 w-full font-bold py-3 px-4 rounded-full shadow-lg transition-all duration-300 ${
+                    isSubmitting 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-xl transform hover:scale-105'
+                  }`}
+                >
+                  {isSubmitting ? 'Logging in...' : 'Login'}
                 </button>
               </div>
             ) : (
