@@ -6,6 +6,7 @@ from enum import Enum
 class UserType(str, Enum):
     CANDIDATE = "candidate"
     EMPLOYER = "employer"
+    ADMIN = "admin"
 
 # Base schemas
 class UserBase(BaseModel):
@@ -29,6 +30,12 @@ class EmployerRegistrationRequest(UserBase):
     company_size: str
     industry: str
     company_description: Optional[str] = None
+
+class AdminRegistrationRequest(UserBase):
+    password: str
+    user_type: UserType = UserType.ADMIN
+    admin_role: str = "user_manager"  # default role
+    department: Optional[str] = None
 
 # Login schemas
 class LoginRequest(BaseModel):
@@ -58,6 +65,9 @@ class UserResponse(UserBase):
     experience_level: Optional[str] = None
     skills: Optional[str] = None
     portfolio_url: Optional[str] = None
+    admin_role: Optional[str] = None
+    permissions: Optional[str] = None
+    department: Optional[str] = None
     
     class Config:
         from_attributes = True

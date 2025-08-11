@@ -59,6 +59,21 @@ export const authService = {
     return response.data;
   },
 
+  // Register admin
+  async registerAdmin(data: UnifiedFormData): Promise<RegistrationResponse> {
+    const payload = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      user_type: 'admin',
+      admin_role: data.adminRole,
+      department: data.department || null,
+    };
+
+    const response = await apiClient.post('/api/auth/register/admin', payload);
+    return response.data;
+  },
+
   // Get current user
   async getCurrentUser() {
     const response = await apiClient.get('/api/auth/me');

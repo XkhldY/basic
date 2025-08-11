@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, Briefcase, UserCheck, CheckCircle, Building, Users, Globe, FileText, Award, Code, Upload } from 'lucide-react';
-import { UserType, UnifiedFormData, COMPANY_SIZES, EXPERIENCE_LEVELS } from '@/types/auth';
+import { UserType, UnifiedFormData, COMPANY_SIZES, EXPERIENCE_LEVELS, ADMIN_ROLES } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/services/auth';
 
@@ -26,7 +26,10 @@ const AuthPage = () => {
     professionalTitle: '',
     experienceLevel: '',
     skills: '',
-    portfolioUrl: ''
+    portfolioUrl: '',
+    // Admin fields
+    adminRole: 'user_manager',
+    department: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +67,7 @@ const AuthPage = () => {
       if (!formData.industry.trim()) {
         newErrors.industry = 'Industry is required';
       }
-    } else {
+    } else if (userType === 'candidate') {
       if (!formData.professionalTitle.trim()) {
         newErrors.professionalTitle = 'Professional title is required';
       }
@@ -74,6 +77,11 @@ const AuthPage = () => {
       if (!formData.skills.trim()) {
         newErrors.skills = 'Skills are required';
       }
+    } else if (userType === 'admin') {
+      if (!formData.adminRole.trim()) {
+        newErrors.adminRole = 'Admin role is required';
+      }
+      // Department is optional for admin
     }
 
     setErrors(newErrors);
@@ -90,6 +98,8 @@ const AuthPage = () => {
       let response;
       if (userType === 'employer') {
         response = await authService.registerEmployer(formData);
+      } else if (userType === 'admin') {
+        response = await authService.registerAdmin(formData);
       } else {
         response = await authService.registerCandidate(formData);
       }
@@ -238,11 +248,48 @@ const AuthPage = () => {
                   >
                     <option value="candidate">Candidate</option>
                     <option value="employer">Employer</option>
+                    <option value="admin">Admin</option>
+
                   </select>
                 </div>
 
                 {/* Conditional Fields Based on User Type */}
-                {userType === 'employer' ? (
+                {userType === 'admin' ? (
+                  <>
+                    <div className="mb-6 relative">
+                      <UserCheck className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400" size={22} />
+                      <select 
+                        value={formData.adminRole}
+                        onChange={(e) => {
+                          setFormData({...formData, adminRole: e.target.value});
+                          if (errors.adminRole) setErrors({...errors, adminRole: ''});
+                        }}
+                        className={`border-2 ${errors.adminRole ? 'border-red-500 bg-red-50' : 'border-gray-200 bg-gray-50'} focus:border-blue-500 focus:bg-white focus:shadow-lg outline-none rounded-xl pl-12 pr-4 py-4 text-base w-full transition-all duration-300 hover:border-gray-300 appearance-none`}
+                      >
+                        {ADMIN_ROLES.map((role) => (
+                          <option key={role.value} value={role.value}>
+                            {role.label}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.adminRole && <p className="text-red-500 text-sm mt-1">{errors.adminRole}</p>}
+                    </div>
+                    <div className="mb-6 relative">
+                      <Building className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400" size={22} />
+                      <input 
+                        type="text" 
+                        placeholder="Department (optional)" 
+                        value={formData.department}
+                        onChange={(e) => {
+                          setFormData({...formData, department: e.target.value});
+                          if (errors.department) setErrors({...errors, department: ''});
+                        }}
+                        className={`border-2 ${errors.department ? 'border-red-500 bg-red-50' : 'border-gray-200 bg-gray-50'} focus:border-blue-500 focus:bg-white focus:shadow-lg outline-none rounded-xl pl-12 pr-4 py-4 text-base w-full transition-all duration-300 hover:border-gray-300`} 
+                      />
+                      {errors.department && <p className="text-red-500 text-sm mt-1">{errors.department}</p>}
+                    </div>
+                  </>
+                ) : userType === 'employer' ? (
                   <>
                     <div className="mb-6 relative">
                       <Building className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400" size={22} />
@@ -374,7 +421,7 @@ const AuthPage = () => {
                       : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-xl transform hover:scale-105'
                   }`}
                 >
-                  {isSubmitting ? 'Registering...' : `Register as ${userType === 'employer' ? 'Employer' : 'Candidate'}`}
+                  {isSubmitting ? 'Registering...' : `Register as ${userType === 'employer' ? 'Employer' : userType === 'admin' ? 'Admin' : 'Candidate'}`}
                 </button>
               </div>
             )}

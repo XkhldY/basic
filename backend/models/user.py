@@ -6,6 +6,7 @@ import enum
 class UserType(enum.Enum):
     CANDIDATE = "candidate"
     EMPLOYER = "employer"
+    ADMIN = "admin"
 
 class User(Base):
     __tablename__ = "users"
@@ -31,3 +32,8 @@ class User(Base):
     experience_level = Column(String(50), nullable=True)
     skills = Column(Text, nullable=True)
     portfolio_url = Column(String(500), nullable=True)
+    
+    # Admin specific fields
+    admin_role = Column(String(50), nullable=True)  # super_admin, user_manager, content_moderator, analyst
+    permissions = Column(Text, nullable=True)  # JSON string of permissions
+    department = Column(String(100), nullable=True)

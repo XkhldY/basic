@@ -5,6 +5,7 @@ from models.user import User, UserType as ModelUserType
 from schemas.user import (
     CandidateRegistrationRequest, 
     EmployerRegistrationRequest,
+    AdminRegistrationRequest,
     LoginRequest, 
     TokenResponse,
     UserResponse
@@ -118,6 +119,37 @@ async def get_current_user_info(
 ):
     """Get current user information"""
     return current_user
+
+@router.post("/register/admin", response_model=dict)
+async def register_admin(
+    user_data: AdminRegistrationRequest,
+    db: Session = Depends(get_db)
+):
+    """Register a new admin (typically restricted in production)"""
+    # Check if user already exists
+    existing_user = db.query(User).filter(User.email == user_data.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # Create new admin user
+    hashed_password = hash_password(user_data.password)
+    db_user = User(
+        name=user_data.name,
+        email=user_data.email,
+        hashed_password=hashed_password,
+        user_type=ModelUserType.ADMIN,
+        admin_role=user_data.admin_role,
+        department=user_data.department
+    )
+    
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    return {"message": "Admin registered successfully", "user_id": db_user.id}
 
 @router.post("/logout")
 async def logout():

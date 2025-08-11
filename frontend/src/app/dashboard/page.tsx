@@ -12,8 +12,10 @@ export default function Dashboard() {
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.push('/auth');
+    } else if (!loading && isAuthenticated && user?.user_type === 'admin') {
+      router.push('/admin');
     }
-  }, [loading, isAuthenticated, router]);
+  }, [loading, isAuthenticated, user, router]);
 
   if (loading) {
     return (

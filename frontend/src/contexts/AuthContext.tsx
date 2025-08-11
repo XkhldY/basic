@@ -8,7 +8,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  user_type: 'candidate' | 'employer';
+  user_type: 'candidate' | 'employer' | 'admin';
   is_active: boolean;
   is_verified: boolean;
   created_at: string;
@@ -23,6 +23,10 @@ export interface User {
   experience_level?: string;
   skills?: string;
   portfolio_url?: string;
+  // Admin fields
+  admin_role?: string;
+  permissions?: string;
+  department?: string;
 }
 
 interface AuthContextType {

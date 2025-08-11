@@ -5,7 +5,7 @@ from decouple import config
 import os
 
 # Database configuration
-DATABASE_URL = config('DATABASE_URL', default='postgresql://user:password@postgres:5432/mydatabase')
+DATABASE_URL = config('DATABASE_URL', default='sqlite:///./job_platform.db')
 
 # Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
