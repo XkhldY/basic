@@ -4,8 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from decouple import config
 import os
 
-# Database configuration
-DATABASE_URL = config('DATABASE_URL', default='sqlite:///./job_platform.db')
+# Database configuration  
+DATABASE_URL = config('DATABASE_URL', default='postgresql://user:password@postgres:5432/mydatabase')
 
 # Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
