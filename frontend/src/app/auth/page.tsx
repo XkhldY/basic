@@ -169,7 +169,7 @@ const AuthPage = () => {
                     placeholder="Email" 
                     value={loginData.email}
                     onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                    className="border-2 border-gray-200 bg-gray-50 focus:border-blue-500 focus:bg-white focus:shadow-lg outline-none rounded-xl pl-12 pr-4 py-4 text-base w-full transition-all duration-300 hover:border-gray-300" 
+                    className="border-2 border-gray-200 bg-gray-50 focus:border-blue-500 focus:bg-white focus:shadow-lg outline-none rounded-xl pl-12 pr-4 py-4 text-base w-full transition-all duration-300 hover:border-gray-300"
                   />
                 </div>
                 <div className="relative">
@@ -179,7 +179,7 @@ const AuthPage = () => {
                     placeholder="Password" 
                     value={loginData.password}
                     onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                    className="border-2 border-gray-200 bg-gray-50 focus:border-blue-500 focus:bg-white focus:shadow-lg outline-none rounded-xl pl-12 pr-4 py-4 text-base w-full transition-all duration-300 hover:border-gray-300" 
+                    className="border-2 border-gray-200 bg-gray-50 focus:border-blue-500 focus:bg-white focus:shadow-lg outline-none rounded-xl pl-12 pr-4 py-4 text-base w-full transition-all duration-300 hover:border-gray-300"
                   />
                 </div>
                 <button 
@@ -409,7 +409,8 @@ const AuthPage = () => {
                         placeholder="Portfolio URL (optional)" 
                         value={formData.portfolioUrl}
                         onChange={(e) => setFormData({...formData, portfolioUrl: e.target.value})}
-                        className="border-2 border-gray-200 bg-gray-50 focus:border-blue-500 focus:bg-white focus:shadow-lg outline-none rounded-xl pl-12 pr-4 py-4 text-base w-full transition-all duration-300 hover:border-gray-300" 
+                        className="border-2 border-gray-200 bg-gray-50 focus:border-blue-500 focus:bg-white focus:shadow-lg outline-none rounded-xl pl-12 pr-4 py-4 text-base w-full transition-all duration-300 hover:border-gray-300"
+ 
                       />
                     </div>
                   </>
