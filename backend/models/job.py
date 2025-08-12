@@ -37,8 +37,8 @@ class Job(Base):
     
     # Job details
     location = Column(String(200), nullable=True)
-    location_type = Column(Enum(LocationType), nullable=False, default=LocationType.ON_SITE)
-    employment_type = Column(Enum(EmploymentType), nullable=False, default=EmploymentType.FULL_TIME)
+    location_type = Column(Enum(LocationType, values_callable=lambda x: [e.value for e in x]), nullable=False, default=LocationType.ON_SITE)
+    employment_type = Column(Enum(EmploymentType, values_callable=lambda x: [e.value for e in x]), nullable=False, default=EmploymentType.FULL_TIME)
     
     # Salary
     salary_min = Column(Float, nullable=True)
@@ -55,7 +55,7 @@ class Job(Base):
     application_url = Column(String(500), nullable=True)
     
     # Status and metadata
-    status = Column(Enum(JobStatus), nullable=False, default=JobStatus.DRAFT)
+    status = Column(Enum(JobStatus, values_callable=lambda x: [e.value for e in x]), nullable=False, default=JobStatus.DRAFT)
     is_featured = Column(Boolean, default=False)
     views_count = Column(Integer, default=0)
     applications_count = Column(Integer, default=0)

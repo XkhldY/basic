@@ -42,3 +42,5 @@ class User(Base):
     # Relationships
     jobs = relationship("Job", back_populates="employer", cascade="all, delete-orphan")
     applications = relationship("Application", foreign_keys="Application.candidate_id", back_populates="candidate", cascade="all, delete-orphan")
+    sent_messages = relationship("Message", foreign_keys="Message.sender_id", back_populates="sender", cascade="all, delete-orphan")
+    received_messages = relationship("Message", foreign_keys="Message.recipient_id", back_populates="recipient", cascade="all, delete-orphan")

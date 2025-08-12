@@ -8,6 +8,8 @@ services:
       - ./frontend:/app
       - /app/node_modules
       - /app/.next
+    networks:
+      - app-network
 
   backend:
     build: ./backend
@@ -15,6 +17,13 @@ services:
       - "8000:80"
     volumes:
       - ./backend:/code
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgres:5432/mydatabase
 
   postgres:
     image: postgres:latest
@@ -26,6 +35,17 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres_data:
