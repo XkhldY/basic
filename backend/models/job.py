@@ -68,3 +68,4 @@ class Job(Base):
     # Relationships
     employer = relationship("User", back_populates="jobs")
     applications = relationship("Application", back_populates="job", cascade="all, delete-orphan")
+    messages = relationship("Message", back_populates="job", cascade="all, delete-orphan")

@@ -8,10 +8,11 @@ from schemas.user import (
     AdminRegistrationRequest,
     LoginRequest, 
     TokenResponse,
-    UserResponse
+    UserResponse,
+    ProfileUpdateRequest
 )
 from auth.security import hash_password, verify_password, create_access_token, create_refresh_token
-from auth.dependencies import get_current_active_user
+from auth.dependencies import get_current_active_user, get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
 

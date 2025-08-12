@@ -300,3 +300,71 @@ async def get_analytics_trends(
             "days": days
         }
     }
+
+# User Activity Endpoints
+@router.get("/users/{user_id}/jobs")
+async def get_user_jobs(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """Get jobs posted by an employer user"""
+    from models.job import Job
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    if user.user_type != 'employer':
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User is not an employer"
+        )
+    
+    jobs = db.query(Job).filter(Job.employer_id == user_id).all()
+    
+    return [{
+        "id": job.id,
+        "title": job.title,
+        "status": job.status.value,
+        "created_at": job.created_at,
+        "applications_count": job.applications_count
+    } for job in jobs]
+
+@router.get("/users/{user_id}/applications")
+async def get_user_applications(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """Get applications submitted by a candidate user"""
+    from models.application import Application
+    from models.job import Job
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    if user.user_type != 'candidate':
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User is not a candidate"
+        )
+    
+    applications = db.query(Application).join(Job).filter(
+        Application.candidate_id == user_id
+    ).all()
+    
+    return [{
+        "id": app.id,
+        "job_title": app.job.title,
+        "company_name": app.job.company_name,
+        "status": app.status.value,
+        "created_at": app.created_at
+    } for app in applications]

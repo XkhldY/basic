@@ -31,6 +31,10 @@ export default function JobsPage() {
   const [locationFilter, setLocationFilter] = useState('');
   const [employmentTypeFilter, setEmploymentTypeFilter] = useState('');
   const [locationTypeFilter, setLocationTypeFilter] = useState('');
+  const [experienceLevelFilter, setExperienceLevelFilter] = useState('');
+  const [salaryMinFilter, setSalaryMinFilter] = useState('');
+  const [companyFilter, setCompanyFilter] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -40,7 +44,7 @@ export default function JobsPage() {
 
   useEffect(() => {
     loadJobs();
-  }, [searchTerm, locationFilter, employmentTypeFilter, locationTypeFilter]);
+  }, [searchTerm, locationFilter, employmentTypeFilter, locationTypeFilter, experienceLevelFilter, salaryMinFilter, companyFilter]);
 
   const loadJobs = async () => {
     setJobsLoading(true);
@@ -50,6 +54,9 @@ export default function JobsPage() {
       if (locationFilter) params.append('location', locationFilter);
       if (employmentTypeFilter) params.append('employment_type', employmentTypeFilter);
       if (locationTypeFilter) params.append('location_type', locationTypeFilter);
+      if (experienceLevelFilter) params.append('experience_level', experienceLevelFilter);
+      if (salaryMinFilter) params.append('salary_min', salaryMinFilter);
+      if (companyFilter) params.append('company', companyFilter);
       
       const response = await apiClient.get(`/api/jobs?${params.toString()}`);
       setJobs(response.data);
@@ -167,6 +174,65 @@ export default function JobsPage() {
               </select>
             </div>
           </div>
+          
+          {/* Advanced Filters Toggle */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700"
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
+            </button>
+          </div>
+
+          {/* Advanced Filters */}
+          {showAdvancedFilters && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Experience Level</label>
+                  <select
+                    value={experienceLevelFilter}
+                    onChange={(e) => setExperienceLevelFilter(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full"
+                  >
+                    <option value="">All Levels</option>
+                    <option value="entry">Entry Level (0-2 years)</option>
+                    <option value="mid">Mid Level (2-5 years)</option>
+                    <option value="senior">Senior Level (5-8 years)</option>
+                    <option value="lead">Lead Level (8+ years)</option>
+                    <option value="executive">Executive Level</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Salary</label>
+                  <input
+                    type="number"
+                    placeholder="50000"
+                    value={salaryMinFilter}
+                    onChange={(e) => setSalaryMinFilter(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                  <div className="relative">
+                    <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <input
+                      type="text"
+                      placeholder="Company name..."
+                      value={companyFilter}
+                      onChange={(e) => setCompanyFilter(e.target.value)}
+                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Job Listings */}
