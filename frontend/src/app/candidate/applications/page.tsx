@@ -40,9 +40,8 @@ export default function CandidateApplicationsPage() {
   const loadApplications = async () => {
     setApplicationsLoading(true);
     try {
-      // This endpoint doesn't exist yet, but we'll create it in Phase 2
-      // For now, we'll show a placeholder
-      setApplications([]);
+      const response = await apiClient.get('/api/applications/my-applications');
+      setApplications(response.data);
     } catch (error) {
       console.error('Failed to load applications:', error);
     } finally {

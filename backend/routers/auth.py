@@ -155,3 +155,25 @@ async def register_admin(
 async def logout():
     """Logout user (token blacklisting would be implemented here in production)"""
     return {"message": "Successfully logged out"}
+
+@router.put("/profile", response_model=UserResponse)
+async def update_profile(
+    profile_data: ProfileUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Update user profile"""
+    # Update user fields
+    update_data = profile_data.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(current_user, field, value)
+    
+    db.commit()
+    db.refresh(current_user)
+    
+    return current_user
+
+@router.get("/profile", response_model=UserResponse)
+async def get_profile(current_user: User = Depends(get_current_user)):
+    """Get current user profile"""
+    return current_user

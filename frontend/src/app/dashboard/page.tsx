@@ -155,10 +155,10 @@ export default function Dashboard() {
                             Review candidate applications
                           </p>
                           <button 
-                            onClick={() => router.push('/employer/jobs')}
+                            onClick={() => router.push('/employer/applications')}
                             className="mt-3 bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700"
                           >
-                            Manage Jobs
+                            View Applications
                           </button>
                         </div>
                       </>

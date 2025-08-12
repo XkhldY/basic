@@ -19,6 +19,8 @@ export default function AdminDashboard() {
   const [settings, setSettings] = useState<any[]>([]);
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsUpdating, setSettingsUpdating] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -87,6 +89,33 @@ export default function AdminDashboard() {
     } finally {
       setSettingsUpdating(false);
     }
+  };
+
+  const bulkToggleUsers = async (action: 'activate' | 'deactivate') => {
+    if (selectedUsers.length === 0) return;
+    
+    setBulkUpdating(true);
+    try {
+      for (const userId of selectedUsers) {
+        await apiClient.post(`/api/admin/users/${userId}/toggle-active`);
+      }
+      setSelectedUsers([]);
+      // Refresh users list
+      const response = await apiClient.get('/api/admin/users?limit=50');
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Failed to bulk update users:', error);
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
+  const toggleUserSelection = (userId: number) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
   };
 
   const toggleUserStatus = async (userId: number) => {
@@ -268,33 +297,57 @@ export default function AdminDashboard() {
                   <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
                 </div>
 
-                {/* Filters */}
+                {/* Filters and Bulk Actions */}
                 <div className="bg-white p-4 rounded-lg shadow">
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                        <input
-                          type="text"
-                          placeholder="Search users..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full"
-                        />
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                    <div className="flex flex-col md:flex-row gap-4">
+                      <div className="flex-1">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                          <input
+                            type="text"
+                            placeholder="Search users..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <select
+                          value={userTypeFilter}
+                          onChange={(e) => setUserTypeFilter(e.target.value)}
+                          className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">All User Types</option>
+                          <option value="candidate">Candidates</option>
+                          <option value="employer">Employers</option>
+                          <option value="admin">Admins</option>
+                        </select>
                       </div>
                     </div>
-                    <div>
-                      <select
-                        value={userTypeFilter}
-                        onChange={(e) => setUserTypeFilter(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">All User Types</option>
-                        <option value="candidate">Candidates</option>
-                        <option value="employer">Employers</option>
-                        <option value="admin">Admins</option>
-                      </select>
-                    </div>
+                    
+                    {selectedUsers.length > 0 && (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-600">
+                          {selectedUsers.length} selected
+                        </span>
+                        <button
+                          onClick={() => bulkToggleUsers('activate')}
+                          disabled={bulkUpdating}
+                          className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                        >
+                          Bulk Activate
+                        </button>
+                        <button
+                          onClick={() => bulkToggleUsers('deactivate')}
+                          disabled={bulkUpdating}
+                          className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                        >
+                          Bulk Deactivate
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -303,6 +356,20 @@ export default function AdminDashboard() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
+                        <th className="px-6 py-3 text-left">
+                          <input
+                            type="checkbox"
+                            checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedUsers(filteredUsers.map(user => user.id));
+                              } else {
+                                setSelectedUsers([]);
+                              }
+                            }}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                        </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           User
                         </th>
@@ -323,6 +390,14 @@ export default function AdminDashboard() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {filteredUsers.map((user) => (
                         <tr key={user.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input
+                              type="checkbox"
+                              checked={selectedUsers.includes(user.id)}
+                              onChange={() => toggleUserSelection(user.id)}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900">{user.name}</div>

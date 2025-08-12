@@ -16,6 +16,7 @@ from auth.admin_permissions import (
 )
 from typing import List, Optional
 from datetime import datetime, timedelta
+import json
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -240,3 +241,62 @@ async def get_audit_logs(
     logs = query.offset(skip).limit(limit).all()
     
     return logs
+
+@router.get("/analytics/trends")
+async def get_analytics_trends(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_admin_with_analytics_permission),
+    days: int = Query(30, ge=7, le=90)
+):
+    """Get analytics trends over time"""
+    end_date = datetime.utcnow().date()
+    start_date = end_date - timedelta(days=days)
+    
+    # Get daily user registration counts
+    daily_registrations = []
+    for i in range(days):
+        date = start_date + timedelta(days=i)
+        next_date = date + timedelta(days=1)
+        
+        count = db.query(User).filter(
+            User.created_at >= date,
+            User.created_at < next_date
+        ).count()
+        
+        daily_registrations.append({
+            "date": date.isoformat(),
+            "count": count
+        })
+    
+    # Get user type distribution over time
+    user_type_trends = {
+        "candidates": [],
+        "employers": [],
+        "admins": []
+    }
+    
+    for i in range(days):
+        date = start_date + timedelta(days=i)
+        next_date = date + timedelta(days=1)
+        
+        for user_type in ["candidate", "employer", "admin"]:
+            count = db.query(User).filter(
+                User.user_type == user_type,
+                User.created_at >= start_date,
+                User.created_at < next_date
+            ).count()
+            
+            user_type_trends[f"{user_type}s"].append({
+                "date": date.isoformat(),
+                "count": count
+            })
+    
+    return {
+        "daily_registrations": daily_registrations,
+        "user_type_trends": user_type_trends,
+        "period": {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "days": days
+        }
+    }
