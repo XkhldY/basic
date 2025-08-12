@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Enum
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from database import Base
 import enum
 
@@ -37,3 +38,7 @@ class User(Base):
     admin_role = Column(String(50), nullable=True)  # super_admin, user_manager, content_moderator, analyst
     permissions = Column(Text, nullable=True)  # JSON string of permissions
     department = Column(String(100), nullable=True)
+    
+    # Relationships
+    jobs = relationship("Job", back_populates="employer", cascade="all, delete-orphan")
+    applications = relationship("Application", foreign_keys="Application.candidate_id", back_populates="candidate", cascade="all, delete-orphan")

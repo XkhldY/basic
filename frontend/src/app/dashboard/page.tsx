@@ -138,7 +138,10 @@ export default function Dashboard() {
                           <p className="mt-2 text-sm text-gray-600">
                             Create and manage job postings
                           </p>
-                          <button className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
+                          <button 
+                            onClick={() => router.push('/employer/jobs/create')}
+                            className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+                          >
                             Create Job Post
                           </button>
                         </div>
@@ -151,8 +154,11 @@ export default function Dashboard() {
                           <p className="mt-2 text-sm text-gray-600">
                             Review candidate applications
                           </p>
-                          <button className="mt-3 bg-green-600 text-white px-4 py-2 rounded-md text-sm">
-                            View Applications
+                          <button 
+                            onClick={() => router.push('/employer/jobs')}
+                            className="mt-3 bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700"
+                          >
+                            Manage Jobs
                           </button>
                         </div>
                       </>
@@ -166,7 +172,10 @@ export default function Dashboard() {
                           <p className="mt-2 text-sm text-gray-600">
                             Find your next opportunity
                           </p>
-                          <button className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
+                          <button 
+                            onClick={() => router.push('/jobs')}
+                            className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+                          >
                             Browse Jobs
                           </button>
                         </div>
@@ -179,8 +188,11 @@ export default function Dashboard() {
                           <p className="mt-2 text-sm text-gray-600">
                             Track your job applications
                           </p>
-                          <button className="mt-3 bg-green-600 text-white px-4 py-2 rounded-md text-sm">
-                            View Applications
+                          <button 
+                            onClick={() => router.push('/candidate/applications')}
+                            className="mt-3 bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700"
+                          >
+                            My Applications
                           </button>
                         </div>
                       </>

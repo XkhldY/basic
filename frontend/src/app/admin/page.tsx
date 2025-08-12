@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { LogOut, Users, BarChart3, Settings, Eye, UserX, UserCheck, Search, Shield, Activity, Database } from 'lucide-react';
+import { LogOut, Users, BarChart3, Settings, Eye, UserX, UserCheck, Search, Shield, Activity, Database, Save } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { UserListItem, PlatformAnalytics } from '@/types/admin';
 
@@ -16,6 +16,9 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [userTypeFilter, setUserTypeFilter] = useState('');
   const [loadingData, setLoadingData] = useState(false);
+  const [settings, setSettings] = useState<any[]>([]);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsUpdating, setSettingsUpdating] = useState(false);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -31,6 +34,12 @@ export default function AdminDashboard() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (activeTab === 'settings' && user?.user_type === 'admin') {
+      loadSettings();
+    }
+  }, [activeTab, user]);
+
   const loadInitialData = async () => {
     setLoadingData(true);
     try {
@@ -44,6 +53,39 @@ export default function AdminDashboard() {
       console.error('Failed to load admin data:', error);
     } finally {
       setLoadingData(false);
+    }
+  };
+
+  const loadSettings = async () => {
+    setSettingsLoading(true);
+    try {
+      const response = await apiClient.get('/api/settings');
+      setSettings(response.data);
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  const updateSetting = async (key: string, value: string) => {
+    try {
+      await apiClient.put(`/api/settings/${key}`, { value });
+      await loadSettings(); // Refresh settings
+    } catch (error) {
+      console.error('Failed to update setting:', error);
+    }
+  };
+
+  const initializeSettings = async () => {
+    setSettingsUpdating(true);
+    try {
+      await apiClient.post('/api/settings/initialize');
+      await loadSettings(); // Refresh settings
+    } catch (error) {
+      console.error('Failed to initialize settings:', error);
+    } finally {
+      setSettingsUpdating(false);
     }
   };
 
@@ -338,10 +380,154 @@ export default function AdminDashboard() {
             {/* Settings Tab */}
             {activeTab === 'settings' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Admin Settings</h2>
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <p className="text-gray-600">Admin settings panel - coming soon!</p>
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold text-gray-900">System Settings</h2>
+                  <button
+                    onClick={initializeSettings}
+                    disabled={settingsUpdating}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    <Database className="mr-2 h-4 w-4" />
+                    {settingsUpdating ? 'Initializing...' : 'Initialize Defaults'}
+                  </button>
                 </div>
+
+                {settingsLoading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="text-lg">Loading settings...</div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Platform Settings */}
+                    <div className="bg-white p-6 rounded-lg shadow">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <Shield className="mr-2 h-5 w-5" />
+                        Platform Settings
+                      </h3>
+                      <div className="space-y-4">
+                        {settings.filter(s => s.category === 'platform').map((setting) => (
+                          <div key={setting.key}>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {setting.description || setting.key}
+                            </label>
+                            {setting.data_type === 'boolean' ? (
+                              <select
+                                value={setting.value}
+                                onChange={(e) => updateSetting(setting.key, e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                              >
+                                <option value="true">True</option>
+                                <option value="false">False</option>
+                              </select>
+                            ) : (
+                              <input
+                                type={setting.data_type === 'integer' ? 'number' : 'text'}
+                                value={setting.value || ''}
+                                onChange={(e) => updateSetting(setting.key, e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                placeholder={`Enter ${setting.description || setting.key}`}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Security Settings */}
+                    <div className="bg-white p-6 rounded-lg shadow">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <Shield className="mr-2 h-5 w-5" />
+                        Security Settings
+                      </h3>
+                      <div className="space-y-4">
+                        {settings.filter(s => s.category === 'security').map((setting) => (
+                          <div key={setting.key}>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {setting.description || setting.key}
+                            </label>
+                            {setting.data_type === 'boolean' ? (
+                              <select
+                                value={setting.value}
+                                onChange={(e) => updateSetting(setting.key, e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                              >
+                                <option value="true">True</option>
+                                <option value="false">False</option>
+                              </select>
+                            ) : (
+                              <input
+                                type={setting.data_type === 'integer' ? 'number' : 'text'}
+                                value={setting.value || ''}
+                                onChange={(e) => updateSetting(setting.key, e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                placeholder={`Enter ${setting.description || setting.key}`}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Email Settings */}
+                    <div className="bg-white p-6 rounded-lg shadow">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <Activity className="mr-2 h-5 w-5" />
+                        Email Settings
+                      </h3>
+                      <div className="space-y-4">
+                        {settings.filter(s => s.category === 'email').map((setting) => (
+                          <div key={setting.key}>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {setting.description || setting.key}
+                            </label>
+                            {setting.data_type === 'boolean' ? (
+                              <select
+                                value={setting.value}
+                                onChange={(e) => updateSetting(setting.key, e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                              >
+                                <option value="true">True</option>
+                                <option value="false">False</option>
+                              </select>
+                            ) : (
+                              <input
+                                type={setting.data_type === 'integer' ? 'number' : 'text'}
+                                value={setting.value || ''}
+                                onChange={(e) => updateSetting(setting.key, e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                placeholder={`Enter ${setting.description || setting.key}`}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* UI Settings */}
+                    <div className="bg-white p-6 rounded-lg shadow">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <Settings className="mr-2 h-5 w-5" />
+                        UI Settings
+                      </h3>
+                      <div className="space-y-4">
+                        {settings.filter(s => s.category === 'ui').map((setting) => (
+                          <div key={setting.key}>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {setting.description || setting.key}
+                            </label>
+                            <input
+                              type={setting.key.includes('color') ? 'color' : 'text'}
+                              value={setting.value || ''}
+                              onChange={(e) => updateSetting(setting.key, e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                              placeholder={`Enter ${setting.description || setting.key}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </>
