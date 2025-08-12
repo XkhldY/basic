@@ -109,9 +109,13 @@ const AuthPage = () => {
       
       // Redirect to dashboard or home page
       router.push('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration failed:', error);
-      const errorMessage = error.response?.data?.detail || error.message || 'Registration failed. Please try again.';
+      const errorMessage = (error instanceof Error && 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response && error.response.data && typeof error.response.data === 'object' && 'detail' in error.response.data) 
+        ? (error.response.data as { detail: string }).detail 
+        : error instanceof Error 
+          ? error.message 
+          : 'Registration failed. Please try again.';
       alert(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -128,9 +132,9 @@ const AuthPage = () => {
     try {
       await login(loginData.email, loginData.password);
       router.push('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
-      const errorMessage = error.message || 'Login failed. Please check your credentials.';
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please check your credentials.';
       alert(errorMessage);
     } finally {
       setIsSubmitting(false);
