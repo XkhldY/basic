@@ -83,6 +83,7 @@ mkdir -p /opt/job-platform
 cd /opt/job-platform
 
 # Clone the repository (assuming it's public or SSH key is configured)
+ git clone https://github.com/XkhldY/basic.git .
 # Note: In production, you might want to use a deployment key or download a specific release
 # For now, we'll create the application structure
 echo "Setting up application structure..."
