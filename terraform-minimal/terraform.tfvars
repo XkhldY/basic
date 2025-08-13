@@ -16,7 +16,7 @@ db_user = "dbadmin"
 # SSH Configuration
 # Generate your SSH key with: ssh-keygen -t ed25519 -C "your-email@example.com"
 # Then copy the public key from ~/.ssh/id_ed25519.pub
-ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... your-email@example.com"
+ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGr5TI8zjcZCBcDZIo9P0zNe7w7/tKedwYabeWM8Ylq6 engkhaled87@gmail.com"
 
 # Security Configuration
 allowed_ssh_cidr_blocks = ["0.0.0.0/0"]  # Change to your IP for better security

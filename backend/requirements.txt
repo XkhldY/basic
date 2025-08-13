@@ -9,3 +9,5 @@ passlib[bcrypt]
 python-multipart
 pydantic[email]
 python-decouple
+boto3>=1.26.0
+botocore>=1.29.0

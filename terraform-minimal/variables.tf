@@ -31,36 +31,8 @@ variable "db_user" {
   default     = "dbadmin"
 }
 
-variable "db_password" {
-  description = "PostgreSQL database password"
-  type        = string
-  sensitive   = true
-  
-  validation {
-    condition     = length(var.db_password) >= 8
-    error_message = "Database password must be at least 8 characters long."
-  }
-  
-  validation {
-    condition     = can(regex("[A-Z]", var.db_password))
-    error_message = "Database password must contain at least one uppercase letter."
-  }
-  
-  validation {
-    condition     = can(regex("[a-z]", var.db_password))
-    error_message = "Database password must contain at least one lowercase letter."
-  }
-  
-  validation {
-    condition     = can(regex("[0-9]", var.db_password))
-    error_message = "Database password must contain at least one number."
-  }
-  
-  validation {
-    condition     = can(regex("[^A-Za-z0-9]", var.db_password))
-    error_message = "Database password must contain at least one special character."
-  }
-}
+# Database password is now managed by AWS Secrets Manager
+# No need to specify manually - AWS will generate and manage it
 
 # SSH Configuration
 variable "ssh_public_key" {

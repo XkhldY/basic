@@ -25,9 +25,15 @@ output "rds_port" {
   value       = aws_db_instance.postgres.port
 }
 
-output "database_url" {
-  description = "Complete PostgreSQL database URL"
-  value       = "postgresql://${var.db_user}:${var.db_password}@${aws_db_instance.postgres.endpoint}:${aws_db_instance.postgres.port}/${var.db_name}"
+output "database_secret_arn" {
+  description = "ARN of the RDS master user secret in Secrets Manager"
+  value       = aws_db_instance.postgres.master_user_secret[0].secret_arn
+  sensitive   = true
+}
+
+output "app_secrets_arn" {
+  description = "ARN of the application secrets in Secrets Manager"
+  value       = aws_secretsmanager_secret.app_secrets.arn
   sensitive   = true
 }
 

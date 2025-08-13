@@ -17,7 +17,10 @@ apt-get install -y \
     git \
     nginx \
     certbot \
-    python3-certbot-nginx
+    python3-certbot-nginx \
+    awscli \
+    jq \
+    unzip
 
 # Install Docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -36,37 +39,94 @@ usermod -aG docker ubuntu
 curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 
+# Helper function to retrieve secret from AWS Secrets Manager
+get_secret_value() {
+    local secret_arn="$1"
+    local key="$2"
+    aws secretsmanager get-secret-value \
+        --region "${aws_region}" \
+        --secret-id "$secret_arn" \
+        --query SecretString \
+        --output text | jq -r ".$key"
+}
+
+# Helper function to get entire secret as JSON
+get_secret_json() {
+    local secret_arn="$1"
+    aws secretsmanager get-secret-value \
+        --region "${aws_region}" \
+        --secret-id "$secret_arn" \
+        --query SecretString \
+        --output text
+}
+
+# Wait for secrets to be available
+echo "Waiting for secrets to be available..."
+sleep 30
+
+# Retrieve database credentials from Secrets Manager
+echo "Retrieving database credentials..."
+DB_SECRET_JSON=$(get_secret_json "${db_secret_arn}")
+DB_PASSWORD=$(echo "$DB_SECRET_JSON" | jq -r '.password')
+
+# Retrieve application secrets
+echo "Retrieving application secrets..."
+APP_SECRET_JSON=$(get_secret_json "${app_secret_arn}")
+JWT_SECRET=$(echo "$APP_SECRET_JSON" | jq -r '.jwt_secret')
+EMAIL_USERNAME=$(echo "$APP_SECRET_JSON" | jq -r '.email_username // ""')
+EMAIL_PASSWORD=$(echo "$APP_SECRET_JSON" | jq -r '.email_password // ""')
+CORS_ORIGINS=$(echo "$APP_SECRET_JSON" | jq -r '.cors_origins')
+FROM_EMAIL=$(echo "$APP_SECRET_JSON" | jq -r '.from_email')
+
 # Create application directory
 mkdir -p /opt/job-platform
 cd /opt/job-platform
 
 # Clone the repository (assuming it's public or SSH key is configured)
 # Note: In production, you might want to use a deployment key or download a specific release
-git clone https://github.com/your-username/job-platform.git .
+# For now, we'll create the application structure
+echo "Setting up application structure..."
 
-# Create environment file for production
+# Create environment file for production with retrieved secrets
 cat > .env <<EOF
-# Database Configuration
+# Database Configuration (retrieved from AWS Secrets Manager)
 DB_HOST=${db_host}
 DB_NAME=${db_name}
 DB_USER=${db_user}
-DB_PASSWORD=${db_password}
-DATABASE_URL=postgresql://${db_user}:${db_password}@${db_host}:5432/${db_name}
+DB_PASSWORD=$DB_PASSWORD
+DATABASE_URL=postgresql://${db_user}:$DB_PASSWORD@${db_host}:5432/${db_name}
 
-# Application Configuration
-JWT_SECRET=${var.app_jwt_secret}
-CORS_ORIGINS=http://localhost:3000,https://${domain_name}
+# Application Configuration (retrieved from AWS Secrets Manager)
+JWT_SECRET=$JWT_SECRET
+SECRET_KEY=$JWT_SECRET
+CORS_ORIGINS=$CORS_ORIGINS
 
-# Email Configuration (configure these based on your SMTP provider)
-EMAIL_SMTP_SERVER=${var.app_email_smtp_server}
-EMAIL_SMTP_PORT=${var.app_email_smtp_port}
-EMAIL_USERNAME=${var.app_email_username}
-EMAIL_PASSWORD=${var.app_email_password}
-FROM_EMAIL=${var.app_from_email}
+# Email Configuration (retrieved from AWS Secrets Manager)
+EMAIL_SMTP_SERVER=smtp.gmail.com
+EMAIL_SMTP_PORT=587
+EMAIL_USERNAME=$EMAIL_USERNAME
+EMAIL_PASSWORD=$EMAIL_PASSWORD
+FROM_EMAIL=$FROM_EMAIL
+EMAIL_USE_TLS=true
+EMAIL_USE_SSL=false
+
+# AWS Configuration
+AWS_REGION=${aws_region}
+AWS_SECRET_NAME=${project_name}/database
 
 # Production environment
 ENVIRONMENT=production
 DEBUG=false
+APP_NAME=Job Platform
+APP_VERSION=1.0.0
+
+# Token Configuration
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+ALGORITHM=HS256
+
+# Logging Configuration
+LOG_LEVEL=INFO
 EOF
 
 # Create production docker-compose file
@@ -80,16 +140,23 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://${db_user}:${db_password}@${db_host}:5432/${db_name}
-      - JWT_SECRET=${var.app_jwt_secret}
-      - ENVIRONMENT=production
-      - DEBUG=false
+    env_file:
+      - .env
     restart: unless-stopped
     depends_on:
       - frontend
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     build:
@@ -99,14 +166,26 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=/api
     restart: unless-stopped
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   app-network:
     driver: bridge
+
+# Note: PostgreSQL is external (AWS RDS) in production
 EOF
 
 # Set up Nginx configuration

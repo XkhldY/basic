@@ -9,3 +9,5 @@ backend/.venv
 backend/__pycache__
 terraform-minimal/.terraform
 backend/job_platform.db
+backend/.env
+backend/.env.example

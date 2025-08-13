@@ -128,6 +128,7 @@ resource "aws_instance" "app_server" {
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.app_sg.id]
   subnet_id              = aws_subnet.public.id
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
   # Increased storage for Docker images and application files
   root_block_device {
@@ -142,11 +143,14 @@ resource "aws_instance" "app_server" {
   }
 
   user_data = base64encode(templatefile("${path.module}/setup.sh", {
-    db_host     = aws_db_instance.postgres.endpoint
-    db_name     = var.db_name
-    db_user     = var.db_user
-    db_password = var.db_password
-    domain_name = var.domain_name
+    db_host               = aws_db_instance.postgres.endpoint
+    db_name               = var.db_name
+    db_user               = var.db_user
+    domain_name           = var.domain_name
+    aws_region            = var.aws_region
+    project_name          = var.project_name
+    db_secret_arn         = aws_db_instance.postgres.master_user_secret[0].secret_arn
+    app_secret_arn        = aws_secretsmanager_secret.app_secrets.arn
   }))
 
   tags = {
@@ -172,7 +176,23 @@ resource "aws_db_subnet_group" "postgres" {
   }
 }
 
-# RDS PostgreSQL Instance
+# KMS Key for encrypting Secrets Manager secrets
+resource "aws_kms_key" "secrets_manager" {
+  description             = "KMS key for ${var.project_name} Secrets Manager"
+  deletion_window_in_days = 7
+  
+  tags = {
+    Name        = "${var.project_name}-secrets-kms"
+    Environment = var.environment
+  }
+}
+
+resource "aws_kms_alias" "secrets_manager" {
+  name          = "alias/${var.project_name}-secrets"
+  target_key_id = aws_kms_key.secrets_manager.key_id
+}
+
+# RDS PostgreSQL Instance with Secrets Manager
 resource "aws_db_instance" "postgres" {
   identifier = "${var.project_name}-db"
   
@@ -181,16 +201,18 @@ resource "aws_db_instance" "postgres" {
   max_allocated_storage = 100          # Auto-scaling limit
   storage_type          = "gp2"
   storage_encrypted     = true
+  kms_key_id           = aws_kms_key.secrets_manager.arn
   
   # Engine configuration  
   engine              = "postgres"
   engine_version      = "15.4"
   instance_class      = "db.t3.micro"  # Free tier eligible
   
-  # Database credentials
-  db_name  = var.db_name
-  username = var.db_user
-  password = var.db_password
+  # Database credentials - managed by AWS Secrets Manager
+  db_name                     = var.db_name
+  username                    = var.db_user
+  manage_master_user_password = true
+  master_user_secret_kms_key_id = aws_kms_key.secrets_manager.key_id
   
   # Network and security
   vpc_security_group_ids = [aws_security_group.db_sg.id]
@@ -214,6 +236,33 @@ resource "aws_db_instance" "postgres" {
     Name        = "${var.project_name}-database"
     Environment = var.environment
   }
+}
+
+# Secrets Manager secret for application secrets
+resource "aws_secretsmanager_secret" "app_secrets" {
+  name                    = "${var.project_name}-app-secrets"
+  description             = "Application secrets for ${var.project_name}"
+  kms_key_id              = aws_kms_key.secrets_manager.key_id
+  recovery_window_in_days = 7
+
+  tags = {
+    Name        = "${var.project_name}-app-secrets"
+    Environment = var.environment
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "app_secrets" {
+  secret_id = aws_secretsmanager_secret.app_secrets.id
+  secret_string = jsonencode({
+    jwt_secret     = var.app_jwt_secret
+    email_username = var.app_email_username
+    email_password = var.app_email_password
+    cors_origins   = join(",", [
+      "https://${var.domain_name}",
+      "http://${aws_eip.app_server.public_ip}:3000"
+    ])
+    from_email = var.app_from_email
+  })
 }
 
 # Route 53 Hosted Zone (if domain is provided)

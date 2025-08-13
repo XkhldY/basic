@@ -1,0 +1,91 @@
+# Root .dockerignore for the entire project
+
+# Version control
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+!README.md
+
+# Docker files
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Environment variables
+.env*
+!.env.example
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Terraform (for AWS deployment)
+terraform-minimal/
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Node.js (frontend)
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+
+# Python (backend)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+env/
+.coverage
+.pytest_cache/
+
+# Database files
+*.db
+*.sqlite3
+job_platform.db
