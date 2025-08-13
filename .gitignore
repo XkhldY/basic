@@ -7,3 +7,5 @@ frontend/.next
 backend/__pycache__
 backend/.venv
 backend/__pycache__
+terraform-minimal/.terraform
+backend/job_platform.db
