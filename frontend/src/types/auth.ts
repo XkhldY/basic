@@ -1,4 +1,4 @@
-export type UserType = 'candidate' | 'employer';
+export type UserType = 'candidate' | 'employer' | 'admin';
 
 export interface BaseFormData {
   name: string;
@@ -23,7 +23,13 @@ export interface CandidateFormData extends BaseFormData {
   portfolioUrl: string;
 }
 
-export type FormData = EmployerFormData | CandidateFormData;
+export interface AdminFormData extends BaseFormData {
+  userType: 'admin';
+  adminRole: string;
+  department: string;
+}
+
+export type FormData = EmployerFormData | CandidateFormData | AdminFormData;
 
 export interface UnifiedFormData extends BaseFormData {
   // Employer fields
@@ -36,6 +42,9 @@ export interface UnifiedFormData extends BaseFormData {
   experienceLevel: string;
   skills: string;
   portfolioUrl: string;
+  // Admin fields
+  adminRole: string;
+  department: string;
 }
 
 export const COMPANY_SIZES = [
@@ -52,4 +61,11 @@ export const EXPERIENCE_LEVELS = [
   { value: 'mid', label: 'Mid Level (3-5 years)' },
   { value: 'senior', label: 'Senior (5-8 years)' },
   { value: 'lead', label: 'Lead/Principal (8+ years)' },
+] as const;
+
+export const ADMIN_ROLES = [
+  { value: 'super_admin', label: 'Super Admin' },
+  { value: 'user_manager', label: 'User Manager' },
+  { value: 'content_moderator', label: 'Content Moderator' },
+  { value: 'analyst', label: 'Analyst' },
 ] as const;
