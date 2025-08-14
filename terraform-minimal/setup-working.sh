@@ -249,6 +249,15 @@ fi
 
 echo "Database credentials retrieved successfully"
 
+# Get current instance public IP dynamically
+echo "Getting instance public IP..."
+PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+if [ -z "$PUBLIC_IP" ]; then
+    echo "ERROR: Could not retrieve public IP"
+    exit 1
+fi
+echo "Instance public IP: $PUBLIC_IP"
+
 # Create production environment file
 echo "Creating environment file..."
 cat > .env <<EOF
@@ -266,10 +275,10 @@ DATABASE_URL=postgresql://dbadmin:${DB_PASSWORD}@job-platform-db.cwdec2aoci4i.us
 # Application Configuration
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 SECRET_KEY=your-super-secret-jwt-key-change-this-in-production
-CORS_ORIGINS=http://54.165.55.106,http://54.165.55.106:3000,http://localhost:3000
+CORS_ORIGINS=http://${PUBLIC_IP},http://${PUBLIC_IP}:3000,http://${PUBLIC_IP}:8000,http://localhost:3000
 
 # Frontend Configuration
-NEXT_PUBLIC_API_URL=http://54.165.55.106:8000
+NEXT_PUBLIC_API_URL=http://${PUBLIC_IP}:8000
 API_URL=http://backend:8000
 
 # AWS Configuration
@@ -328,7 +337,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://54.165.55.106:8000
+      - NEXT_PUBLIC_API_URL=http://${PUBLIC_IP}:8000
     restart: unless-stopped
     networks:
       - app-network
@@ -460,9 +469,9 @@ sudo -u ubuntu docker-compose -f docker-compose.prod.yml logs db-migrate
 
 echo "=== Setup completed at $(date) ==="
 echo "Application should be accessible at:"
-echo "- Frontend: http://54.165.55.106:3000"
-echo "- Backend: http://54.165.55.106:8000"
-echo "- Nginx proxy: http://54.165.55.106"
+echo "- Frontend: http://${PUBLIC_IP}:3000"
+echo "- Backend: http://${PUBLIC_IP}:8000"
+echo "- Nginx proxy: http://${PUBLIC_IP}"
 
 # Final status check
 sleep 10
