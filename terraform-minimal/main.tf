@@ -123,7 +123,7 @@ resource "aws_eip" "app_server" {
 
 # EC2 Instance for Frontend + Backend
 resource "aws_instance" "app_server" {
-  ami                    = "ami-0c02fb55956c7d316" # Ubuntu 22.04 LTS
+  ami                    = "ami-0866a3c8686eaeeba" # Ubuntu 22.04 LTS (us-east-1)
   instance_type          = "t3.micro"              # Free tier eligible
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.app_sg.id]
@@ -142,16 +142,7 @@ resource "aws_instance" "app_server" {
     }
   }
 
-  user_data = base64encode(templatefile("${path.module}/setup.sh", {
-    db_host               = aws_db_instance.postgres.endpoint
-    db_name               = var.db_name
-    db_user               = var.db_user
-    domain_name           = var.domain_name
-    aws_region            = var.aws_region
-    project_name          = var.project_name
-    db_secret_arn         = aws_db_instance.postgres.master_user_secret[0].secret_arn
-    app_secret_arn        = aws_secretsmanager_secret.app_secrets.arn
-  }))
+  user_data = base64encode(file("${path.module}/setup-minimal.sh"))
 
   tags = {
     Name        = "${var.project_name}-app-server"
@@ -205,7 +196,7 @@ resource "aws_db_instance" "postgres" {
   
   # Engine configuration  
   engine              = "postgres"
-  engine_version      = "15.4"
+  engine_version      = "15.13"
   instance_class      = "db.t3.micro"  # Free tier eligible
   
   # Database credentials - managed by AWS Secrets Manager
