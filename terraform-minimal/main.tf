@@ -144,6 +144,18 @@ resource "aws_instance" "app_server" {
 
   user_data = base64encode(file("${path.module}/setup-minimal.sh"))
 
+  # Force recreation when user data changes
+  user_data_replace_on_change = true
+
+  # Lifecycle configuration for zero-downtime deployments
+  lifecycle {
+    create_before_destroy = true
+    replace_triggered_by = [
+      # Force recreation when setup script changes
+      file("${path.module}/setup-minimal.sh")
+    ]
+  }
+
   tags = {
     Name        = "${var.project_name}-app-server"
     Environment = var.environment
@@ -229,32 +241,8 @@ resource "aws_db_instance" "postgres" {
   }
 }
 
-# Secrets Manager secret for application secrets
-resource "aws_secretsmanager_secret" "app_secrets" {
-  name                    = "${var.project_name}-app-secrets"
-  description             = "Application secrets for ${var.project_name}"
-  kms_key_id              = aws_kms_key.secrets_manager.key_id
-  recovery_window_in_days = 7
-
-  tags = {
-    Name        = "${var.project_name}-app-secrets"
-    Environment = var.environment
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "app_secrets" {
-  secret_id = aws_secretsmanager_secret.app_secrets.id
-  secret_string = jsonencode({
-    jwt_secret     = var.app_jwt_secret
-    email_username = var.app_email_username
-    email_password = var.app_email_password
-    cors_origins   = join(",", [
-      "https://${var.domain_name}",
-      "http://${aws_eip.app_server.public_ip}:3000"
-    ])
-    from_email = var.app_from_email
-  })
-}
+# Note: App secrets temporarily removed due to deletion conflict
+# Can be re-added later with different name if needed
 
 # Route 53 Hosted Zone (if domain is provided)
 resource "aws_route53_zone" "main" {

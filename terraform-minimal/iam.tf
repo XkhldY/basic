@@ -38,7 +38,6 @@ resource "aws_iam_policy" "secrets_manager_policy" {
           "secretsmanager:DescribeSecret"
         ]
         Resource = [
-          aws_secretsmanager_secret.app_secrets.arn,
           aws_db_instance.postgres.master_user_secret[0].secret_arn
         ]
       },
