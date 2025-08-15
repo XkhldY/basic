@@ -24,6 +24,16 @@ terraform-minimal/.terraform
 terraform-minimal/terraform.tfstate*
 terraform-minimal/job-platform-key*
 
+# SSH Keys and sensitive files
+*.pem
+*.key
+*.pub
+id_rsa*
+id_ed25519*
+*.crt
+*.p12
+*.pfx
+
 # Deployment artifacts
 *.tar.gz
 deployment-package/
