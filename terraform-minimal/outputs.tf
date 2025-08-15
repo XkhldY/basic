@@ -31,11 +31,13 @@ output "database_secret_arn" {
   sensitive   = true
 }
 
-output "app_secrets_arn" {
-  description = "ARN of the application secrets in Secrets Manager"
-  value       = aws_secretsmanager_secret.app_secrets.arn
+output "db_secret_arn" {
+  description = "Alias for database_secret_arn (used by deployment script)"
+  value       = aws_db_instance.postgres.master_user_secret[0].secret_arn
   sensitive   = true
 }
+
+# App secrets output temporarily removed
 
 output "ssh_command" {
   description = "SSH command to connect to the EC2 instance"

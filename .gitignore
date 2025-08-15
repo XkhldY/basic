@@ -1,13 +1,58 @@
+# Dependencies
 frontend/node_modules
-.claude
-*.pyc
-CLAUDE.md
-backend/job_platform.db
-frontend/.next
 backend/__pycache__
 backend/.venv
-backend/__pycache__
-terraform-minimal/.terraform
+*.pyc
+
+# Build artifacts
+frontend/.next
+
+# Development files
+.claude
 backend/job_platform.db
+
+# Environment files
+.env
+.env.local
+.env.generated
 backend/.env
 backend/.env.example
+frontend/.env.local
+
+# Terraform
+terraform-minimal/.terraform
+terraform-minimal/terraform.tfstate*
+terraform-minimal/job-platform-key*
+
+# SSH Keys and sensitive files
+*.pem
+*.key
+*.pub
+id_rsa*
+id_ed25519*
+*.crt
+*.p12
+*.pfx
+
+# Deployment artifacts
+*.tar.gz
+deployment-package/
+
+# Old deployment scripts (keep only deploy-automated.sh)
+deploy.sh
+deploy-fixed.sh
+deploy-production.sh
+deploy-with-dynamic-ip.sh
+deploy-working.sh
+final-deploy.sh
+quick-redeploy.sh
+create-deployment-package.sh
+fix-frontend-config.sh
+test-ip-config.sh
+update-frontend-ip.sh
+
+# Old docker compose files (keep only docker-compose.prod.yml)
+docker-compose.fixed.yml
+docker-compose.production.yml
+CLAUDE.md
+backend/job_platform.db

@@ -123,7 +123,7 @@ resource "aws_eip" "app_server" {
 
 # EC2 Instance for Frontend + Backend
 resource "aws_instance" "app_server" {
-  ami                    = "ami-0c02fb55956c7d316" # Ubuntu 22.04 LTS
+  ami                    = "ami-0866a3c8686eaeeba" # Ubuntu 22.04 LTS (us-east-1)
   instance_type          = "t3.micro"              # Free tier eligible
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.app_sg.id]
@@ -142,16 +142,19 @@ resource "aws_instance" "app_server" {
     }
   }
 
-  user_data = base64encode(templatefile("${path.module}/setup.sh", {
-    db_host               = aws_db_instance.postgres.endpoint
-    db_name               = var.db_name
-    db_user               = var.db_user
-    domain_name           = var.domain_name
-    aws_region            = var.aws_region
-    project_name          = var.project_name
-    db_secret_arn         = aws_db_instance.postgres.master_user_secret[0].secret_arn
-    app_secret_arn        = aws_secretsmanager_secret.app_secrets.arn
-  }))
+  user_data = base64encode(file("${path.module}/setup-minimal.sh"))
+
+  # Force recreation when user data changes
+  user_data_replace_on_change = true
+
+  # Lifecycle configuration for zero-downtime deployments
+  lifecycle {
+    create_before_destroy = true
+    replace_triggered_by = [
+      # Force recreation when setup script changes
+      file("${path.module}/setup-minimal.sh")
+    ]
+  }
 
   tags = {
     Name        = "${var.project_name}-app-server"
@@ -205,7 +208,7 @@ resource "aws_db_instance" "postgres" {
   
   # Engine configuration  
   engine              = "postgres"
-  engine_version      = "15.4"
+  engine_version      = "15.13"
   instance_class      = "db.t3.micro"  # Free tier eligible
   
   # Database credentials - managed by AWS Secrets Manager
@@ -238,32 +241,8 @@ resource "aws_db_instance" "postgres" {
   }
 }
 
-# Secrets Manager secret for application secrets
-resource "aws_secretsmanager_secret" "app_secrets" {
-  name                    = "${var.project_name}-app-secrets"
-  description             = "Application secrets for ${var.project_name}"
-  kms_key_id              = aws_kms_key.secrets_manager.key_id
-  recovery_window_in_days = 7
-
-  tags = {
-    Name        = "${var.project_name}-app-secrets"
-    Environment = var.environment
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "app_secrets" {
-  secret_id = aws_secretsmanager_secret.app_secrets.id
-  secret_string = jsonencode({
-    jwt_secret     = var.app_jwt_secret
-    email_username = var.app_email_username
-    email_password = var.app_email_password
-    cors_origins   = join(",", [
-      "https://${var.domain_name}",
-      "http://${aws_eip.app_server.public_ip}:3000"
-    ])
-    from_email = var.app_from_email
-  })
-}
+# Note: App secrets temporarily removed due to deletion conflict
+# Can be re-added later with different name if needed
 
 # Route 53 Hosted Zone (if domain is provided)
 resource "aws_route53_zone" "main" {

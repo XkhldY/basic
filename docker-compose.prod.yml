@@ -10,6 +10,8 @@ services:
     environment:
       - ENVIRONMENT=production
       - DEBUG=false
+    env_file:
+      - .env
     restart: unless-stopped
     depends_on:
       - frontend
@@ -34,7 +36,9 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=/api
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    env_file:
+      - .env
     restart: unless-stopped
     networks:
       - app-network
