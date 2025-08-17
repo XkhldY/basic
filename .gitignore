@@ -56,3 +56,4 @@ docker-compose.fixed.yml
 docker-compose.production.yml
 CLAUDE.md
 backend/job_platform.db
+terraform-compute/job-platform-key
