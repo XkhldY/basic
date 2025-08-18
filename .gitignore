@@ -23,6 +23,12 @@ frontend/.env.local
 terraform-minimal/.terraform
 terraform-minimal/terraform.tfstate*
 terraform-minimal/job-platform-key*
+terraform-compute/.terraform
+terraform-compute/terraform.tfstate*
+terraform-compute/job-platform-key*
+terraform-persistent/.terraform
+terraform-persistent/terraform.tfstate*
+terraform-persistent/job-platform-key*
 
 # SSH Keys and sensitive files
 *.pem
