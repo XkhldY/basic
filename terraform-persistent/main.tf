@@ -1,5 +1,5 @@
-# Terraform configuration for minimal cost AWS deployment
-# Estimated cost: $15-25/month
+# Persistent Infrastructure - Database + Core Networking
+# This infrastructure is created once and maintained long-term
 
 terraform {
   required_version = ">= 1.0"
@@ -29,6 +29,7 @@ resource "aws_vpc" "main" {
   tags = {
     Name        = "${var.project_name}-vpc"
     Environment = var.environment
+    Type        = "persistent"
   }
 }
 
@@ -39,10 +40,11 @@ resource "aws_internet_gateway" "main" {
   tags = {
     Name        = "${var.project_name}-igw"
     Environment = var.environment
+    Type        = "persistent"
   }
 }
 
-# Public Subnet for EC2
+# Public Subnet for EC2 (future compute resources)
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
@@ -52,6 +54,7 @@ resource "aws_subnet" "public" {
   tags = {
     Name        = "${var.project_name}-public-subnet"
     Environment = var.environment
+    Type        = "persistent"
   }
 }
 
@@ -64,6 +67,7 @@ resource "aws_subnet" "private" {
   tags = {
     Name        = "${var.project_name}-private-subnet"
     Environment = var.environment
+    Type        = "persistent"
   }
 }
 
@@ -76,6 +80,7 @@ resource "aws_subnet" "private_secondary" {
   tags = {
     Name        = "${var.project_name}-private-subnet-2"
     Environment = var.environment
+    Type        = "persistent"
   }
 }
 
@@ -91,6 +96,7 @@ resource "aws_route_table" "public" {
   tags = {
     Name        = "${var.project_name}-public-rt"
     Environment = var.environment
+    Type        = "persistent"
   }
 }
 
@@ -98,74 +104,6 @@ resource "aws_route_table" "public" {
 resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public.id
-}
-
-# Key Pair for EC2 access
-resource "aws_key_pair" "deployer" {
-  key_name   = "${var.project_name}-key"
-  public_key = var.ssh_public_key
-
-  tags = {
-    Name        = "${var.project_name}-key"
-    Environment = var.environment
-  }
-}
-
-# Elastic IP for EC2 instance
-resource "aws_eip" "app_server" {
-  domain = "vpc"
-  
-  tags = {
-    Name        = "${var.project_name}-eip"
-    Environment = var.environment
-  }
-}
-
-# EC2 Instance for Frontend + Backend
-resource "aws_instance" "app_server" {
-  ami                    = "ami-0866a3c8686eaeeba" # Ubuntu 22.04 LTS (us-east-1)
-  instance_type          = "t3.micro"              # Free tier eligible
-  key_name               = aws_key_pair.deployer.key_name
-  vpc_security_group_ids = [aws_security_group.app_sg.id]
-  subnet_id              = aws_subnet.public.id
-  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
-
-  # Increased storage for Docker images and application files
-  root_block_device {
-    volume_type = "gp2"
-    volume_size = 30
-    encrypted   = true
-
-    tags = {
-      Name        = "${var.project_name}-root-volume"
-      Environment = var.environment
-    }
-  }
-
-  user_data = base64encode(file("${path.module}/setup-minimal.sh"))
-
-  # Force recreation when user data changes
-  user_data_replace_on_change = true
-
-  # Lifecycle configuration for zero-downtime deployments
-  lifecycle {
-    create_before_destroy = true
-    replace_triggered_by = [
-      # Force recreation when setup script changes
-      file("${path.module}/setup-minimal.sh")
-    ]
-  }
-
-  tags = {
-    Name        = "${var.project_name}-app-server"
-    Environment = var.environment
-  }
-}
-
-# Associate Elastic IP with EC2 instance
-resource "aws_eip_association" "app_server" {
-  instance_id   = aws_instance.app_server.id
-  allocation_id = aws_eip.app_server.id
 }
 
 # DB Subnet Group for RDS
@@ -176,6 +114,7 @@ resource "aws_db_subnet_group" "postgres" {
   tags = {
     Name        = "${var.project_name}-db-subnet-group"
     Environment = var.environment
+    Type        = "persistent"
   }
 }
 
@@ -187,12 +126,48 @@ resource "aws_kms_key" "secrets_manager" {
   tags = {
     Name        = "${var.project_name}-secrets-kms"
     Environment = var.environment
+    Type        = "persistent"
   }
 }
 
 resource "aws_kms_alias" "secrets_manager" {
   name          = "alias/${var.project_name}-secrets"
   target_key_id = aws_kms_key.secrets_manager.key_id
+}
+
+# Security Group for RDS Database
+resource "aws_security_group" "db_sg" {
+  name_prefix = "${var.project_name}-db-"
+  vpc_id      = aws_vpc.main.id
+  description = "Security group for PostgreSQL database"
+
+  # PostgreSQL access from compute security group (will be referenced from compute module)
+  ingress {
+    description = "PostgreSQL from compute instances"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [aws_subnet.public.cidr_block]  # Allow from public subnet where compute will be
+  }
+
+  # No outbound rules needed for RDS
+  egress {
+    description = "No outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = []
+  }
+
+  tags = {
+    Name        = "${var.project_name}-db-sg"
+    Environment = var.environment
+    Type        = "persistent"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # RDS PostgreSQL Instance with Secrets Manager
@@ -231,36 +206,14 @@ resource "aws_db_instance" "postgres" {
   performance_insights_enabled = false  # Not available in free tier
   monitoring_interval         = 0       # Disable enhanced monitoring to save costs
   
-  # Deletion protection
-  skip_final_snapshot = true  # Set to false in production
-  deletion_protection = false # Set to true in production
+  # Deletion protection - ENABLED for persistent infrastructure
+  skip_final_snapshot = false           # Create snapshot on deletion
+  deletion_protection = false            # Prevent accidental deletion
+  final_snapshot_identifier = "${var.project_name}-db-final-snapshot"
 
   tags = {
     Name        = "${var.project_name}-database"
     Environment = var.environment
+    Type        = "persistent"
   }
-}
-
-# Note: App secrets temporarily removed due to deletion conflict
-# Can be re-added later with different name if needed
-
-# Route 53 Hosted Zone (if domain is provided)
-resource "aws_route53_zone" "main" {
-  count = var.domain_name != "" ? 1 : 0
-  name  = var.domain_name
-
-  tags = {
-    Name        = "${var.project_name}-zone"
-    Environment = var.environment
-  }
-}
-
-# Route 53 A Record pointing to Elastic IP
-resource "aws_route53_record" "app" {
-  count   = var.domain_name != "" ? 1 : 0
-  zone_id = aws_route53_zone.main[0].zone_id
-  name    = var.domain_name
-  type    = "A"
-  ttl     = 300
-  records = [aws_eip.app_server.public_ip]
 }
