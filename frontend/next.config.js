@@ -8,7 +8,8 @@ const nextConfig = {
     // Disable TypeScript checks during production builds (for now)
     ignoreBuildErrors: true,
   },
-  output: 'standalone',
+  // Disable standalone output for now to fix static asset serving
+  // ...(process.env.NODE_ENV === 'production' && { output: 'standalone' }),
   // Server external packages moved to top level in Next.js 15
   serverExternalPackages: [],
   
