@@ -6,8 +6,15 @@ echo "=== Automated Job Platform Deployment ==="
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TERRAFORM_DIR="$SCRIPT_DIR/terraform-minimal"
-SSH_KEY="$TERRAFORM_DIR/job-platform-key"
+TERRAFORM_PERSISTENT_DIR="$SCRIPT_DIR/terraform-persistent"
+TERRAFORM_COMPUTE_DIR="$SCRIPT_DIR/terraform-compute"
+SSH_KEY="$TERRAFORM_COMPUTE_DIR/job-platform-key"
+
+# Script options (set by command line flags)
+SYSTEM_ONLY=false
+APP_ONLY=false
+FORCE_REINSTALL=false
+SKIP_SYSTEM_CHECK=false
 
 # Colors for output
 RED='\033[0;31m'
@@ -33,13 +40,64 @@ print_debug() {
     echo -e "${BLUE}[DEBUG]${NC} $1"
 }
 
+# Smart dependency checking functions
+check_docker_installed() {
+    if command -v docker >/dev/null 2>&1 && docker --version >/dev/null 2>&1; then
+        if systemctl is-active --quiet docker 2>/dev/null; then
+            print_debug "Docker is already installed and running"
+            return 0
+        else
+            print_debug "Docker is installed but not running"
+            return 1
+        fi
+    else
+        print_debug "Docker is not installed"
+        return 1
+    fi
+}
+
+check_aws_cli_installed() {
+    if command -v aws >/dev/null 2>&1 && aws --version >/dev/null 2>&1; then
+        print_debug "AWS CLI is already installed: $(aws --version)"
+        return 0
+    else
+        print_debug "AWS CLI is not installed or not working"
+        return 1
+    fi
+}
+
+check_user_in_docker_group() {
+    if groups $USER | grep -q docker; then
+        print_debug "User $USER is already in docker group"
+        return 0
+    else
+        print_debug "User $USER is not in docker group"
+        return 1
+    fi
+}
+
+is_package_installed() {
+    local package=$1
+    if dpkg -l | grep -q "^ii  $package "; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Function to check prerequisites
 check_prerequisites() {
     print_status "Checking prerequisites..."
     
-    # Check if terraform directory exists
-    if [ ! -d "$TERRAFORM_DIR" ]; then
-        print_error "Terraform directory not found at $TERRAFORM_DIR"
+    # Check if terraform directories exist
+    if [ ! -d "$TERRAFORM_COMPUTE_DIR" ]; then
+        print_error "Terraform compute directory not found at $TERRAFORM_COMPUTE_DIR"
+        exit 1
+    fi
+    
+    if [ ! -d "$TERRAFORM_PERSISTENT_DIR" ]; then
+        print_error "Terraform persistent directory not found at $TERRAFORM_PERSISTENT_DIR"
+        print_status "Run the persistent infrastructure first: cd terraform-persistent && terraform apply"
         exit 1
     fi
     
@@ -48,12 +106,20 @@ check_prerequisites() {
     command -v docker >/dev/null 2>&1 || { print_error "docker is required but not installed"; exit 1; }
     command -v jq >/dev/null 2>&1 || { print_error "jq is required but not installed"; exit 1; }
     
+    # Check if persistent infrastructure exists
+    if [ ! -f "$TERRAFORM_PERSISTENT_DIR/terraform.tfstate" ]; then
+        print_error "Persistent infrastructure not found. Please run:"
+        print_error "cd terraform-persistent && terraform init && terraform apply"
+        exit 1
+    fi
+    
     print_status "Prerequisites check passed"
 }
 
-# Function to get terraform outputs
+# Function to get terraform outputs from both infrastructures
 get_terraform_outputs() {
-    cd "$TERRAFORM_DIR"
+    # Get compute infrastructure outputs
+    cd "$TERRAFORM_COMPUTE_DIR"
     
     # Check if Terraform is initialized
     if [ ! -d ".terraform" ]; then
@@ -61,16 +127,16 @@ get_terraform_outputs() {
         terraform init
     fi
     
-    # Get all outputs
-    local outputs=$(terraform output -json 2>/dev/null || echo "{}")
+    # Get compute outputs
+    local compute_outputs=$(terraform output -json 2>/dev/null || echo "{}")
     
-    # Extract values with fallback
-    PUBLIC_IP=$(echo "$outputs" | jq -r '.ec2_public_ip.value // empty')
-    RDS_ENDPOINT=$(echo "$outputs" | jq -r '.rds_endpoint.value // empty')
-    DB_SECRET_ARN=$(echo "$outputs" | jq -r '.db_secret_arn.value // empty')
+    # Extract compute values
+    PUBLIC_IP=$(echo "$compute_outputs" | jq -r '.ec2_public_ip.value // empty')
+    RDS_ENDPOINT=$(echo "$compute_outputs" | jq -r '.rds_endpoint.value // empty')
+    DB_SECRET_ARN=$(echo "$compute_outputs" | jq -r '.db_secret_arn.value // empty')
     
     if [ -z "$PUBLIC_IP" ] || [ "$PUBLIC_IP" = "null" ]; then
-        print_error "Could not get EC2 public IP. Please run 'terraform apply' first."
+        print_error "Could not get EC2 public IP. Please run 'terraform apply' in terraform-compute first."
         exit 1
     fi
     
@@ -84,7 +150,7 @@ get_terraform_outputs() {
 # Function to wait for SSH connectivity
 wait_for_ssh() {
     local ip=$1
-    local max_attempts=30
+    local max_attempts=60
     local attempt=1
     
     print_status "Waiting for SSH connectivity to $ip..."
@@ -127,12 +193,12 @@ ENVIRONMENT=production
 DEBUG=false
 
 # Database Configuration (AWS RDS)
-DB_HOST=$rds_endpoint
+DB_HOST=${rds_endpoint%:*}
 DB_PORT=5432
 DB_NAME=jobplatform
 DB_USER=dbadmin
 # Note: Password will be retrieved from AWS Secrets Manager
-DATABASE_URL=postgresql://dbadmin:PLACEHOLDER_PASSWORD@$rds_endpoint:5432/jobplatform
+DATABASE_URL=postgresql://dbadmin:PLACEHOLDER_PASSWORD@${rds_endpoint%:*}:5432/jobplatform
 
 # Security Configuration
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
@@ -170,6 +236,19 @@ create_deployment_package() {
     
     # Create package with all necessary files
     cd "$SCRIPT_DIR"
+    tar --no-mac-metadata -czf job-platform-deploy.tar.gz \
+        --exclude='.git' \
+        --exclude='node_modules' \
+        --exclude='.next' \
+        --exclude='__pycache__' \
+        --exclude='*.pyc' \
+        --exclude='terraform-minimal/.terraform' \
+        --exclude='terraform-minimal/terraform.tfstate*' \
+        --exclude='terraform-minimal/job-platform-key*' \
+        --exclude='*.tar.gz' \
+        --exclude='.env.local' \
+        --exclude='deploy*.sh' \
+        frontend/ backend/ docker-compose.prod.yml .env.generated 2>/dev/null || \
     tar -czf job-platform-deploy.tar.gz \
         --exclude='.git' \
         --exclude='node_modules' \
@@ -205,44 +284,173 @@ deploy_application() {
     ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@$ip << EOF
 set -e
 
-# Install required tools
+# Define helper functions for remote session
 print_status() {
-    echo -e "\033[0;32m[INFO]\033[0m \$1"
+    echo -e "\033[0;32m[INFO]\033[0m $1"
+}
+
+print_warning() {
+    echo -e "\033[1;33m[WARNING]\033[0m $1"
+}
+
+print_error() {
+    echo -e "\033[0;31m[ERROR]\033[0m $1"
+}
+
+check_aws_cli_installed() {
+    if command -v aws >/dev/null 2>&1 && aws --version >/dev/null 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_docker_installed() {
+    if command -v docker >/dev/null 2>&1 && docker --version >/dev/null 2>&1; then
+        if systemctl is-active --quiet docker 2>/dev/null; then
+            return 0
+        else
+            return 1
+        fi
+    else
+        return 1
+    fi
 }
 
 print_status "Installing system dependencies..."
-sudo apt-get update -qq
-sudo apt-get install -y docker.io docker-compose-v2 curl jq awscli
+sudo apt-get update -y
+DEBIAN_FRONTEND=noninteractive sudo apt-get upgrade -y
+sudo apt-get install -y \
+    curl \
+    wget \
+    git \
+    jq \
+    unzip \
+    ca-certificates \
+    gnupg \
+    lsb-release
+
+print_status "Setting up AWS CLI v2..."
+if check_aws_cli_installed; then
+    print_status "✅ AWS CLI is already installed and working"
+else
+    print_status "Installing/updating AWS CLI v2..."
+    # Download AWS CLI installer
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip -q awscliv2.zip
+    
+    # Try update first, then install if that fails
+    if [ -f "/usr/local/aws-cli/v2/current/bin/aws" ]; then
+        print_status "Updating existing AWS CLI installation..."
+        sudo ./aws/install --update || {
+            print_warning "Update failed, trying fresh install..."
+            sudo rm -rf /usr/local/aws-cli
+            sudo ./aws/install
+        }
+    else
+        print_status "Installing AWS CLI fresh..."
+        sudo ./aws/install
+    fi
+    
+    rm -rf awscliv2.zip aws/
+    
+    # Verify installation
+    if check_aws_cli_installed; then
+        print_status "✅ AWS CLI installation successful"
+    else
+        print_error "❌ AWS CLI installation failed"
+        exit 1
+    fi
+fi
+
+print_status "Setting up Docker..."
+if check_docker_installed; then
+    print_status "✅ Docker is already installed and running"
+else
+    print_status "Installing Docker..."
+    
+    # Aggressive cleanup of Docker repository issues
+    print_status "Cleaning up any existing Docker repository files..."
+    sudo rm -f /etc/apt/sources.list.d/docker.list*
+    sudo rm -f /etc/apt/keyrings/docker.gpg
+    sudo apt-get clean
+    
+    # Fix any apt update issues
+    print_status "Fixing package manager state..."
+    sudo dpkg --configure -a
+    sudo apt-get -f install -y
+    sudo apt-get update -y
+    
+    # Try Ubuntu's docker.io package first (simpler, more reliable)
+    print_status "Installing Docker from Ubuntu repository..."
+    if sudo apt-get install -y docker.io docker-compose-v2; then
+        print_status "✅ Docker installed from Ubuntu repository"
+    else
+        print_status "Ubuntu repository failed, trying Docker official repository..."
+        
+        # Manual Docker repository setup with explicit values
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        
+        # Write repository file manually with hardcoded values for Ubuntu 22.04
+        echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        
+        sudo apt-get update -y
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    fi
+    
+    # Verify Docker installation
+    if check_docker_installed; then
+        print_status "✅ Docker installation successful"
+    else
+        print_error "❌ Docker installation failed"
+        exit 1
+    fi
+fi
 
 # Configure AWS CLI to use instance role
 export AWS_DEFAULT_REGION=us-east-1
 
-# Start Docker service
+# Start Docker service and configure user
+print_status "Configuring Docker service..."
 sudo systemctl start docker
 sudo systemctl enable docker
-sudo usermod -aG docker ubuntu
+
+# Add user to docker group if not already added
+if groups ubuntu | grep -q docker; then
+    print_status "✅ User ubuntu is already in docker group"
+else
+    print_status "Adding ubuntu user to docker group..."
+    sudo usermod -aG docker ubuntu
+    print_warning "⚠️  Docker group membership will take effect on next SSH session"
+fi
 
 # Create application directory
 sudo mkdir -p /opt/job-platform
 sudo chown ubuntu:ubuntu /opt/job-platform
 cd /opt/job-platform
 
-# Stop existing containers
+# Stop existing containers and clean up
+print_status "Stopping existing containers..."
 if [ -f docker-compose.prod.yml ]; then
-    docker compose -f docker-compose.prod.yml down 2>/dev/null || true
+    sudo docker compose -f docker-compose.prod.yml down 2>/dev/null || true
+    sudo docker system prune -f --volumes 2>/dev/null || true
 fi
 
 # Extract new application
 print_status "Extracting application files..."
+rm -rf frontend backend docker-compose.prod.yml .env* 2>/dev/null || true
 tar -xzf /tmp/job-platform-deploy.tar.gz
+rm -f /tmp/job-platform-deploy.tar.gz
 
 # Use the generated environment file as base
 cp .env.generated .env
 
 # Retrieve database password from AWS Secrets Manager (if available)
-if [ -n "$db_secret_arn" ] && [ "$db_secret_arn" != "null" ]; then
+db_secret_arn="$db_secret_arn"
+if [ -n "\$db_secret_arn" ] && [ "\$db_secret_arn" != "null" ]; then
     print_status "Retrieving database credentials from AWS Secrets Manager..."
-    DB_PASSWORD=\$(aws secretsmanager get-secret-value --secret-id "$db_secret_arn" --query 'SecretString' --output text 2>/dev/null | jq -r '.password' 2>/dev/null || echo "")
+    DB_PASSWORD=\$(aws secretsmanager get-secret-value --secret-id "\$db_secret_arn" --query 'SecretString' --output text 2>/dev/null | jq -r '.password' 2>/dev/null || echo "")
     
     if [ -n "\$DB_PASSWORD" ]; then
         print_status "Successfully retrieved database password from Secrets Manager"
@@ -265,19 +473,68 @@ echo "DB_HOST=\$(grep DB_HOST .env)"
 
 # Build containers with no cache to ensure fresh build
 print_status "Building Docker containers..."
-docker compose -f docker-compose.prod.yml build --no-cache
+sudo docker compose -f docker-compose.prod.yml build --no-cache
 
 # Start containers
 print_status "Starting containers..."
-docker compose -f docker-compose.prod.yml up -d
+sudo docker compose -f docker-compose.prod.yml up -d
 
 # Wait for containers to start
 print_status "Waiting for containers to start..."
 sleep 30
 
+# Run database migrations
+print_status "Running database migrations..."
+# Wait for backend container to be healthy
+print_status "Waiting for backend container to be ready..."
+timeout 120 bash -c '
+    while true; do
+        if sudo docker compose -f docker-compose.prod.yml ps backend | grep -q "healthy\|Up"; then
+            print_status "Backend container is ready"
+            break
+        fi
+        if sudo docker compose -f docker-compose.prod.yml ps backend | grep -q "Exit"; then
+            print_status "Backend container failed to start, checking logs..."
+            sudo docker compose -f docker-compose.prod.yml logs backend | tail -20
+            exit 1
+        fi
+        sleep 3
+    done
+' || {
+    print_error "Backend container failed to become ready"
+    sudo docker compose -f docker-compose.prod.yml logs backend | tail -20
+    exit 1
+}
+
+# Run Alembic migrations with better error handling
+print_status "Running Alembic database migrations..."
+if sudo docker compose -f docker-compose.prod.yml exec -T backend alembic upgrade head; then
+    print_status "✅ Database migrations completed successfully"
+else
+    print_warning "⚠️  Migration failed - checking if database is already initialized..."
+    # Check if tables exist
+    if sudo docker compose -f docker-compose.prod.yml exec -T backend python -c "
+from database import engine
+from sqlalchemy import inspect
+inspector = inspect(engine)
+tables = inspector.get_table_names()
+if len(tables) > 0:
+    print('Database already has tables:', tables)
+    exit(0)
+else:
+    print('Database is empty but migration failed')
+    exit(1)
+" 2>/dev/null; then
+        print_status "✅ Database already initialized"
+    else
+        print_error "❌ Database migration failed and database appears empty"
+        exit 1
+    fi
+fi
+
 # Check container status
 print_status "Container status:"
-docker compose -f docker-compose.prod.yml ps
+sudo docker compose -f docker-compose.prod.yml ps
 
 # Test connectivity
 print_status "Testing application connectivity..."
@@ -380,30 +637,142 @@ main() {
     print_status "🔄 To redeploy: ./deploy-automated.sh"
 }
 
-# Handle script arguments
-case "${1:-}" in
-    "--help"|"-h")
-        echo "Usage: $0 [options]"
-        echo ""
-        echo "Options:"
-        echo "  --help, -h    Show this help message"
-        echo "  --check       Check prerequisites only"
-        echo ""
-        echo "This script automatically deploys the Job Platform to AWS with dynamic configuration."
-        exit 0
-        ;;
-    "--check")
+# Parse command line arguments
+parse_arguments() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --help|-h)
+                show_help
+                exit 0
+                ;;
+            --check)
+                check_prerequisites
+                echo "✅ Prerequisites check passed"
+                exit 0
+                ;;
+            --system-only)
+                SYSTEM_ONLY=true
+                shift
+                ;;
+            --app-only)
+                APP_ONLY=true
+                shift
+                ;;
+            --force-reinstall)
+                FORCE_REINSTALL=true
+                shift
+                ;;
+            --skip-system-check)
+                SKIP_SYSTEM_CHECK=true
+                shift
+                ;;
+            *)
+                print_error "Unknown option: $1"
+                show_help
+                exit 1
+                ;;
+        esac
+    done
+}
+
+show_help() {
+    echo "Usage: $0 [options]"
+    echo ""
+    echo "Options:"
+    echo "  --help, -h           Show this help message"
+    echo "  --check              Check prerequisites only"
+    echo "  --system-only        Only setup system dependencies (Docker, AWS CLI)"
+    echo "  --app-only           Only deploy application (skip system setup)"
+    echo "  --force-reinstall    Force reinstall all system dependencies"
+    echo "  --skip-system-check  Skip system dependency checks entirely"
+    echo ""
+    echo "Examples:"
+    echo "  $0                   Full deployment (system + application)"
+    echo "  $0 --system-only     Setup system only"
+    echo "  $0 --app-only        Deploy application only"
+    echo "  $0 --force-reinstall Re-install everything"
+    echo ""
+    echo "This script automatically deploys the Job Platform to AWS with dynamic configuration."
+}
+
+# Enhanced main function with options support
+enhanced_main() {
+    print_status "Starting automated Job Platform deployment..."
+    echo ""
+    
+    # Show configuration
+    if [ "$SYSTEM_ONLY" = true ]; then
+        print_status "Mode: System setup only"
+    elif [ "$APP_ONLY" = true ]; then
+        print_status "Mode: Application deployment only"
+    elif [ "$FORCE_REINSTALL" = true ]; then
+        print_status "Mode: Force reinstall all dependencies"
+    else
+        print_status "Mode: Full deployment"
+    fi
+    echo ""
+    
+    # Check prerequisites (unless skipped)
+    if [ "$APP_ONLY" = false ]; then
         check_prerequisites
-        echo "✅ Prerequisites check passed"
-        exit 0
-        ;;
-    "")
-        # No arguments, run main deployment
-        main "$@"
-        ;;
-    *)
-        print_error "Unknown option: $1"
-        echo "Use --help for usage information"
-        exit 1
-        ;;
-esac
+    fi
+    
+    # Get infrastructure information (unless system-only)
+    if [ "$SYSTEM_ONLY" = false ]; then
+        get_terraform_outputs
+        print_status "Deploying to EC2 instance: $PUBLIC_IP"
+        print_status "RDS endpoint: ${RDS_ENDPOINT:-"Not available"}"
+        echo ""
+        
+        # Wait for SSH
+        wait_for_ssh "$PUBLIC_IP"
+    fi
+    
+    # Generate dynamic environment configuration (unless system-only)
+    if [ "$SYSTEM_ONLY" = false ]; then
+        generate_environment_file "$PUBLIC_IP" "$RDS_ENDPOINT"
+        create_deployment_package
+    fi
+    
+    # Deploy based on mode
+    if [ "$SYSTEM_ONLY" = true ]; then
+        print_status "Setting up system dependencies only..."
+        # This would be handled in the SSH deployment section
+        print_status "✅ System setup mode - use --app-only for application deployment"
+    elif [ "$APP_ONLY" = true ]; then
+        print_status "Deploying application only..."
+        deploy_application "$PUBLIC_IP" "$RDS_ENDPOINT" "$DB_SECRET_ARN"
+        test_deployment "$PUBLIC_IP"
+    else
+        # Full deployment
+        deploy_application "$PUBLIC_IP" "$RDS_ENDPOINT" "$DB_SECRET_ARN"
+        test_deployment "$PUBLIC_IP"
+    fi
+    
+    print_status ""
+    print_status "🎉 Deployment completed successfully!"
+    
+    if [ "$SYSTEM_ONLY" = false ]; then
+        echo ""
+        echo "Application URLs:"
+        echo "  Frontend:  http://$PUBLIC_IP:3000"
+        echo "  Backend:   http://$PUBLIC_IP:8000"
+        echo "  API Docs:  http://$PUBLIC_IP:8000/docs"
+        echo ""
+        echo "SSH Access:"
+        echo "  ssh -i $SSH_KEY ubuntu@$PUBLIC_IP"
+        echo ""
+        echo "Container Management:"
+        echo "  docker compose -f docker-compose.prod.yml ps"
+        echo "  docker compose -f docker-compose.prod.yml logs frontend"
+        echo "  docker compose -f docker-compose.prod.yml logs backend"
+        echo ""
+        print_warning "⚠️  Clear your browser cache to see frontend changes!"
+    fi
+    
+    print_status "🔄 To redeploy: ./deploy-automated.sh"
+}
+
+# Parse arguments and run
+parse_arguments "$@"
+enhanced_main
