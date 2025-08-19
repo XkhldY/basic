@@ -3,19 +3,18 @@ const nextConfig = {
   // Environment-based configuration
   eslint: {
     // Only ignore ESLint during builds in development for faster iteration
-    ignoreDuringBuilds: process.env.NODE_ENV === 'development',
+    ignoreDuringBuilds: process.env.NODE_ENV === 'production',
   },
   
   typescript: {
     // Only ignore TypeScript errors in development for faster iteration
     // In production, we want strict type checking
-    ignoreBuildErrors: process.env.NODE_ENV === 'development',
+    ignoreBuildErrors: process.env.NODE_ENV === 'production',
   },
 
-  // Enable standalone output for better performance in production
-  ...(process.env.NODE_ENV === 'production' && { 
-    output: 'standalone' 
-  }),
+  // Enable standalone output for production builds
+  // This creates a minimal deployment with only necessary files
+  output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
 
   // Optimize for production builds
   ...(process.env.NODE_ENV === 'production' && {
