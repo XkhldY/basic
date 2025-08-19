@@ -1,7 +1,12 @@
 version: '3.8'
 services:
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.simple
+      args:
+        NODE_ENV: development
+        NEXT_PUBLIC_API_URL: http://localhost:8000
     ports:
       - "3000:3000"
     volumes:

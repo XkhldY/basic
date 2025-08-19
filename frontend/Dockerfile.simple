@@ -1,0 +1,54 @@
+# Multi-stage build that handles both development and production
+FROM node:18-slim AS base
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy package files
+COPY package*.json ./
+
+# Build arguments
+ARG NODE_ENV=production
+ARG NEXT_PUBLIC_API_URL
+
+ENV NODE_ENV=$NODE_ENV
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Install dependencies based on environment
+RUN if [ "$NODE_ENV" = "development" ]; then \
+    npm ci; \
+    else \
+    npm ci --only=production; \
+    fi && npm cache clean --force
+
+# Copy source code
+COPY --chown=nextjs:nodejs . .
+
+# Create .next directory with proper permissions for development
+RUN mkdir -p .next && chown -R nextjs:nodejs .next
+
+# Build for production only
+RUN if [ "$NODE_ENV" = "production" ]; then \
+    npm run build; \
+    fi
+
+USER nextjs
+
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Start based on environment
+CMD ["sh", "-c", "if [ \"$NODE_ENV\" = \"development\" ]; then npm run dev; else npm start; fi"]
