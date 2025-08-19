@@ -3,7 +3,7 @@ services:
   frontend:
     build: 
       context: ./frontend
-      dockerfile: Dockerfile.simple
+      dockerfile: Dockerfile.dev
       args:
         NODE_ENV: development
         NEXT_PUBLIC_API_URL: http://localhost:8000
@@ -31,6 +31,7 @@ services:
     networks:
       - app-network
     env_file:
+      - ./.env.local
       - ./backend/.env
     environment:
       - ENVIRONMENT=development
