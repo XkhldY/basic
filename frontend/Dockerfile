@@ -3,9 +3,11 @@ FROM node:18-slim AS builder
 
 WORKDIR /app
 
-# Build argument for API URL
+# Build arguments
 ARG NEXT_PUBLIC_API_URL
+ARG NODE_ENV=production
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NODE_ENV=$NODE_ENV
 
 # Set environment for building
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -23,8 +25,12 @@ RUN npm config set fetch-retry-mintimeout 20000 && \
 # Copy source code
 COPY . .
 
-# Build the application with timeout (API URL is now embedded)
-RUN timeout 600 npm run build || npm run build
+# Build the application only in production mode
+RUN if [ "$NODE_ENV" = "production" ]; then \
+    timeout 600 npm run build || npm run build; \
+    else \
+    echo "Skipping build in development mode"; \
+    fi
 
 # Production stage
 FROM node:18-slim AS runner
@@ -41,17 +47,33 @@ RUN apt-get update && \
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Set production environment
-ENV NODE_ENV=production
+# Set environment from build arg (defaults to production for safety)
+ARG NODE_ENV=production
+ENV NODE_ENV=$NODE_ENV
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy only production dependencies
+# Copy package files and install dependencies based on environment
 COPY package*.json ./
-RUN npm ci --only=production --cache /tmp/.npm && npm cache clean --force
+RUN if [ "$NODE_ENV" = "development" ]; then \
+    npm ci --cache /tmp/.npm; \
+    else \
+    npm ci --only=production --cache /tmp/.npm; \
+    fi && npm cache clean --force
 
-# Copy built application from builder stage with correct ownership
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+# Copy public directory and handle .next based on environment
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Copy built application from builder stage only in production mode
+ARG NODE_ENV=production
+RUN if [ "$NODE_ENV" = "production" ]; then \
+    echo "Copying production build artifacts"; \
+    else \
+    echo "Development mode - creating empty .next directory"; \
+    mkdir -p ./.next; \
+    fi
+
+# Conditional copy of .next directory for production
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 
 # Copy static files for standalone mode if they exist
 RUN if [ -d ".next/standalone" ]; then \
@@ -69,5 +91,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start server based on environment
-# Use npm start for all modes to ensure proper static asset serving
-CMD ["npm", "start"]
+# Use development mode if NODE_ENV is development, otherwise production
+CMD ["sh", "-c", "if [ \"$NODE_ENV\" = \"development\" ]; then npm run dev; else npm start; fi"]
