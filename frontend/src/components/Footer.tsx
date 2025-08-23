@@ -11,12 +11,10 @@ const Footer = () => {
 
   const footerLinks = {
     platform: [
-      { name: 'For employers', href: '/employer' },
-      { name: 'For candidates', href: '/candidate' }
+      { name: 'For Employers', href: '/employer' },
+      { name: 'For Candidates', href: '/candidate' }
     ],
     support: [
-      { name: 'Help Center', href: '/#contact' },
-      { name: 'Contact Support', href: '/#contact' },
       { name: 'Privacy Policy', href: '#' },
       { name: 'Terms of Service', href: '#' }
     ],

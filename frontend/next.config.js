@@ -4,7 +4,6 @@ const nextConfig = {
   images: {
     unoptimized: false,
   },
-}
 
   eslint: {
     ignoreDuringBuilds: true,

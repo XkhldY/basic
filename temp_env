@@ -1,0 +1,11 @@
+# Production environment variables - automatically generated during deployment
+DATABASE_URL=postgresql://dbadmin:s.WSLpS$)kUF|LxTmDE4_bPugUu!@job-platform-db.cwdec2aoci4i.us-east-1.rds.amazonaws.com:5432/jobplatform
+DB_HOST=job-platform-db.cwdec2aoci4i.us-east-1.rds.amazonaws.com
+DB_PORT=5432
+DB_NAME=jobplatform
+DB_USER=dbadmin
+DB_PASSWORD=s.WSLpS$)kUF|LxTmDE4_bPugUu!
+ENVIRONMENT=production
+DEBUG=false
+NEXT_PUBLIC_API_URL=http://54.172.102.143:8000
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000,http://54.172.102.143:3000
