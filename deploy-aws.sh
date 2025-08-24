@@ -103,10 +103,28 @@ wait_for_ssh() {
 deploy_app() {
     print_status "Deploying application to $EC2_IP..."
     
+    # Update frontend config for production
+    print_status "Updating frontend config for production..."
+    
+    # Backup original config
+    cp frontend/public/config.js frontend/public/config.js.backup
+    
+    # Create production config
+    cat > frontend/public/config.js << EOF
+// Production configuration - automatically generated during deployment
+window.APP_CONFIG = {
+  API_URL: 'http://${EC2_IP}:8000',
+  ENVIRONMENT: 'production'
+};
+EOF
+    
     # Create deployment package
     print_status "Creating deployment package..."
     tar --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='__pycache__' \
         -czf deploy.tar.gz frontend/ backend/ docker-compose.prod.yml
+    
+    # Restore original config
+    mv frontend/public/config.js.backup frontend/public/config.js
     
     # Upload to EC2
     print_status "Uploading to EC2..."
