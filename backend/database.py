@@ -5,7 +5,23 @@ from decouple import config
 import os
 
 # Database configuration  
-DATABASE_URL = config('DATABASE_URL', default='postgresql://user:password@postgres:5432/mydatabase')
+def get_database_url():
+    """Get database URL from environment variables or config"""
+    # Try to get from environment first
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        return database_url
+    
+    # Fallback to individual components
+    db_host = os.getenv('DB_HOST', 'localhost')
+    db_port = os.getenv('DB_PORT', '5432')
+    db_name = os.getenv('DB_NAME', 'jobplatform')
+    db_user = os.getenv('DB_USER', 'dbadmin')
+    db_password = os.getenv('DB_PASSWORD', 'password')
+    
+    return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+
+DATABASE_URL = get_database_url()
 
 # Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL)

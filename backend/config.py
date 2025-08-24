@@ -100,7 +100,7 @@ class Settings:
     # CORS
     CORS_ORIGINS: List[str] = config(
         'CORS_ORIGINS',
-        default='http://localhost:3000,http://127.0.0.1:3000',
+        default='http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000',
         cast=lambda v: [s.strip() for s in v.split(',')]
     )
     

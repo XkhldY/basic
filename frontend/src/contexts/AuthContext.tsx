@@ -12,17 +12,62 @@ export interface User {
   is_active: boolean;
   is_verified: boolean;
   created_at: string;
-  updated_at?: string;
-  // Employer fields
-  company_name?: string;
-  company_size?: string;
-  industry?: string;
-  company_description?: string;
-  // Candidate fields
+  updated_at: string;
+  
+  // Basic profile fields
+  phone_number?: string;
+  date_of_birth?: string;
+  location?: string;
+  linkedin_url?: string;
+  github_url?: string;
+  
+  // Candidate-specific fields
   professional_title?: string;
   experience_level?: string;
   skills?: string;
   portfolio_url?: string;
+  education_level?: string;
+  years_of_experience?: string;
+  current_salary?: number;
+  expected_salary?: number;
+  preferred_work_type?: string;
+  willing_to_relocate?: boolean;
+  notice_period?: string;
+  technical_skills?: string[];
+  soft_skills?: string[];
+  certifications?: string[];
+  languages?: string[];
+  desired_industries?: string[];
+  work_schedule_preference?: string;
+  remote_work_preference?: string;
+  travel_willingness?: string;
+  
+  // Employer-specific fields
+  company_name?: string;
+  company_size?: string;
+  industry?: string;
+  company_description?: string;
+  company_website?: string;
+  company_logo_url?: string;
+  founded_year?: string;
+  company_type?: string;
+  revenue_range?: string;
+  employee_count?: number;
+  contact_person?: string;
+  contact_phone?: string;
+  company_address?: string;
+  company_city?: string;
+  company_state?: string;
+  company_country?: string;
+  company_postal_code?: string;
+  tax_id?: string;
+  registration_number?: string;
+  business_license?: string;
+  hiring_frequency?: string;
+  typical_contract_length?: string;
+  remote_policy?: string;
+  benefits_offered?: string[];
+  
   // Admin fields
   admin_role?: string;
   permissions?: string;
@@ -35,6 +80,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -94,12 +140,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const updateUser = (userData: Partial<User>) => {
+    setUser(prevUser => prevUser ? { ...prevUser, ...userData } : null);
+  };
+
   const value = {
     user,
     loading,
     login,
     logout,
     isAuthenticated,
+    updateUser,
   };
 
   return (

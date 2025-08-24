@@ -114,6 +114,17 @@ export default function Dashboard() {
                         </>
                       )}
                     </div>
+                    
+                    {/* Profile Navigation */}
+                    <div className="mt-6 pt-4 border-t border-gray-200">
+                      <button
+                        onClick={() => router.push(user.user_type === 'employer' ? '/employer/profile' : '/candidate/profile')}
+                        className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        {user.user_type === 'employer' ? 'Edit Company Profile' : 'Edit Profile'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
