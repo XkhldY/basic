@@ -118,13 +118,30 @@ window.APP_CONFIG = {
 };
 EOF
     
+    # Create production environment file for backend
+    print_status "Creating production environment file..."
+    cat > .env << EOF
+# Production environment variables - automatically generated during deployment
+DATABASE_URL=postgresql://dbadmin:s.WSLpS\$)kUF|LxTmDE4_bPugUu!@job-platform-db.cwdec2aoci4i.us-east-1.rds.amazonaws.com:5432/jobplatform
+DB_HOST=job-platform-db.cwdec2aoci4i.us-east-1.rds.amazonaws.com
+DB_PORT=5432
+DB_NAME=jobplatform
+DB_USER=dbadmin
+DB_PASSWORD=s.WSLpS\$)kUF|LxTmDE4_bPugUu!
+ENVIRONMENT=production
+DEBUG=false
+NEXT_PUBLIC_API_URL=http://${EC2_IP}:8000
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000,http://${EC2_IP}:3000
+EOF
+    
     # Create deployment package
     print_status "Creating deployment package..."
-    tar --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='__pycache__' \
-        -czf deploy.tar.gz frontend/ backend/ docker-compose.prod.yml
+    tar --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='__pycache__' --exclude='.env.local' \
+        -czf deploy.tar.gz frontend/ backend/ docker-compose.prod.yml .env
     
-    # Restore original config
+    # Restore original config and clean up temporary files
     mv frontend/public/config.js.backup frontend/public/config.js
+    rm -f .env
     
     # Upload to EC2
     print_status "Uploading to EC2..."
@@ -135,9 +152,29 @@ EOF
     ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@$EC2_IP << 'EOF'
 set -e
 
-echo "📦 Installing dependencies..."
-sudo apt-get update -y
-sudo apt-get install -y docker.io docker-compose-v2 curl
+# echo "📦 Installing dependencies..."
+# sudo apt-get update -y
+
+# # Clean up any conflicting Docker packages
+# echo "🧹 Removing conflicting Docker packages..."
+# sudo apt-get remove -y docker docker-engine docker.io containerd runc containerd.io 2>/dev/null || true
+
+# # Install prerequisites
+# sudo apt-get install -y ca-certificates curl gnupg lsb-release
+
+# # Add Docker's official GPG key and repository
+# echo "🔑 Adding Docker repository..."
+# sudo install -m 0755 -d /etc/apt/keyrings
+# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --batch --yes -o /etc/apt/keyrings/docker.gpg
+# sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# # Update and install Docker from official repository
+# echo "🐳 Installing Docker from official repository..."
+# sudo apt-get update -y
+# sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
 
 echo "🐳 Starting Docker..."
 sudo systemctl start docker
@@ -151,6 +188,7 @@ cd /opt/job-platform
 
 echo "🔄 Stopping existing containers..."
 sudo docker compose -f docker-compose.prod.yml down 2>/dev/null || true
+sudo docker system prune -f
 
 echo "📂 Extracting application..."
 rm -rf frontend backend docker-compose.prod.yml 2>/dev/null || true
