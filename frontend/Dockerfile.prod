@@ -1,0 +1,30 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Install dependencies
+COPY package*.json ./
+RUN npm ci --no-audit --no-fund
+
+# Copy source code
+COPY . .
+
+# Set Node.js memory limit to prevent build hanging
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# Build the application
+RUN npm run build
+
+# Set production environment
+ARG NEXT_PUBLIC_API_URL
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+EXPOSE 3000
+
+# Start production server
+CMD ["npm", "start"]
