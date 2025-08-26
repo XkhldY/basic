@@ -64,3 +64,4 @@ CLAUDE.md
 backend/job_platform.db
 terraform-compute/job-platform-key
 terraform-persistent/.terraform.tfstate.lock.info
+temp_env
