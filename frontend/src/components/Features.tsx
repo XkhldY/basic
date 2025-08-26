@@ -83,7 +83,7 @@ const Features = () => {
       
       {/* Visible Floating Elements */}
       <div className="absolute inset-0">
-        {[...Array(30)].map((_, i) => (
+        {[...Array(80)].map((_, i) => (
           <div
             key={i}
             className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
@@ -105,26 +105,36 @@ const Features = () => {
         {/* Main Features */}
         <motion.div 
           className="text-center mb-16"
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 1, ease: "easeOut" }}
         >
-          <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 mb-10 mt-8">
+          <motion.div 
+            className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 mb-10 mt-8"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+          >
             <Shield size={16} />
             <span>Why choose us</span>
-          </div>
+          </motion.div>
           <motion.h2
             className="text-4xl lg:text-6xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
+            transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
           >
             Everything you need to <span>succeed</span>
           </motion.h2>
-          <p className="text-lg text-gray-800 max-w-3xl mx-auto">
+          <motion.p 
+            className="text-lg text-gray-800 max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.7, ease: "easeOut" }}
+          >
             Our platform provides comprehensive solutions for both employers and job seekers, 
             ensuring successful matches and long-term success.
-          </p>
+          </motion.p>
         </motion.div>
 
         {/* Benefits Grid */}
@@ -133,18 +143,40 @@ const Features = () => {
             <motion.div
               key={benefit.title}
               className="bg-white/80 rounded-2xl p-8 shadow-xl border border-amber-200/30 hover:shadow-2xl transition-all duration-200 group hover:-translate-y-1 text-center hover:bg-white hover:border-amber-300/50"
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.6 + index * 0.05 }}
-              whileHover={{ scale: 1.01 }}
+              transition={{ 
+                duration: 1, 
+                delay: 0.9 + index * 0.2, 
+                ease: "easeOut"
+              }}
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 mb-6 group-hover:scale-105 transition-all duration-200 mx-auto group-hover:from-amber-100 group-hover:to-amber-200">
+              <motion.div 
+                className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 mb-6 group-hover:scale-105 transition-all duration-200 mx-auto group-hover:from-amber-100 group-hover:to-amber-200"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 1.1 + index * 0.2, ease: "easeOut" }}
+              >
                 <div className="animate-[float_3s_ease-in-out_infinite]">
                   <benefit.icon size={32} className="text-amber-700 transition-all duration-200 group-hover:text-amber-800" />
                 </div>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4 transition-all duration-200 group-hover:text-gray-800">{benefit.title}</h3>
-              <p className="text-gray-700 leading-relaxed transition-all duration-200 group-hover:text-gray-600">{benefit.description}</p>
+              </motion.div>
+              <motion.h3 
+                className="text-xl font-bold text-gray-900 mb-4 transition-all duration-200 group-hover:text-gray-800"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 1.3 + index * 0.2, ease: "easeOut" }}
+              >
+                {benefit.title}
+              </motion.h3>
+              <motion.p 
+                className="text-gray-700 leading-relaxed transition-all duration-200 group-hover:text-gray-600"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 1.5 + index * 0.2, ease: "easeOut" }}
+              >
+                {benefit.description}
+              </motion.p>
             </motion.div>
           ))}
         </div>
@@ -153,78 +185,56 @@ const Features = () => {
         <div className="mt-32">
           <motion.div
             className="text-center mb-4"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
+            transition={{ duration: 1, delay: 1.7, ease: "easeOut" }}
           >
-            <h3 className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold">
+            <motion.h3 
+              className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 1.9, ease: "easeOut" }}
+            >
               Trusted by leading companies
-            </h3>
-            <p className="text-lg text-gray-700 max-w-3xl mx-auto">
+            </motion.h3>
+            <motion.p 
+              className="text-lg text-gray-700 max-w-3xl mx-auto"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 2.1, ease: "easeOut" }}
+            >
               Join companies that trust our platform to find their next great hire
-            </p>
+            </motion.p>
           </motion.div>
           
           {/* Moving Company Logos Bar */}
           <motion.div
             className="relative overflow-hidden py-8 max-w-4xl mx-auto"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
+            transition={{ duration: 1, delay: 2.3, ease: "easeOut" }}
           >
-            {/* Left Smooth Fade */}
-            <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-amber-100 via-amber-100/50 to-transparent z-10 pointer-events-none" />
-            
-            {/* Right Smooth Fade */}
-            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-amber-100 via-amber-100/50 to-transparent z-10 pointer-events-none" />
-            
-            <div className="flex space-x-12 animate-scroll">
-              {/* Company Logos - First Set */}
-              <div className="flex items-center space-x-12 flex-shrink-0">
-                <div className="flex items-center justify-center w-48 h-28 p-4">
-                  <img src="/img/momentscience_logo.avif" alt="Moment Science" className="max-w-full max-h-full object-contain brightness-0" />
-                </div>
-                <div className="flex items-center justify-center w-40 h-24 p-4">
-                  <img src="/img/clever_logo.avif" alt="Clever" className="max-w-full max-h-full object-contain" />
-                </div>
-                <div className="flex items-center justify-center w-44 h-20 p-1">
-                  <span className="text-2xl font-bold text-gray-800">
-                    Bajaar LLC
-                  </span>
-                </div>
-                <div className="flex items-center justify-center w-40 h-24 p-4">
-                  <img src="/img/adspostx_logo.svg" alt="AdsPostX" className="max-w-full max-h-full object-contain" />
-                </div>
-                <div className="flex items-center justify-center w-40 h-24 p-4">
-                  <img src="/img/blastBucks_logo.webp" alt="BlastBucks" className="max-w-full max-h-full object-contain" />
-                </div>
-                <div className="flex items-center justify-center w-40 h-24 p-4">
-                  <img src="/img/enefits_logo.svg" alt="Enefits" className="max-w-full max-h-full object-contain brightness-0" />
-                </div>
+            <div className="flex items-center justify-center space-x-12">
+              {/* Company Logos - Static Display */}
+              <div className="flex items-center justify-center w-48 h-28 p-4">
+                <img src="/img/momentscience_logo.avif" alt="Moment Science" className="max-w-full max-h-full object-contain brightness-0" />
               </div>
-              
-              {/* Company Logos - Second Set (for seamless loop) */}
-              <div className="flex items-center space-x-12 flex-shrink-0">
-                <div className="flex items-center justify-center w-48 h-28 p-4">
-                  <img src="/img/momentscience_logo.avif" alt="Moment Science" className="max-w-full max-h-full object-contain brightness-0" />
-                </div>
-                <div className="flex items-center justify-center w-40 h-24 p-4">
-                  <img src="/img/clever_logo.avif" alt="Clever" className="max-w-full max-h-full object-contain" />
-                </div>
-                <div className="flex items-center justify-center w-44 h-20 p-1">
-                  <span className="text-2xl font-bold text-gray-800">
-                    Bajaar LLC
-                  </span>
-                </div>
-                <div className="flex items-center justify-center w-40 h-24 p-4">
-                  <img src="/img/adspostx_logo.svg" alt="AdsPostX" className="max-w-full max-h-full object-contain" />
-                </div>
-                <div className="flex items-center justify-center w-40 h-24 p-4">
-                  <img src="/img/blastBucks_logo.webp" alt="BlastBucks" className="max-w-full max-h-full object-contain" />
-                </div>
-                <div className="flex items-center justify-center w-40 h-24 p-4">
-                  <img src="/img/enefits_logo.svg" alt="Enefits" className="max-w-full max-h-full object-contain brightness-0" />
-                </div>
+              <div className="flex items-center justify-center w-40 h-24 p-4">
+                <img src="/img/clever_logo.avif" alt="Clever" className="max-w-full max-h-full object-contain" />
+              </div>
+              <div className="flex items-center justify-center w-44 h-20 p-1">
+                <span className="text-2xl font-bold text-gray-800">
+                  Bajaar LLC
+                </span>
+              </div>
+              <div className="flex items-center justify-center w-40 h-24 p-4">
+                <img src="/img/adspostx_logo.svg" alt="AdsPostX" className="max-w-full max-h-full object-contain" />
+              </div>
+              <div className="flex items-center justify-center w-40 h-24 p-4">
+                <img src="/img/blastBucks_logo.webp" alt="BlastBucks" className="max-w-full max-h-full object-contain" />
+              </div>
+              <div className="flex items-center justify-center w-40 h-24 p-4">
+                <img src="/img/enefits_logo.svg" alt="Enefits" className="max-w-full max-h-full object-contain brightness-0" />
               </div>
             </div>
           </motion.div>
@@ -234,22 +244,37 @@ const Features = () => {
         <div className="mt-12">
           <motion.div
             className="text-center mb-12"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.4 }}
+            transition={{ duration: 1, delay: 2.5, ease: "easeOut" }}
           >
-            <span className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-10 inline-block">
+            <motion.span 
+              className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-10 inline-block"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 2.7, ease: "easeOut" }}
+            >
               <div className="flex items-center space-x-2">
                 <Zap size={16} />
                 <span>Expert skills</span>
               </div>
-            </span>
-            <h3 className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold">
+            </motion.span>
+            <motion.h3 
+              className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 2.9, ease: "easeOut" }}
+            >
               Wide range of <span>expertise</span>
-            </h3>
-            <p className="text-lg text-gray-800 max-w-3xl mx-auto mb-6">
+            </motion.h3>
+            <motion.p 
+              className="text-lg text-gray-800 max-w-3xl mx-auto mb-6"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 3.1, ease: "easeOut" }}
+            >
               Our platform connects you with professionals across diverse industries and skill sets
-            </p>
+            </motion.p>
           </motion.div>
 
           <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
@@ -257,17 +282,31 @@ const Features = () => {
               <motion.div
                 key={skill.category}
                 className="flex items-center space-x-3 px-4 py-2 bg-white/90 rounded-full border border-amber-200/50 shadow-sm hover:bg-white hover:border-amber-300/70 hover:shadow-md transition-all duration-200 group"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.8 + index * 0.05 }}
+                transition={{ 
+                  duration: 1, 
+                  delay: 3.3 + index * 0.1, 
+                  ease: "easeOut"
+                }}
                 whileHover={{ scale: 1.1, y: -2 }}
               >
-                <span className="text-lg">
+                <motion.span 
+                  className="text-lg"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 3.5 + index * 0.1, ease: "easeOut" }}
+                >
                   {skill.emoji}
-                </span>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                </motion.span>
+                <motion.span 
+                  className="text-sm font-medium text-gray-700 group-hover:text-gray-900"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 3.7 + index * 0.1, ease: "easeOut" }}
+                >
                   {skill.category}
-                </span>
+                </motion.span>
               </motion.div>
             ))}
           </div>
@@ -278,22 +317,37 @@ const Features = () => {
           <div className="container-custom relative z-10">
             <motion.div
               className="text-center mb-12"
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.6 }}
+              transition={{ duration: 0.6, delay: 4.0 }}
             >
-              <span className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-6 inline-block">
+              <motion.span 
+                className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-6 inline-block"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 4.2 }}
+              >
                 <div className="flex items-center space-x-2">
                   <Briefcase size={16} />
                   <span>Open positions</span>
                 </div>
-              </span>
-              <h3 className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold">
+              </motion.span>
+              <motion.h3 
+                className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 4.4 }}
+              >
                 Join our <span>team</span>
-              </h3>
-              <p className="text-lg text-gray-800 max-w-3xl mx-auto mb-10">
+              </motion.h3>
+              <motion.p 
+                className="text-lg text-gray-800 max-w-3xl mx-auto mb-10"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 4.6 }}
+              >
                 Discover exciting opportunities and be part of our mission to connect top talent with amazing companies
-              </p>
+              </motion.p>
             </motion.div>
 
             {/* Jobs Grid */}
@@ -302,37 +356,62 @@ const Features = () => {
                 <motion.div
                   key={job.title}
                   className="bg-white/90 rounded-3xl p-6 shadow-lg border border-amber-200/30 hover:shadow-xl transition-all duration-200 group hover:-translate-y-1 hover:bg-white hover:border-amber-300/50"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ 
                     duration: 0.5, 
-                    delay: 0.8 + index * 0.1
+                    delay: 4.8 + index * 0.2,
                   }}
                   whileHover={{ 
                     scale: 1.02, 
                     y: -3
                   }}
                 >
-                  <div className="flex items-center justify-between mb-4">
+                  <motion.div 
+                    className="flex items-center justify-between mb-4"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 5.0 + index * 0.2 }}
+                  >
                     <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full">
                       {job.type}
                     </span>
                     <span className="text-xs text-gray-500">{job.date}</span>
-                  </div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-gray-800 transition-colors duration-200">
+                  </motion.div>
+                  <motion.h4 
+                    className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-gray-800 transition-colors duration-200"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 5.2 + index * 0.2 }}
+                  >
                     {job.title}
-                  </h4>
-                  <p className="text-sm text-gray-600 mb-3">{job.location}</p>
-                  <div className="flex flex-wrap gap-2">
+                  </motion.h4>
+                  <motion.p 
+                    className="text-sm text-gray-600 mb-3"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 5.4 + index * 0.2 }}
+                  >
+                    {job.location}
+                  </motion.p>
+                  <motion.div 
+                    className="flex flex-wrap gap-2"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 5.6 + index * 0.2 }}
+                  >
                     {job.tags.map((tag, tagIndex) => (
-                      <span
+                      <motion.span
                         key={tagIndex}
                         className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-xl"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.2, delay: 5.8 + index * 0.2 + tagIndex * 0.1 }}
                       >
                         {tag}
-                      </span>
+                      </motion.span>
                     ))}
-                  </div>
+                  </motion.div>
                 </motion.div>
               ))}
             </div>
@@ -340,9 +419,9 @@ const Features = () => {
             {/* See More Jobs Button */}
             <motion.div
               className="text-center mb-16"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 1.5 }}
+              transition={{ duration: 0.5, delay: 6.0 }}
             >
               <button className="btn-primary text-lg px-8 py-4 flex items-center justify-center space-x-2 group w-full sm:w-auto min-w-[200px] h-[56px] mx-auto">
                 <span>See more jobs</span>
@@ -355,27 +434,46 @@ const Features = () => {
             {/* Testimonial */}
             <motion.div
               className="bg-white/80 rounded-3xl p-8 shadow-lg border border-amber-200/30 max-w-4xl mx-auto"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 2 }}
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.6, delay: 6.2 }}
             >
               <div className="flex items-center gap-8">
-                <div className="flex-1 text-left">
-                  <blockquote className="text-xl text-gray-800 italic mb-4">
+                <motion.div 
+                  className="flex-1 text-left"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 6.4 }}
+                >
+                  <motion.blockquote 
+                    className="text-xl text-gray-800 italic mb-4"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 6.6 }}
+                  >
                     "Hiring through POM was seamless, smooth process, easy communication, and great support!"
-                  </blockquote>
-                  <div>
+                  </motion.blockquote>
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 6.8 }}
+                  >
                     <p className="font-semibold text-gray-900">Hassan</p>
                     <p className="text-sm text-gray-600">Product Designer</p>
-                  </div>
-                </div>
-                <div className="w-40 h-40 rounded-2xl overflow-hidden flex-shrink-0">
+                  </motion.div>
+                </motion.div>
+                <motion.div 
+                  className="w-40 h-40 rounded-2xl overflow-hidden flex-shrink-0"
+                  initial={{ opacity: 0, x: 20, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 6.3 }}
+                >
                   <img 
                     src="/img/hassan_productDesigner.avif" 
                     alt="Hassan - Product Designer" 
                     className="w-full h-full object-cover"
                   />
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           </div>
