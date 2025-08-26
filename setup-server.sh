@@ -2,11 +2,8 @@
 
 set -e
 
-echo "🚀 Complete AWS Deployment for Job Platform"
-echo "==========================================="
-echo ""
-echo "This script detects if server setup is needed and runs the appropriate deployment."
-echo ""
+echo "🚀 One-Time Server Setup for Job Platform"
+echo "========================================="
 
 # Configuration
 SSH_KEY="terraform-compute/job-platform-key"
@@ -37,7 +34,6 @@ check_prerequisites() {
     
     # Check required tools
     command -v terraform >/dev/null 2>&1 || { print_error "terraform is required"; exit 1; }
-    command -v docker >/dev/null 2>&1 || { print_error "docker is required"; exit 1; }
     command -v jq >/dev/null 2>&1 || { print_error "jq is required"; exit 1; }
     
     # Check if terraform directories exist
@@ -129,81 +125,36 @@ wait_for_ssh() {
     exit 1
 }
 
-# Deploy application
-deploy_app() {
-    print_status "Deploying application to $EC2_IP..."
+# Setup server infrastructure
+setup_server() {
+    print_status "Setting up server infrastructure on $EC2_IP..."
     
-    # Update frontend config for production
-    print_status "Updating frontend config for production..."
-    
-    # Backup original config
-    cp frontend/public/config.js frontend/public/config.js.backup
-    
-    # Create production config
-    cat > frontend/public/config.js << EOF
-// Production configuration - automatically generated during deployment
-window.APP_CONFIG = {
-  API_URL: 'http://api.pom100.com',
-  ENVIRONMENT: 'production'
-};
-EOF
-    
-    # Create production environment file for backend
-    print_status "Creating production environment file..."
-    cat > .env << EOF
-# Production environment variables - automatically generated during deployment
-# Database credentials are retrieved from AWS Secrets Manager on the EC2 instance
-DB_HOST=$RDS_ENDPOINT
-DB_PORT=5432
-DB_NAME=jobplatform  
-DB_SECRET_ARN=$DB_SECRET_ARN
-ENVIRONMENT=production
-DEBUG=false
-NEXT_PUBLIC_API_URL=http://api.pom100.com
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000,http://pom100.com,http://www.pom100.com
-EOF
-    
-    # Create deployment package
-    print_status "Creating deployment package..."
-    tar --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='__pycache__' --exclude='.env.local' \
-        -czf deploy.tar.gz frontend/ backend/ docker-compose.prod.yml .env
-    
-    # Restore original config and clean up temporary files
-    mv frontend/public/config.js.backup frontend/public/config.js
-    rm -f .env
-    
-    # Upload to EC2
-    print_status "Uploading to EC2..."
-    scp -i "$SSH_KEY" -o StrictHostKeyChecking=no deploy.tar.gz ubuntu@$EC2_IP:/tmp/
-    
-    # Deploy on EC2
-    print_status "Running deployment on EC2..."
+    # Setup on EC2
     ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@$EC2_IP << EOF
 set -e
 
-# echo "📦 Installing dependencies..."
-# sudo apt-get update -y
+echo "📦 Installing system dependencies..."
+sudo apt-get update -y
 
-# # Clean up any conflicting Docker packages
-# echo "🧹 Removing conflicting Docker packages..."
-# sudo apt-get remove -y docker docker-engine docker.io containerd runc containerd.io 2>/dev/null || true
+# Clean up any conflicting Docker packages
+echo "🧹 Removing conflicting Docker packages..."
+sudo apt-get remove -y docker docker-engine docker.io containerd runc containerd.io 2>/dev/null || true
 
-# # Install prerequisites
-# sudo apt-get install -y ca-certificates curl gnupg lsb-release
+# Install prerequisites
+sudo apt-get install -y ca-certificates curl gnupg lsb-release
 
-# # Add Docker's official GPG key and repository
-# echo "🔑 Adding Docker repository..."
-# sudo install -m 0755 -d /etc/apt/keyrings
-# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --batch --yes -o /etc/apt/keyrings/docker.gpg
-# sudo chmod a+r /etc/apt/keyrings/docker.gpg
+# Add Docker's official GPG key and repository
+echo "🔑 Adding Docker repository..."
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --batch --yes -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-# echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# # Update and install Docker from official repository
-# echo "🐳 Installing Docker from official repository..."
-# sudo apt-get update -y
-# sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
+# Update and install Docker from official repository
+echo "🐳 Installing Docker from official repository..."
+sudo apt-get update -y
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 echo "🐳 Starting Docker..."
 sudo systemctl start docker
@@ -211,7 +162,6 @@ sudo systemctl enable docker
 sudo usermod -aG docker ubuntu
 
 echo "🌐 Installing and configuring Nginx..."
-sudo apt-get update -y
 sudo apt-get install -y nginx
 
 # Create Nginx configuration for the job platform
@@ -324,7 +274,7 @@ if [ "\$POM100_IP" = "\$PUBLIC_IP" ] && [ "\$API_POM100_IP" = "\$PUBLIC_IP" ]; t
     sudo systemctl start certbot.timer
     
     echo "✅ SSL certificates installed and auto-renewal configured"
-    echo "🔒 Your sites are now available at:"
+    echo "🔒 Your sites will be available at:"
     echo "  https://pom100.com"
     echo "  https://www.pom100.com" 
     echo "  https://api.pom100.com"
@@ -342,123 +292,20 @@ else
     echo "   api.pom100.com A  \$PUBLIC_IP"
 fi
 
-echo "📁 Setting up application..."
+echo "📁 Setting up application directory..."
 sudo mkdir -p /opt/job-platform
 sudo chown ubuntu:ubuntu /opt/job-platform
-cd /opt/job-platform
 
-echo "🔄 Stopping existing containers..."
-sudo docker compose -f docker-compose.prod.yml down 2>/dev/null || true
-sudo docker system prune -f
-
-echo "📂 Extracting application..."
-rm -rf frontend backend docker-compose.prod.yml 2>/dev/null || true
-tar -xzf /tmp/deploy.tar.gz
-rm -f /tmp/deploy.tar.gz
-
-echo "🔐 Retrieving database credentials from AWS Secrets Manager..."
-# Get database credentials from Secrets Manager
-DB_SECRET_ARN=\$(grep "DB_SECRET_ARN=" .env | cut -d'=' -f2)
-if [ -n "\$DB_SECRET_ARN" ]; then
-    DB_SECRET_JSON=\$(aws secretsmanager get-secret-value --secret-id "\$DB_SECRET_ARN" --query SecretString --output text 2>/dev/null || echo "")
-    
-    if [ -n "\$DB_SECRET_JSON" ]; then
-        # AWS-managed RDS secrets only contain username and password
-        # Host and database name come from terraform outputs and variables
-        DB_USER=\$(echo "\$DB_SECRET_JSON" | jq -r .username)
-        DB_PASSWORD=\$(echo "\$DB_SECRET_JSON" | jq -r .password)
-        DB_HOST=\$(grep "DB_HOST=" .env | cut -d'=' -f2)  # From terraform output (RDS endpoint)
-        DB_PORT=\$(grep "DB_PORT=" .env | cut -d'=' -f2)  # Port from .env
-        DB_NAME="jobplatform"  # From terraform variables (var.db_name)
-        
-        echo "✅ Database credentials assembled:"
-        echo "  DB_USER: \$DB_USER"
-        echo "  DB_HOST: \$DB_HOST"
-        echo "  DB_PORT: \$DB_PORT"
-        echo "  DB_NAME: \$DB_NAME"
-        
-        # Create DATABASE_URL from the retrieved credentials
-        # Remove any existing port from DB_HOST to avoid duplication
-        DB_HOST_CLEAN=\$(echo "\$DB_HOST" | cut -d':' -f1)
-        DATABASE_URL="postgresql://\$DB_USER:\$DB_PASSWORD@\$DB_HOST_CLEAN:\$DB_PORT/\$DB_NAME"
-        
-        echo "🔍 Final DATABASE_URL format: postgresql://[user]:[password]@\$DB_HOST_CLEAN:\$DB_PORT/\$DB_NAME"
-        
-        # Update .env file with actual credentials
-        echo "DATABASE_URL=\$DATABASE_URL" >> .env
-        echo "DB_USER=\$DB_USER" >> .env  
-        echo "DB_PASSWORD=\$DB_PASSWORD" >> .env
-        
-        echo "✅ Database credentials retrieved from Secrets Manager"
-    else
-        echo "❌ Failed to retrieve database secret from Secrets Manager"
-        exit 1
-    fi
-else
-    echo "❌ DB_SECRET_ARN not found in .env file"
-    exit 1
-fi
-
-echo "🏗️ Building and starting containers..."
-sudo docker compose -f docker-compose.prod.yml build --no-cache
-sudo docker compose -f docker-compose.prod.yml up -d
-
-echo "⏳ Waiting for containers to start..."
-sleep 30
-
-echo "📊 Container status:"
-sudo docker compose -f docker-compose.prod.yml ps
-
-echo "✅ Deployment completed!"
+echo "✅ Server setup completed!"
 EOF
     
-    # Clean up local files
-    rm -f deploy.tar.gz
-    
-    print_status "✅ Application deployed successfully"
+    print_status "✅ Server infrastructure setup completed"
 }
 
-# Test deployment
-test_deployment() {
-    print_status "Testing deployment..."
-    
-    sleep 10
-    
-    # Test frontend
-    print_status "Testing frontend..."
-    if curl -s -o /dev/null -w "%{http_code}" "http://$EC2_IP:3000/" | grep -q "200"; then
-        print_status "✅ Frontend is accessible"
-    else
-        print_warning "⚠️ Frontend test failed"
-    fi
-    
-    # Test backend
-    print_status "Testing backend..."
-    if curl -s "http://$EC2_IP:8000/health" | grep -q "healthy" 2>/dev/null; then
-        print_status "✅ Backend is healthy"
-    else
-        print_warning "⚠️ Backend health check failed"
-    fi
-}
-
-# Check if server setup is needed
-check_server_setup() {
-    print_status "Checking if server setup is needed..."
-    
-    # Check if Nginx is configured on the server
-    if ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@$EC2_IP 'test -f /etc/nginx/sites-enabled/job-platform' 2>/dev/null; then
-        print_status "✅ Server is already configured"
-        return 0
-    else
-        print_status "🔧 Server setup required"
-        return 1
-    fi
-}
-
-# Main deployment function
+# Main function
 main() {
     echo ""
-    print_status "Starting complete AWS deployment..."
+    print_status "Starting one-time server setup..."
     echo ""
     
     # Check prerequisites
@@ -467,45 +314,28 @@ main() {
     # Get infrastructure info
     get_infrastructure_info
     
-    # Basic SSH check
-    chmod 600 "$SSH_KEY"
+    # Wait for SSH
+    wait_for_ssh
     
-    # Check if server setup is needed
-    if ! check_server_setup; then
-        echo ""
-        print_warning "🔧 Server setup required. Running setup-server.sh first..."
-        echo ""
-        
-        if [ -f "./setup-server.sh" ]; then
-            chmod +x ./setup-server.sh
-            ./setup-server.sh
-            
-            echo ""
-            print_status "✅ Server setup completed. Now deploying application..."
-            echo ""
-        else
-            print_error "setup-server.sh not found. Please create it or run manual setup."
-            exit 1
-        fi
-    fi
-    
-    # Run application deployment
-    if [ -f "./deploy-app.sh" ]; then
-        chmod +x ./deploy-app.sh
-        ./deploy-app.sh
-    else
-        print_error "deploy-app.sh not found. Please create it or run manual deployment."
-        exit 1
-    fi
+    # Setup server
+    setup_server
     
     echo ""
-    print_status "🎉 Complete deployment finished successfully!"
+    print_status "🎉 Server setup completed successfully!"
     echo ""
-    print_status "📋 Available deployment options:"
-    echo "  ./deploy-aws.sh     - Complete deployment (detects setup needs)"
-    echo "  ./setup-server.sh   - One-time server setup only"
-    echo "  ./deploy-app.sh     - Fast application deployment only"
+    echo "🌐 Server is now configured with:"
+    echo "  ✅ Docker and Docker Compose"
+    echo "  ✅ Nginx reverse proxy (pom100.com → :3000, api.pom100.com → :8000)"
+    echo "  ✅ SSL certificates (if DNS was configured)"
+    echo "  ✅ Application directory (/opt/job-platform)"
     echo ""
+    echo "🚀 Next steps:"
+    echo "  1. Configure DNS records to point to $EC2_IP"
+    echo "  2. Run SSL setup if not done: ssh to server and run 'sudo certbot --nginx -d pom100.com -d www.pom100.com -d api.pom100.com'"
+    echo "  3. Deploy your application with: ./deploy-app.sh"
+    echo ""
+    print_warning "⚠️ This setup only needs to be run ONCE per server"
+    print_status "🔄 For application deployments, use: ./deploy-app.sh"
 }
 
 # Show help
@@ -516,13 +346,7 @@ show_help() {
     echo "  --help, -h    Show this help message"
     echo "  --check       Check prerequisites only"
     echo ""
-    echo "This script provides intelligent deployment to AWS EC2."
-    echo "It detects if server setup is needed and runs the appropriate scripts."
-    echo ""
-    echo "Available Scripts:"
-    echo "  ./deploy-aws.sh     - Complete deployment (auto-detects setup needs)"
-    echo "  ./setup-server.sh   - One-time server setup (Docker, Nginx, SSL)"
-    echo "  ./deploy-app.sh     - Fast application deployment (containers only)"
+    echo "This script sets up the server infrastructure (Docker, Nginx, SSL) - RUN ONCE ONLY."
     echo ""
     echo "Prerequisites:"
     echo "  1. Run terraform-persistent/terraform apply"
