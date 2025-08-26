@@ -107,13 +107,13 @@ const Features = () => {
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <motion.div 
             className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 mb-10 mt-8"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           >
             <Shield size={16} />
             <span>Why choose us</span>
@@ -122,7 +122,7 @@ const Features = () => {
             className="text-4xl lg:text-6xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           >
             Everything you need to <span>succeed</span>
           </motion.h2>
@@ -130,7 +130,7 @@ const Features = () => {
             className="text-lg text-gray-800 max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.7, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
           >
             Our platform provides comprehensive solutions for both employers and job seekers, 
             ensuring successful matches and long-term success.
@@ -146,16 +146,17 @@ const Features = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ 
-                duration: 1, 
-                delay: 0.9 + index * 0.2, 
+                duration: 0.8, 
+                delay: 0.8 + index * 0.15, 
                 ease: "easeOut"
               }}
+              whileHover={{ scale: 1.02, y: -5 }}
             >
               <motion.div 
                 className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 mb-6 group-hover:scale-105 transition-all duration-200 mx-auto group-hover:from-amber-100 group-hover:to-amber-200"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 1.1 + index * 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.8, delay: 1.0 + index * 0.15, ease: "easeOut" }}
               >
                 <div className="animate-[float_3s_ease-in-out_infinite]">
                   <benefit.icon size={32} className="text-amber-700 transition-all duration-200 group-hover:text-amber-800" />
@@ -165,7 +166,7 @@ const Features = () => {
                 className="text-xl font-bold text-gray-900 mb-4 transition-all duration-200 group-hover:text-gray-800"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 1.3 + index * 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.8, delay: 1.2 + index * 0.15, ease: "easeOut" }}
               >
                 {benefit.title}
               </motion.h3>
@@ -173,7 +174,7 @@ const Features = () => {
                 className="text-gray-700 leading-relaxed transition-all duration-200 group-hover:text-gray-600"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 1.5 + index * 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.8, delay: 1.4 + index * 0.15, ease: "easeOut" }}
               >
                 {benefit.description}
               </motion.p>
@@ -187,13 +188,13 @@ const Features = () => {
             className="text-center mb-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.7, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 1.6, ease: "easeOut" }}
           >
             <motion.h3 
               className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 1.9, ease: "easeOut" }}
+              transition={{ duration: 0.8, delay: 1.8, ease: "easeOut" }}
             >
               Trusted by leading companies
             </motion.h3>
@@ -201,58 +202,85 @@ const Features = () => {
               className="text-lg text-gray-700 max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 2.1, ease: "easeOut" }}
+              transition={{ duration: 0.8, delay: 2.0, ease: "easeOut" }}
             >
               Join companies that trust our platform to find their next great hire
             </motion.p>
           </motion.div>
-          
-          {/* Moving Company Logos Bar */}
-          <motion.div
-            className="relative overflow-hidden py-8 max-w-4xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 2.3, ease: "easeOut" }}
-          >
-            <div className="flex items-center justify-center space-x-12">
-              {/* Company Logos - Static Display */}
-              <div className="flex items-center justify-center w-48 h-28 p-4">
-                <img src="/img/momentscience_logo.avif" alt="Moment Science" className="max-w-full max-h-full object-contain brightness-0" />
-              </div>
-              <div className="flex items-center justify-center w-40 h-24 p-4">
-                <img src="/img/clever_logo.avif" alt="Clever" className="max-w-full max-h-full object-contain" />
-              </div>
-              <div className="flex items-center justify-center w-44 h-20 p-1">
-                <span className="text-2xl font-bold text-gray-800">
-                  Bajaar LLC
-                </span>
-              </div>
-              <div className="flex items-center justify-center w-40 h-24 p-4">
-                <img src="/img/adspostx_logo.svg" alt="AdsPostX" className="max-w-full max-h-full object-contain" />
-              </div>
-              <div className="flex items-center justify-center w-40 h-24 p-4">
-                <img src="/img/blastBucks_logo.webp" alt="BlastBucks" className="max-w-full max-h-full object-contain" />
-              </div>
-              <div className="flex items-center justify-center w-40 h-24 p-4">
-                <img src="/img/enefits_logo.svg" alt="Enefits" className="max-w-full max-h-full object-contain brightness-0" />
-              </div>
-            </div>
-          </motion.div>
+
+                  <motion.div
+                    className="relative py-8 max-w-4xl mx-auto overflow-hidden"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 2.2, ease: "easeOut" }}
+                  >
+                    {/* Left fade effect */}
+                    <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-amber-100 to-transparent z-10 pointer-events-none" />
+                    
+                    {/* Right fade effect */}
+                    <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-amber-100 to-transparent z-10 pointer-events-none" />
+                    
+                    <div className="flex items-center space-x-12 animate-scroll">
+                      {/* Company Logos - Moving Display */}
+                      <div className="flex items-center justify-center w-48 h-28 p-4 flex-shrink-0">
+                        <img src="/img/momentscience_logo.avif" alt="Moment Science" className="max-w-full max-h-full object-contain brightness-0" />
+                      </div>
+                      <div className="flex items-center justify-center w-40 h-24 p-4 flex-shrink-0">
+                        <img src="/img/clever_logo.avif" alt="Clever" className="max-w-full max-h-full object-contain" />
+                      </div>
+                      <div className="flex items-center justify-center w-44 h-20 p-1 flex-shrink-0">
+                        <span className="text-2xl font-bold text-gray-800">
+                          Bajaar LLC
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center w-40 h-24 p-4 flex-shrink-0">
+                        <img src="/img/adspostx_logo.svg" alt="AdsPostX" className="max-w-full max-h-full object-contain" />
+                      </div>
+                      <div className="flex items-center justify-center w-40 h-24 p-4 flex-shrink-0">
+                        <img src="/img/blastBucks_logo.webp" alt="BlastBucks" className="max-w-full max-h-full object-contain" />
+                      </div>
+                      <div className="flex items-center justify-center w-40 h-24 p-4 flex-shrink-0">
+                        <img src="/img/enefits_logo.svg" alt="Enefits" className="max-w-full max-h-full object-contain brightness-0" />
+                      </div>
+                      
+                      {/* Duplicate logos for seamless loop */}
+                      <div className="flex items-center justify-center w-48 h-28 p-4 flex-shrink-0">
+                        <img src="/img/momentscience_logo.avif" alt="Moment Science" className="max-w-full max-h-full object-contain brightness-0" />
+                      </div>
+                      <div className="flex items-center justify-center w-40 h-24 p-4 flex-shrink-0">
+                        <img src="/img/clever_logo.avif" alt="Clever" className="max-w-full max-h-full object-contain" />
+                      </div>
+                      <div className="flex items-center justify-center w-44 h-20 p-1 flex-shrink-0">
+                        <span className="text-2xl font-bold text-gray-800">
+                          Bajaar LLC
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center w-40 h-24 p-4 flex-shrink-0">
+                        <img src="/img/adspostx_logo.svg" alt="AdsPostX" className="max-w-full max-h-full object-contain" />
+                      </div>
+                      <div className="flex items-center justify-center w-40 h-24 p-4 flex-shrink-0">
+                        <img src="/img/blastBucks_logo.webp" alt="BlastBucks" className="max-w-full max-h-full object-contain" />
+                      </div>
+                      <div className="flex items-center justify-center w-40 h-24 p-4 flex-shrink-0">
+                        <img src="/img/enefits_logo.svg" alt="Enefits" className="max-w-full max-h-full object-contain brightness-0" />
+                      </div>
+                    </div>
+                  </motion.div>
         </div>
 
-        {/* Skills Section */}
-        <div className="mt-12">
+        {/* Expert Skills Section */}
+        <div className="mt-32">
           <motion.div
-            className="text-center mb-12"
+            className="text-center mb-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 2.5, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 2.4, ease: "easeOut" }}
           >
             <motion.span 
               className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-10 inline-block"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 2.7, ease: "easeOut" }}
+              transition={{ duration: 0.8, delay: 2.6, ease: "easeOut" }}
             >
               <div className="flex items-center space-x-2">
                 <Zap size={16} />
@@ -263,7 +291,7 @@ const Features = () => {
               className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 2.9, ease: "easeOut" }}
+              transition={{ duration: 0.8, delay: 2.8, ease: "easeOut" }}
             >
               Wide range of <span>expertise</span>
             </motion.h3>
@@ -271,13 +299,13 @@ const Features = () => {
               className="text-lg text-gray-800 max-w-3xl mx-auto mb-6"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 3.1, ease: "easeOut" }}
+              transition={{ duration: 0.8, delay: 3.0, ease: "easeOut" }}
             >
               Our platform connects you with professionals across diverse industries and skill sets
             </motion.p>
           </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
             {skills.map((skill, index) => (
               <motion.div
                 key={skill.category}
@@ -285,8 +313,8 @@ const Features = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ 
-                  duration: 1, 
-                  delay: 3.3 + index * 0.1, 
+                  duration: 0.8, 
+                  delay: 3.2 + index * 0.08, 
                   ease: "easeOut"
                 }}
                 whileHover={{ scale: 1.1, y: -2 }}
@@ -295,7 +323,7 @@ const Features = () => {
                   className="text-lg"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, delay: 3.5 + index * 0.1, ease: "easeOut" }}
+                  transition={{ duration: 0.8, delay: 3.4 + index * 0.08, ease: "easeOut" }}
                 >
                   {skill.emoji}
                 </motion.span>
@@ -303,7 +331,7 @@ const Features = () => {
                   className="text-sm font-medium text-gray-700 group-hover:text-gray-900"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, delay: 3.7 + index * 0.1, ease: "easeOut" }}
+                  transition={{ duration: 0.8, delay: 3.6 + index * 0.08, ease: "easeOut" }}
                 >
                   {skill.category}
                 </motion.span>
