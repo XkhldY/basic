@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Mail, Phone, MessageSquare, ArrowRight, CheckCircle } from 'lucide-react'
+import { Mail, Phone, MessageSquare, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 const Contact = () => {
@@ -12,8 +12,8 @@ const Contact = () => {
       description: 'Get help via email within 24 hours',
       action: 'Send Email',
       href: 'mailto:support@jobplatform.com',
-      color: 'text-primary-600',
-      bgColor: 'bg-primary-50'
+      color: 'text-slate-600',
+      bgColor: 'bg-slate-50 dark:bg-slate-800'
     },
     {
       icon: MessageSquare,
@@ -21,8 +21,8 @@ const Contact = () => {
       description: 'Chat with our support team instantly',
       action: 'Start Chat',
       href: '/auth',
-      color: 'text-accent-600',
-      bgColor: 'bg-accent-50'
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-50 dark:bg-teal-800'
     },
     {
       icon: Phone,
@@ -30,28 +30,54 @@ const Contact = () => {
       description: 'Call us for immediate assistance',
       action: 'Call Now',
       href: 'tel:+1-555-0123',
-      color: 'text-success-600',
-      bgColor: 'bg-success-50'
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-50 dark:bg-emerald-800'
     }
   ]
 
-  const benefits = [
-    '24/7 customer support',
-    'Expert career guidance',
-    'Technical assistance',
-    'Account management help',
-    'Billing support',
-    'Feature requests'
-  ]
-
   return (
-    <section id="contact" className="section-padding bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary-200/30 to-transparent rounded-full opacity-30 blur-3xl animate-float"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-l from-accent-200/30 to-transparent rounded-full opacity-25 blur-3xl animate-float-delayed"></div>
+    <section id="contact" className="pt-12 pb-16 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950 relative overflow-hidden">
+      {/* Background with Modern 2025 Texture */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 animate-gradient-shift" />
+      
+      {/* Modern Texture Layers */}
+      <div className="absolute inset-0 opacity-40">
+        {/* Geometric Grid Pattern */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(59, 130, 246, 0.15) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px'
+        }} />
+        
+        {/* Floating Particles */}
+        <div className="absolute inset-0">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1.5 h-1.5 bg-blue-400/60 rounded-full"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animation: `float ${3 + Math.random() * 4}s ease-in-out infinite`,
+                animationDelay: `${Math.random() * 2}s`
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Subtle Noise Texture */}
+        <div className="absolute inset-0 opacity-20" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          backgroundSize: '200px 200px'
+        }} />
       </div>
-
+      
+      {/* Animated Mesh Flow */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/15 to-transparent animate-mesh-flow" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-400/15 to-transparent animate-mesh-flow-reverse" />
+      
       <div className="container-custom relative z-10">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -62,120 +88,142 @@ const Contact = () => {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-primary-50 border border-primary-200 rounded-full text-sm font-medium text-primary-700 mb-6">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-slate-900 mb-10 mt-8">
               <MessageSquare size={16} />
               <span>Get in Touch</span>
             </div>
-            <h2 className="heading-secondary mb-6">
-              Ready to Get <span className="text-gradient bg-gradient-to-r from-primary-600 to-accent-600">Started?</span>
+            <h2 className="text-3xl lg:text-5xl text-slate-900 dark:text-white leading-tight mb-10 normal-case font-semibold">
+              Ready to find your <span>perfect match?</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Have questions about our platform? Need help with your account? 
-              Our support team is here to help you succeed.
+            <p className="text-base text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+              Whether you're hiring top talent or looking for your next opportunity, 
+              let's start the conversation that could change everything.
             </p>
           </motion.div>
 
-          {/* Contact Methods Grid */}
-          <div className="grid md:grid-cols-3 gap-8 mb-20">
-            {contactMethods.map((method, index) => (
-              <motion.div
-                key={method.title}
-                className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl ${method.bgColor} mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                  <method.icon size={32} className={method.color} />
+          {/* Contact Form */}
+          <motion.div 
+            className="max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <div className="relative">
+              {/* Contact Information */}
+              <div className="text-center mb-16 -mt-8 relative z-10">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-white/90">
+                  <div className="flex items-center space-x-3">
+                    <Mail className="w-5 h-5 text-[#ffc759]" />
+                    <a 
+                      href="mailto:info@hirewithpom.com" 
+                      className="font-medium hover:text-[#ffc759] transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
+                      style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                      title="Open default email client"
+                    >
+                      info@hirewithpom.com
+                    </a>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Phone className="w-5 h-5 text-[#ffc759]" />
+                    <a 
+                      href="tel:+12109525741" 
+                      className="font-medium hover:text-[#ffc759] transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
+                      style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                    >
+                      +1 (210) 952-5741
+                    </a>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">{method.title}</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">{method.description}</p>
-                <Link href={method.href}>
-                  <button className="btn-primary w-full group">
-                    <span>{method.action}</span>
-                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={20} />
-                  </button>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* CTA Section */}
-          <motion.div 
-            className="bg-gradient-to-r from-primary-600 to-accent-600 rounded-3xl p-12 text-center text-white relative overflow-hidden"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            {/* Background decoration */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-float"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-float-delayed"></div>
-            </div>
-
-            <div className="relative z-10">
-              <h3 className="text-4xl lg:text-5xl font-bold mb-6">
-                Start Your Journey Today
-              </h3>
-              <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-                Join thousands of professionals and companies who have already found success on our platform. 
-                Create your account and discover new opportunities.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/auth">
-                  <motion.button 
-                    className="bg-white text-primary-600 hover:bg-gray-50 font-semibold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <span className="flex items-center space-x-2">
-                      <span>Create Account</span>
-                      <ArrowRight className="group-hover:translate-x-1 transition-transform duration-200" size={20} />
-                    </span>
-                  </motion.button>
-                </Link>
-                <Link href="/jobs">
-                  <motion.button 
-                    className="border-2 border-white/30 text-white hover:bg-white/10 font-semibold py-4 px-8 rounded-xl transition-all duration-300 group"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <span className="flex items-center space-x-2">
-                      <span>Browse Jobs</span>
-                      <ArrowRight className="group-hover:translate-x-1 transition-transform duration-200" size={20} />
-                    </span>
-                  </motion.button>
-                </Link>
               </div>
-            </div>
-          </motion.div>
+              
+              {/* Elegant Glass Container */}
+              <div className="relative bg-transparent backdrop-blur-xl rounded-3xl p-12 shadow-2xl border border-white/20">
+                {/* Subtle Glass Effect */}
+                <div className="absolute inset-0 bg-white/5 rounded-3xl"></div>
+                
+                {/* Subtle Background Glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/3 via-transparent to-white/3 rounded-3xl"></div>
+                
+                <div className="text-center mb-12 relative z-10">
+                  <h3 className="text-3xl lg:text-4xl text-white mb-6 normal-case font-light">
+                    Send us a message
+                  </h3>
+                </div>
 
-          {/* Support Benefits */}
-          <motion.div 
-            className="mt-20 text-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <h4 className="text-2xl font-bold text-gray-900 mb-8">What You Can Expect</h4>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {benefits.map((benefit, index) => (
-                <motion.div
-                  key={benefit}
-                  className="flex items-center space-x-3 text-left"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <CheckCircle size={20} className="text-success-600 flex-shrink-0" />
-                  <span className="text-gray-700 font-medium">{benefit}</span>
-                </motion.div>
-              ))}
+                <form className="space-y-8 relative z-10">
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-white/80 mb-3">
+                        Full name
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        className="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 font-light transition-all duration-300 focus:outline-none focus:border-white/40 focus:bg-white/15 hover:bg-white/15"
+                        placeholder="Enter your full name"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-3">
+                        Email address
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        className="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 font-light transition-all duration-300 focus:outline-none focus:border-white/40 focus:bg-white/15 hover:bg-white/15"
+                        placeholder="Enter your email"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="subject" className="block text-sm font-medium text-white/80 mb-3">
+                      Subject
+                    </label>
+                    <input
+                      type="text"
+                      id="subject"
+                      name="subject"
+                      className="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 font-light transition-all duration-300 focus:outline-none focus:border-white/40 focus:bg-white/15 hover:bg-white/15"
+                      placeholder="What's this about?"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium text-white/80 mb-3">
+                      Message
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      rows={5}
+                      className="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 font-light resize-none transition-all duration-300 focus:outline-none focus:border-white/40 focus:bg-white/15 hover:bg-white/15"
+                      placeholder="Tell us about your hiring needs or career goals..."
+                      required
+                    ></textarea>
+                  </div>
+
+                  <div className="text-center pt-6">
+                    <button
+                      type="submit"
+                      className="relative overflow-hidden group bg-gradient-to-r from-[#ffc759] via-[#ffb84d] to-[#ffa03a] text-slate-900 font-bold text-lg px-12 py-4 rounded-2xl shadow-2xl hover:shadow-[#ffc759]/25 transition-all duration-500 hover:scale-105 hover:-translate-y-1"
+                    >
+                      <span className="relative z-10 flex items-center justify-center space-x-3">
+                        <span>Send</span>
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#ffb84d] via-[#ffa03a] to-[#ffc759] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </motion.div>
         </div>

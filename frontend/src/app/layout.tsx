@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Instrument_Sans } from "next/font/google";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const instrumentSans = Instrument_Sans({ 
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-instrument-sans"
+});
 
 export const metadata: Metadata = {
   title: "Job Platform",
@@ -16,11 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <script src="/config.js"></script>
-      </head>
-      <body className={`${inter.className} antialiased`}>
+    <html lang="en" className="dark">
+      <body className={`${instrumentSans.className} antialiased`}>
         <AuthProvider>
           {children}
         </AuthProvider>

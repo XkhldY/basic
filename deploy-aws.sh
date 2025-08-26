@@ -175,7 +175,7 @@ EOF
     
     # Deploy on EC2
     print_status "Running deployment on EC2..."
-    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@$EC2_IP << 'EOF'
+    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@$EC2_IP << EOF
 set -e
 
 # echo "📦 Installing dependencies..."
@@ -228,13 +228,26 @@ if [ -n "\$DB_SECRET_ARN" ]; then
     DB_SECRET_JSON=\$(aws secretsmanager get-secret-value --secret-id "\$DB_SECRET_ARN" --query SecretString --output text 2>/dev/null || echo "")
     
     if [ -n "\$DB_SECRET_JSON" ]; then
+        # AWS-managed RDS secrets only contain username and password
+        # Host and database name come from terraform outputs and variables
         DB_USER=\$(echo "\$DB_SECRET_JSON" | jq -r .username)
         DB_PASSWORD=\$(echo "\$DB_SECRET_JSON" | jq -r .password)
-        DB_HOST=\$(echo "\$DB_SECRET_JSON" | jq -r .host)
-        DB_NAME=\$(echo "\$DB_SECRET_JSON" | jq -r .dbname)
+        DB_HOST=\$(grep "DB_HOST=" .env | cut -d'=' -f2)  # From terraform output (RDS endpoint)
+        DB_PORT=\$(grep "DB_PORT=" .env | cut -d'=' -f2)  # Port from .env
+        DB_NAME="jobplatform"  # From terraform variables (var.db_name)
+        
+        echo "✅ Database credentials assembled:"
+        echo "  DB_USER: \$DB_USER"
+        echo "  DB_HOST: \$DB_HOST"
+        echo "  DB_PORT: \$DB_PORT"
+        echo "  DB_NAME: \$DB_NAME"
         
         # Create DATABASE_URL from the retrieved credentials
-        DATABASE_URL="postgresql://\${DB_USER}:\${DB_PASSWORD}@\${DB_HOST}:5432/\${DB_NAME}"
+        # Remove any existing port from DB_HOST to avoid duplication
+        DB_HOST_CLEAN=\$(echo "\$DB_HOST" | cut -d':' -f1)
+        DATABASE_URL="postgresql://\$DB_USER:\$DB_PASSWORD@\$DB_HOST_CLEAN:\$DB_PORT/\$DB_NAME"
+        
+        echo "🔍 Final DATABASE_URL format: postgresql://[user]:[password]@\$DB_HOST_CLEAN:\$DB_PORT/\$DB_NAME"
         
         # Update .env file with actual credentials
         echo "DATABASE_URL=\$DATABASE_URL" >> .env
