@@ -1,39 +1,12 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Mail, Phone, MessageSquare, ArrowRight } from 'lucide-react'
+import { Mail, MessageSquare, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { useState } from 'react'
 
 const Contact = () => {
-  const contactMethods = [
-    {
-      icon: Mail,
-      title: 'Email Support',
-      description: 'Get help via email within 24 hours',
-      action: 'Send Email',
-      href: 'mailto:support@jobplatform.com',
-      color: 'text-slate-600',
-      bgColor: 'bg-slate-50 dark:bg-slate-800'
-    },
-    {
-      icon: MessageSquare,
-      title: 'Live Chat',
-      description: 'Chat with our support team instantly',
-      action: 'Start Chat',
-      href: '/auth',
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-50 dark:bg-teal-800'
-    },
-    {
-      icon: Phone,
-      title: 'Phone Support',
-      description: 'Call us for immediate assistance',
-      action: 'Call Now',
-      href: 'tel:+1-555-0123',
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50 dark:bg-emerald-800'
-    }
-  ]
+  const [showEmailFallback, setShowEmailFallback] = useState(false)
 
   return (
     <section id="contact" className="pt-12 pb-16 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950 relative overflow-hidden">
@@ -101,7 +74,7 @@ const Contact = () => {
             </p>
           </motion.div>
 
-          {/* Contact Form */}
+          {/* Contact Information */}
           <motion.div 
             className="max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
@@ -112,27 +85,54 @@ const Contact = () => {
             <div className="relative">
               {/* Contact Information */}
               <div className="text-center mb-16 -mt-8 relative z-10">
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-white/90">
+                <div className="flex items-center justify-center text-white/90">
                   <div className="flex items-center space-x-3">
                     <Mail className="w-5 h-5 text-[#ffc759]" />
-                    <a 
-                      href="mailto:info@hirewithpom.com" 
-                      className="font-medium hover:text-[#ffc759] transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
-                      style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
-                      title="Open default email client"
-                    >
-                      info@hirewithpom.com
-                    </a>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Phone className="w-5 h-5 text-[#ffc759]" />
-                    <a 
-                      href="tel:+12109525741" 
-                      className="font-medium hover:text-[#ffc759] transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
-                      style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
-                    >
-                      +1 (210) 952-5741
-                    </a>
+                    <div className="relative">
+                      <a 
+                        href="mailto:info@hirewithpom.com" 
+                        className="font-medium hover:text-[#ffc759] transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
+                        style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                        title="Open default email client"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          console.log('Email link clicked - opening Gmail...');
+                          
+                          // Open Gmail with pre-filled email
+                          const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=info@hirewithpom.com&su=Contact%20Request&body=Hello,%0D%0A%0D%0AI%20would%20like%20to%20get%20in%20touch%20with%20you.%0D%0A%0D%0ABest%20regards`;
+                          
+                          // Open in new tab
+                          window.open(gmailUrl, '_blank');
+                          
+                          // Show success message briefly
+                          setShowEmailFallback(true);
+                          setTimeout(() => setShowEmailFallback(false), 3000);
+                        }}
+                      >
+                        info@hirewithpom.com
+                      </a>
+                      
+                                             {/* Success message */}
+                       {showEmailFallback && (
+                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-green-600 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
+                           <div className="flex items-center space-x-2">
+                             <span>✅</span>
+                             <span>Gmail opened! Email pre-filled with info@hirewithpom.com</span>
+                           </div>
+                           <div className="text-center mt-1">
+                             <button
+                               onClick={() => {
+                                 navigator.clipboard.writeText('info@hirewithpom.com');
+                                 setShowEmailFallback(false);
+                               }}
+                               className="text-green-200 hover:text-white text-xs underline"
+                             >
+                               Copy email to clipboard
+                             </button>
+                           </div>
+                         </div>
+                       )}
+                    </div>
                   </div>
                 </div>
               </div>

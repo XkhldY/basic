@@ -195,18 +195,12 @@ const PrivacyPolicy = () => {
                 <p className="text-slate-600 dark:text-slate-300 mb-6">
                   If you have any questions about this privacy policy or our data practices, please don't hesitate to contact us.
                 </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <div className="flex items-center justify-center">
                   <a 
                     href="mailto:info@hirewithpom.com"
                     className="flex items-center space-x-2 px-6 py-3 bg-[#ffc759] hover:bg-[#ffb84d] text-slate-900 font-medium rounded-xl transition-colors duration-200"
                   >
                     <span>Email Us</span>
-                  </a>
-                  <a 
-                    href="tel:+12109525741"
-                    className="flex items-center space-x-2 px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 font-medium rounded-xl transition-colors duration-200"
-                  >
-                    <span>Call Us</span>
                   </a>
                 </div>
               </div>
