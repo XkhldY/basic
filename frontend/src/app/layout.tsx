@@ -10,8 +10,13 @@ const instrumentSans = Instrument_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Job Platform",
-  description: "A modern job platform for employers and candidates",
+  title: "POM",
+  description: "A modern platform for employers and candidates",
+  icons: {
+    icon: '/img/icon- white bg- dark logo.png',
+    shortcut: '/img/icon- white bg- dark logo.png',
+    apple: '/img/icon- white bg- dark logo.png',
+  },
 };
 
 export default function RootLayout({

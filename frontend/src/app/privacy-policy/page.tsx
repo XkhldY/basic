@@ -102,7 +102,7 @@ const PrivacyPolicy = () => {
               <div className="space-y-4 text-slate-600 dark:text-slate-300">
                 <p>We use the information we collect to:</p>
                 <ul className="list-disc list-inside space-y-2 ml-4">
-                  <li>Provide and improve our job platform services</li>
+                  <li>Provide and improve our platform services</li>
                   <li>Match job seekers with relevant opportunities</li>
                   <li>Connect employers with qualified candidates</li>
                   <li>Send important updates and notifications</li>
