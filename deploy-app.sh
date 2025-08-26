@@ -2,11 +2,8 @@
 
 set -e
 
-echo "🚀 Complete AWS Deployment for Job Platform"
-echo "==========================================="
-echo ""
-echo "This script detects if server setup is needed and runs the appropriate deployment."
-echo ""
+echo "🚀 Fast Application Deployment for Job Platform"
+echo "=============================================="
 
 # Configuration
 SSH_KEY="terraform-compute/job-platform-key"
@@ -112,7 +109,7 @@ wait_for_ssh() {
     chmod 600 "$SSH_KEY"
     
     local attempts=0
-    local max_attempts=30
+    local max_attempts=10  # Reduced attempts since server should be ready
     
     while [ $attempts -lt $max_attempts ]; do
         if ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@$EC2_IP 'echo "SSH ready"' &>/dev/null; then
@@ -121,11 +118,12 @@ wait_for_ssh() {
         fi
         
         attempts=$((attempts + 1))
-        print_status "Attempt $attempts/$max_attempts, waiting 10 seconds..."
-        sleep 10
+        print_status "Attempt $attempts/$max_attempts, waiting 5 seconds..."
+        sleep 5
     done
     
     print_error "❌ SSH connection failed after $max_attempts attempts"
+    print_error "Make sure the server is running and setup-server.sh has been run"
     exit 1
 }
 
@@ -181,178 +179,18 @@ EOF
     ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@$EC2_IP << EOF
 set -e
 
-# echo "📦 Installing dependencies..."
-# sudo apt-get update -y
-
-# # Clean up any conflicting Docker packages
-# echo "🧹 Removing conflicting Docker packages..."
-# sudo apt-get remove -y docker docker-engine docker.io containerd runc containerd.io 2>/dev/null || true
-
-# # Install prerequisites
-# sudo apt-get install -y ca-certificates curl gnupg lsb-release
-
-# # Add Docker's official GPG key and repository
-# echo "🔑 Adding Docker repository..."
-# sudo install -m 0755 -d /etc/apt/keyrings
-# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --batch --yes -o /etc/apt/keyrings/docker.gpg
-# sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# # Update and install Docker from official repository
-# echo "🐳 Installing Docker from official repository..."
-# sudo apt-get update -y
-# sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-
-echo "🐳 Starting Docker..."
-sudo systemctl start docker
-sudo systemctl enable docker
-sudo usermod -aG docker ubuntu
-
-echo "🌐 Installing and configuring Nginx..."
-sudo apt-get update -y
-sudo apt-get install -y nginx
-
-# Create Nginx configuration for the job platform
-sudo tee /etc/nginx/sites-available/job-platform > /dev/null << 'NGINX_CONFIG'
-# Main site - pom100.com
-server {
-    listen 80;
-    server_name pom100.com www.pom100.com;
-    
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-    
-    # Frontend proxy
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
-        proxy_read_timeout 86400;
-    }
-}
-
-# API subdomain - api.pom100.com
-server {
-    listen 80;
-    server_name api.pom100.com;
-    
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    
-    # API proxy
-    location / {
-        proxy_pass http://localhost:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
-        proxy_read_timeout 86400;
-    }
-    
-    # Enable CORS for API
-    location ~* ^/(api|docs|openapi\.json) {
-        if (\$request_method = 'OPTIONS') {
-            add_header 'Access-Control-Allow-Origin' '*';
-            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE';
-            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
-            add_header 'Access-Control-Max-Age' 1728000;
-            add_header 'Content-Type' 'text/plain; charset=utf-8';
-            add_header 'Content-Length' 0;
-            return 204;
-        }
-        proxy_pass http://localhost:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
-    }
-}
-NGINX_CONFIG
-
-# Enable the site and disable default
-sudo ln -sf /etc/nginx/sites-available/job-platform /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
-
-# Test configuration and start Nginx
-sudo nginx -t
-sudo systemctl enable nginx
-sudo systemctl restart nginx
-
-echo "✅ Nginx configured for pom100.com → :3000 and api.pom100.com → :8000"
-
-echo "🔒 Setting up SSL certificates with Let's Encrypt..."
-# Install certbot
-sudo apt-get install -y certbot python3-certbot-nginx
-
-# Check if domains resolve to this server before attempting SSL
-echo "⏳ Waiting for DNS propagation (checking if domains resolve to this server)..."
-PUBLIC_IP=\$(curl -s http://checkip.amazonaws.com/)
-POM100_IP=\$(dig +short pom100.com || echo "")
-API_POM100_IP=\$(dig +short api.pom100.com || echo "")
-
-if [ "\$POM100_IP" = "\$PUBLIC_IP" ] && [ "\$API_POM100_IP" = "\$PUBLIC_IP" ]; then
-    echo "✅ DNS records are correctly configured, obtaining SSL certificates..."
-    
-    # Obtain SSL certificates for both domains
-    sudo certbot --nginx -d pom100.com -d www.pom100.com -d api.pom100.com --non-interactive --agree-tos --email admin@pom100.com --no-eff-email
-    
-    # Set up auto-renewal
-    sudo systemctl enable certbot.timer
-    sudo systemctl start certbot.timer
-    
-    echo "✅ SSL certificates installed and auto-renewal configured"
-    echo "🔒 Your sites are now available at:"
-    echo "  https://pom100.com"
-    echo "  https://www.pom100.com" 
-    echo "  https://api.pom100.com"
-else
-    echo "⚠️ DNS records not yet pointing to this server (\$PUBLIC_IP)"
-    echo "   pom100.com resolves to: \$POM100_IP"
-    echo "   api.pom100.com resolves to: \$API_POM100_IP"
-    echo ""
-    echo "📋 To enable SSL later, run these commands on the server:"
-    echo "   sudo certbot --nginx -d pom100.com -d www.pom100.com -d api.pom100.com"
-    echo ""
-    echo "🌐 DNS Configuration needed:"
-    echo "   pom100.com     A  \$PUBLIC_IP"
-    echo "   www.pom100.com A  \$PUBLIC_IP"  
-    echo "   api.pom100.com A  \$PUBLIC_IP"
-fi
-
 echo "📁 Setting up application..."
-sudo mkdir -p /opt/job-platform
-sudo chown ubuntu:ubuntu /opt/job-platform
 cd /opt/job-platform
 
 echo "🔄 Stopping existing containers..."
 sudo docker compose -f docker-compose.prod.yml down 2>/dev/null || true
+
+echo "🧹 Cleaning up Docker resources..."
 sudo docker system prune -f
+sudo docker image prune -f
 
 echo "📂 Extracting application..."
-rm -rf frontend backend docker-compose.prod.yml 2>/dev/null || true
+rm -rf frontend backend docker-compose.prod.yml .env 2>/dev/null || true
 tar -xzf /tmp/deploy.tar.gz
 rm -f /tmp/deploy.tar.gz
 
@@ -409,7 +247,14 @@ sleep 30
 echo "📊 Container status:"
 sudo docker compose -f docker-compose.prod.yml ps
 
-echo "✅ Deployment completed!"
+# Show container logs for debugging
+echo "📋 Recent container logs:"
+echo "--- Frontend logs ---"
+sudo docker compose -f docker-compose.prod.yml logs --tail=10 frontend
+echo "--- Backend logs ---"
+sudo docker compose -f docker-compose.prod.yml logs --tail=10 backend
+
+echo "✅ Application deployment completed!"
 EOF
     
     # Clean up local files
@@ -441,24 +286,10 @@ test_deployment() {
     fi
 }
 
-# Check if server setup is needed
-check_server_setup() {
-    print_status "Checking if server setup is needed..."
-    
-    # Check if Nginx is configured on the server
-    if ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@$EC2_IP 'test -f /etc/nginx/sites-enabled/job-platform' 2>/dev/null; then
-        print_status "✅ Server is already configured"
-        return 0
-    else
-        print_status "🔧 Server setup required"
-        return 1
-    fi
-}
-
 # Main deployment function
 main() {
     echo ""
-    print_status "Starting complete AWS deployment..."
+    print_status "Starting fast application deployment..."
     echo ""
     
     # Check prerequisites
@@ -467,45 +298,38 @@ main() {
     # Get infrastructure info
     get_infrastructure_info
     
-    # Basic SSH check
-    chmod 600 "$SSH_KEY"
+    # Wait for SSH
+    wait_for_ssh
     
-    # Check if server setup is needed
-    if ! check_server_setup; then
-        echo ""
-        print_warning "🔧 Server setup required. Running setup-server.sh first..."
-        echo ""
-        
-        if [ -f "./setup-server.sh" ]; then
-            chmod +x ./setup-server.sh
-            ./setup-server.sh
-            
-            echo ""
-            print_status "✅ Server setup completed. Now deploying application..."
-            echo ""
-        else
-            print_error "setup-server.sh not found. Please create it or run manual setup."
-            exit 1
-        fi
-    fi
+    # Deploy application
+    deploy_app
     
-    # Run application deployment
-    if [ -f "./deploy-app.sh" ]; then
-        chmod +x ./deploy-app.sh
-        ./deploy-app.sh
-    else
-        print_error "deploy-app.sh not found. Please create it or run manual deployment."
-        exit 1
-    fi
+    # Test deployment
+    test_deployment
     
     echo ""
-    print_status "🎉 Complete deployment finished successfully!"
+    print_status "🎉 Application deployment completed successfully!"
     echo ""
-    print_status "📋 Available deployment options:"
-    echo "  ./deploy-aws.sh     - Complete deployment (detects setup needs)"
-    echo "  ./setup-server.sh   - One-time server setup only"
-    echo "  ./deploy-app.sh     - Fast application deployment only"
+    echo "🌐 Application URLs (via Nginx reverse proxy):"
+    echo "  Frontend:    http://pom100.com"
+    echo "  Frontend:    http://www.pom100.com"
+    echo "  Backend API: http://api.pom100.com"
+    echo "  API Docs:    http://api.pom100.com/docs"
     echo ""
+    echo "🔧 Direct Access (for debugging):"
+    echo "  Frontend:  http://$EC2_IP:3000"
+    echo "  Backend:   http://$EC2_IP:8000"
+    echo ""
+    echo "📡 SSH Access:"
+    echo "  ssh -i $SSH_KEY ubuntu@$EC2_IP"
+    echo ""
+    echo "🐳 Container Management:"
+    echo "  docker compose -f docker-compose.prod.yml ps"
+    echo "  docker compose -f docker-compose.prod.yml logs frontend"
+    echo "  docker compose -f docker-compose.prod.yml logs backend"
+    echo ""
+    print_warning "⚠️ Clear your browser cache to see frontend changes!"
+    print_status "🔄 To redeploy: ./deploy-app.sh"
 }
 
 # Show help
@@ -516,18 +340,13 @@ show_help() {
     echo "  --help, -h    Show this help message"
     echo "  --check       Check prerequisites only"
     echo ""
-    echo "This script provides intelligent deployment to AWS EC2."
-    echo "It detects if server setup is needed and runs the appropriate scripts."
-    echo ""
-    echo "Available Scripts:"
-    echo "  ./deploy-aws.sh     - Complete deployment (auto-detects setup needs)"
-    echo "  ./setup-server.sh   - One-time server setup (Docker, Nginx, SSL)"
-    echo "  ./deploy-app.sh     - Fast application deployment (containers only)"
+    echo "This script provides fast application deployment (containers only)."
     echo ""
     echo "Prerequisites:"
     echo "  1. Run terraform-persistent/terraform apply"
     echo "  2. Run terraform-compute/terraform apply"
-    echo "  3. Ensure SSH key exists at terraform-compute/job-platform-key"
+    echo "  3. Run ./setup-server.sh (one-time server setup)"
+    echo "  4. Ensure SSH key exists at terraform-compute/job-platform-key"
 }
 
 # Parse arguments
