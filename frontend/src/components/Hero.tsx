@@ -27,7 +27,7 @@ const Hero = () => {
               {/* Main Heading */}
               <div className="space-y-6">
                 <motion.h1
-                  className="text-6xl lg:text-7xl font-semibold text-gray-900 dark:text-white leading-tight normal-case"
+                  className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl font-semibold text-gray-900 dark:text-white leading-tight normal-case"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.3 }}
@@ -37,7 +37,7 @@ const Hero = () => {
                   <span>top talent</span>
                 </motion.h1>
                 <motion.p
-                  className="text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8"
+                  className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.5 }}
@@ -62,31 +62,31 @@ const Hero = () => {
                 ))}
               </motion.div>
 
-              {/* CTA Buttons */}
-              <motion.div 
-                className="flex flex-col sm:flex-row gap-6 justify-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.9 }}
-              >
-                <Link href="/auth">
-                  <motion.button 
-                    className="btn-primary text-lg px-8 py-4 flex items-center justify-center space-x-2 group w-full sm:w-auto min-w-[200px] h-[56px]"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
+                             {/* CTA Buttons */}
+               <motion.div 
+                 className="flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center items-center pb-12 sm:pb-0"
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ duration: 1, delay: 0.9 }}
+               >
+                                 <Link href="/auth">
+                   <motion.button 
+                     className="btn-primary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px]"
+                     whileHover={{ scale: 1.02 }}
+                     whileTap={{ scale: 0.98 }}
+                   >
                     <span>Get started</span>
-                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={20} />
+                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
                   </motion.button>
                 </Link>
-                <Link href="/jobs">
-                  <motion.button 
-                    className="btn-secondary text-lg px-8 py-4 flex items-center justify-center group w-full sm:w-auto min-w-[200px] h-[56px] border-0 text-gray-900"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
+                                 <Link href="/jobs">
+                   <motion.button 
+                     className="btn-secondary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px] border-0 text-gray-900"
+                     whileHover={{ scale: 1.02 }}
+                     whileTap={{ scale: 0.98 }}
+                   >
                     <span>Browse jobs</span>
-                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={20} />
+                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
                   </motion.button>
                 </Link>
               </motion.div>
