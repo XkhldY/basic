@@ -9,6 +9,7 @@ import Features from '@/components/Features';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
+import CookiesBanner from '@/components/CookiesBanner';
 
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
@@ -47,6 +48,9 @@ export default function Home() {
       </AnimateOnScroll>
 
       <Footer />
+      
+      {/* Cookies Banner */}
+      <CookiesBanner />
     </main>
   );
 }
