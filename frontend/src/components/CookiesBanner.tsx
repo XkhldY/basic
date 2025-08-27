@@ -75,13 +75,14 @@ const CookiesBanner = () => {
          <div className="ml-2 mr-0">
            {!showPreferences ? (
                            // Main Banner
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0">
-                                     <div className="w-8 h-8 bg-amber-500/20 rounded-full flex items-center justify-center">
+                           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+               <div className="flex items-center gap-3">
+                 <div className="flex-shrink-0">
+                   <div className="w-8 h-8 bg-amber-500/20 rounded-full flex items-center justify-center">
                      <Cookie className="w-4 h-4 text-amber-400" />
                    </div>
-                </div>
-                                 <div className="flex-1 min-w-0">
+                 </div>
+                 <div className="flex-1 min-w-0">
                    <h3 className="text-base font-semibold text-white inline">
                      We value your privacy.
                    </h3>
@@ -89,8 +90,9 @@ const CookiesBanner = () => {
                      We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking "Accept all", you consent to our use of cookies.
                    </span>
                  </div>
-                
-                <div className="flex gap-2 flex-shrink-0">
+               </div>
+               
+               <div className="flex gap-2 flex-shrink-0 justify-center sm:justify-start">
                                                                                            <button
                       onClick={() => setShowPreferences(true)}
                       className="flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-300 bg-slate-800/40 hover:bg-slate-700/60 rounded-md transition-colors duration-200 backdrop-blur-sm focus:outline-none focus:ring-0"
@@ -118,7 +120,7 @@ const CookiesBanner = () => {
                initial={{ opacity: 0, height: 0 }}
                animate={{ opacity: 1, height: 'auto' }}
                exit={{ opacity: 0, height: 0 }}
-               className="bg-slate-900 rounded-lg p-6"
+               className="bg-slate-900 rounded-lg p-4 sm:p-6"
              >
               <div className="flex items-center justify-between mb-4">
                                  <h3 className="text-lg font-semibold text-white">
@@ -133,9 +135,9 @@ const CookiesBanner = () => {
                  </button>
               </div>
               
-              <div className="space-y-4 mb-6">
-                                 {/* Necessary Cookies */}
-                 <div className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                             <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                 {/* Necessary Cookies */}
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-slate-800 rounded-lg gap-2 sm:gap-0">
                    <div className="flex-1">
                      <div className="flex items-center gap-2 mb-1">
                        <CheckCircle className="w-4 h-4 text-green-400" />
@@ -157,7 +159,7 @@ const CookiesBanner = () => {
                  </div>
 
                                  {/* Analytics Cookies */}
-                 <div className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-slate-800 rounded-lg gap-2 sm:gap-0">
                    <div className="flex-1">
                      <div className="flex items-center gap-2 mb-1">
                        <span className="font-medium text-white">Analytics</span>
@@ -178,7 +180,7 @@ const CookiesBanner = () => {
                  </div>
 
                                  {/* Marketing Cookies */}
-                 <div className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-slate-800 rounded-lg gap-2 sm:gap-0">
                    <div className="flex-1">
                      <div className="flex items-center gap-2 mb-1">
                        <span className="font-medium text-white">Marketing</span>
@@ -199,7 +201,7 @@ const CookiesBanner = () => {
                  </div>
 
                                  {/* Functional Cookies */}
-                 <div className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-slate-800 rounded-lg gap-2 sm:gap-0">
                    <div className="flex-1">
                      <div className="flex items-center gap-2 mb-1">
                        <span className="font-medium text-white">Functional</span>
@@ -220,8 +222,8 @@ const CookiesBanner = () => {
                  </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                                 <button
+                             <div className="flex flex-col sm:flex-row gap-2 justify-center sm:justify-end">
+                 <button
                    onClick={() => setShowPreferences(false)}
                    className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 transition-colors duration-200 focus:outline-none focus:ring-0 border-0"
                    style={{ outline: 'none', boxShadow: 'none' }}
@@ -234,7 +236,7 @@ const CookiesBanner = () => {
                  >
                    Save Preferences
                  </button>
-              </div>
+               </div>
             </motion.div>
           )}
         </div>

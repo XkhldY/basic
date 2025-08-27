@@ -113,7 +113,7 @@ const Features = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <motion.div 
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 mb-6 mt-12 sm:mt-8"
+            className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-400 rounded-full text-sm font-medium text-gray-900 mb-6 mt-12 sm:mt-8"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
@@ -128,8 +128,9 @@ const Features = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+            style={{ color: '#111827' }}
           >
-            Everything you need to <span>succeed</span>
+            Everything you need to <span style={{ color: '#111827' }}>succeed</span>
           </motion.h2>
           <motion.p 
             className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto"
@@ -304,7 +305,7 @@ const Features = () => {
             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
           >
             <motion.span 
-              className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-10 inline-block"
+              className="bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-400 rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-10 inline-block"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.1 }}
@@ -321,8 +322,9 @@ const Features = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.1 }}
               transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+              style={{ color: '#111827' }}
             >
-              Wide range of <span>expertise</span>
+              Wide range of <span style={{ color: '#111827' }}>expertise</span>
             </motion.h3>
             <motion.p 
               className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto mb-6"
@@ -363,6 +365,7 @@ const Features = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 3.6 + index * 0.08, ease: "easeOut" }}
+                  style={{ color: '#374151' }}
                 >
                   {skill.category}
                 </motion.span>
@@ -382,7 +385,7 @@ const Features = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
             >
               <motion.span 
-                className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-6 inline-block"
+                className="bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-400 rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-6 inline-block"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, amount: 0.1 }}
@@ -399,8 +402,9 @@ const Features = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
+                style={{ color: '#111827' }}
               >
-                Join our <span>team</span>
+                Join our <span style={{ color: '#111827' }}>team</span>
               </motion.h3>
               <motion.p 
                 className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto mb-10"
