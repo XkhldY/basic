@@ -15,6 +15,7 @@ import {
   User,
   ArrowRight
 } from 'lucide-react'
+import Link from 'next/link'
 
 const Features = () => {
   const benefits = [
@@ -112,7 +113,7 @@ const Features = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <motion.div 
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 mb-6 mt-12 sm:mt-8"
+            className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-400 rounded-full text-sm font-medium text-gray-900 mb-6 mt-12 sm:mt-8"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
@@ -127,8 +128,9 @@ const Features = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+            style={{ color: '#111827' }}
           >
-            Everything you need to <span>succeed</span>
+            Everything you need to <span style={{ color: '#111827' }}>succeed</span>
           </motion.h2>
           <motion.p 
             className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto"
@@ -187,6 +189,22 @@ const Features = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* First Section CTA Button */}
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ duration: 0.6, delay: 1.8, ease: "easeOut" }}
+        >
+          <Link href="/auth">
+            <button className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px] mx-auto">
+              <span>Get started</span>
+              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
+            </button>
+          </Link>
+        </motion.div>
 
                 {/* Testimonials Section */}
         <div className="mt-16 sm:mt-32">
@@ -287,7 +305,7 @@ const Features = () => {
             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
           >
             <motion.span 
-              className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-10 inline-block"
+              className="bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-400 rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-10 inline-block"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.1 }}
@@ -304,8 +322,9 @@ const Features = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.1 }}
               transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+              style={{ color: '#111827' }}
             >
-              Wide range of <span>expertise</span>
+              Wide range of <span style={{ color: '#111827' }}>expertise</span>
             </motion.h3>
             <motion.p 
               className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto mb-6"
@@ -346,15 +365,16 @@ const Features = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 3.6 + index * 0.08, ease: "easeOut" }}
+                  style={{ color: '#374151' }}
                 >
                   {skill.category}
                 </motion.span>
                   </motion.div>
                 ))}
+                              </div>
               </div>
-            </div>
 
-                {/* Jobs Section */}
+                  {/* Jobs Section */}
         <div id="jobs" className="mt-12 sm:mt-20 pt-12 sm:pt-16 pb-12 sm:pb-16 bg-gradient-to-b from-amber-50 via-white to-amber-50 relative rounded-t-3xl sm:rounded-3xl overflow-hidden">
           <div className="container-custom relative z-10">
             <motion.div
@@ -365,7 +385,7 @@ const Features = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
             >
               <motion.span 
-                className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-6 inline-block"
+                className="bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-400 rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-6 inline-block"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, amount: 0.1 }}
@@ -382,8 +402,9 @@ const Features = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
+                style={{ color: '#111827' }}
               >
-                Join our <span>team</span>
+                Join our <span style={{ color: '#111827' }}>team</span>
               </motion.h3>
               <motion.p 
                 className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto mb-10"
@@ -469,10 +490,12 @@ const Features = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 6.0 }}
             >
-              <button className="btn-primary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[240px] h-[48px] sm:h-[56px] mx-auto">
-                <span>See more jobs</span>
-                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
-              </button>
+                             <Link href="/jobs">
+                 <button className="btn-primary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[240px] h-[48px] sm:h-[56px] mx-auto">
+                   <span>See more jobs</span>
+                   <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
+                 </button>
+               </Link>
               </motion.div>
 
             {/* Testimonial */}
