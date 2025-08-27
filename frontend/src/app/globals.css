@@ -362,6 +362,16 @@ html {
 }
 
 .animate-scroll {
-  animation: scroll 12s linear infinite;
+  animation: scroll 4s linear infinite;
+}
+
+@media (min-width: 640px) {
+  .animate-scroll {
+    animation: scroll 12s linear infinite;
+  }
+}
+
+.animate-scroll-desktop {
+  animation: scroll 20s linear infinite;
 }
 

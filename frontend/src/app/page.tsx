@@ -38,7 +38,7 @@ export default function Home() {
       {/* Hero section - no scroll animation wrapper so it's immediately visible */}
       <Hero />
 
-      <AnimateOnScroll type="fade-up" amount={0.2}>
+      <AnimateOnScroll type="fade-up" amount={0.01} once={false} duration={0.8}>
         <Features />
       </AnimateOnScroll>
 
