@@ -83,6 +83,12 @@ class User(Base):
     profile_completion_percentage = Column(Integer, default=0)
     last_profile_update = Column(DateTime(timezone=True), onupdate=func.now())
     
+    # Resume fields
+    resume_url = Column(String(500), nullable=True)
+    resume_file_name = Column(String(255), nullable=True)
+    resume_uploaded_at = Column(DateTime(timezone=True), nullable=True)
+    resume_file_size = Column(Integer, nullable=True)
+    
     # Admin specific fields
     admin_role = Column(String(50), nullable=True)  # super_admin, user_manager, content_moderator, analyst
     permissions = Column(Text, nullable=True)  # JSON string of permissions

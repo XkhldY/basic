@@ -1,7 +1,7 @@
 """Enhanced user profiles
 
-Revision ID: 002
-Revises: 001
+Revision ID: 002_enhanced_user_profiles
+Revises: 001_initial_migration
 Create Date: 2025-08-22 15:38:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '002'
-down_revision = '001'
+revision = '002_enhanced_user_profiles'
+down_revision = '001_initial_migration'
 branch_labels = None
 depends_on = None
 
