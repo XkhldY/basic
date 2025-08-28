@@ -73,3 +73,29 @@ output "persistent_infrastructure_summary" {
     db_security_group  = aws_security_group.db_sg.id
   }
 }
+
+# S3 File Storage outputs
+output "s3_bucket_name_dev" {
+  description = "Name of the S3 bucket for development file storage"
+  value       = aws_s3_bucket.file_storage_dev.bucket
+}
+
+output "s3_bucket_arn_dev" {
+  description = "ARN of the S3 bucket for development file storage"
+  value       = aws_s3_bucket.file_storage_dev.arn
+}
+
+output "s3_bucket_name_prod" {
+  description = "Name of the S3 bucket for production file storage"
+  value       = aws_s3_bucket.file_storage_prod.bucket
+}
+
+output "s3_bucket_arn_prod" {
+  description = "ARN of the S3 bucket for production file storage"
+  value       = aws_s3_bucket.file_storage_prod.arn
+}
+
+output "s3_file_access_policy_arn" {
+  description = "ARN of the IAM policy for S3 file access"
+  value       = aws_iam_policy.s3_file_access.arn
+}

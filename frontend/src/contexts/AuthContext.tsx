@@ -72,6 +72,12 @@ export interface User {
   admin_role?: string;
   permissions?: string;
   department?: string;
+  
+  // Resume fields
+  resume_url?: string;
+  resume_file_name?: string;
+  resume_uploaded_at?: string;
+  resume_file_size?: number;
 }
 
 interface AuthContextType {

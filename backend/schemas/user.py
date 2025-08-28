@@ -118,6 +118,12 @@ class UserResponse(UserBase):
     profile_completion_percentage: Optional[int] = None
     last_profile_update: Optional[datetime] = None
     
+    # Resume fields
+    resume_url: Optional[str] = None
+    resume_file_name: Optional[str] = None
+    resume_uploaded_at: Optional[datetime] = None
+    resume_file_size: Optional[int] = None
+    
     class Config:
         from_attributes = True
 
