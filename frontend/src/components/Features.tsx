@@ -12,14 +12,16 @@ import {
   Award,
   Heart,
   Briefcase,
-  User
+  User,
+  ArrowRight
 } from 'lucide-react'
+import Link from 'next/link'
 
 const Features = () => {
   const benefits = [
-    { icon: Users, title: 'Handpicked Talent', description: 'Expert professionals carefully selected and personally verified for your specific needs' },
-    { icon: Clock, title: 'Fast Matching', description: 'Get connected with the right opportunities in days, not months' },
-    { icon: DollarSign, title: 'Cost-Effective', description: 'Save up to 60% compared to traditional hiring agencies' }
+    { icon: Users, title: 'Handpicked talent', description: 'Expert professionals carefully selected and personally verified for your specific needs' },
+    { icon: Clock, title: 'Fast matching', description: 'Get connected with the right opportunities in days, not months' },
+    { icon: DollarSign, title: 'Cost-effective', description: 'Save up to 60% compared to traditional hiring agencies' }
   ]
 
   const skills = [
@@ -65,7 +67,7 @@ const Features = () => {
   ]
 
   return (
-    <section id="features" className="pt-12 pb-8 bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 relative overflow-hidden">
+         <section id="features" className="pt-0 sm:pt-12 pb-0 sm:pb-8 bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 relative overflow-hidden">
       {/* Background with Subtle Animations */}
       <div className="absolute inset-0 bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50" />
       
@@ -94,26 +96,28 @@ const Features = () => {
               animationDelay: `${Math.random() * 2.5}s`
             }}
           />
-        ))}
-      </div>
+            ))}
+          </div>
       
       {/* Visible Mesh Flow */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/15 to-transparent animate-mesh-flow" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-200/20 to-transparent animate-mesh-flow-reverse" />
-      
+
       <div className="container-custom relative z-10">
-        {/* Main Features */}
+                {/* Main Features */}
         <motion.div 
-          className="text-center mb-16"
+          className="text-center mb-8 sm:mb-16"
           initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <motion.div 
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 mb-10 mt-8"
+            className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-400 rounded-full text-sm font-medium text-gray-900 mb-6 mt-12 sm:mt-8"
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
           >
             <Shield size={16} />
             <span>Why choose us</span>
@@ -121,16 +125,19 @@ const Features = () => {
           <motion.h2
             className="text-4xl lg:text-6xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+            style={{ color: '#111827' }}
           >
-            Everything you need to <span>succeed</span>
+            Everything you need to <span style={{ color: '#111827' }}>succeed</span>
           </motion.h2>
           <motion.p 
-            className="text-lg text-gray-800 max-w-3xl mx-auto"
+            className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.7, ease: "easeOut" }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
           >
             Our platform provides comprehensive solutions for both employers and job seekers, 
             ensuring successful matches and long-term success.
@@ -138,34 +145,36 @@ const Features = () => {
         </motion.div>
 
         {/* Benefits Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {benefits.map((benefit, index) => (
             <motion.div
               key={benefit.title}
               className="bg-white/80 rounded-2xl p-8 shadow-xl border border-amber-200/30 hover:shadow-2xl transition-all duration-200 group hover:-translate-y-1 text-center hover:bg-white hover:border-amber-300/50"
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
               transition={{ 
-                duration: 1, 
-                delay: 0.9 + index * 0.2, 
+                duration: 0.6, 
+                delay: 0.4 + index * 0.1, 
                 ease: "easeOut"
               }}
+              whileHover={{ scale: 1.02, y: -5 }}
             >
               <motion.div 
                 className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 mb-6 group-hover:scale-105 transition-all duration-200 mx-auto group-hover:from-amber-100 group-hover:to-amber-200"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 1.1 + index * 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.8, delay: 1.0 + index * 0.15, ease: "easeOut" }}
               >
                 <div className="animate-[float_3s_ease-in-out_infinite]">
                   <benefit.icon size={32} className="text-amber-700 transition-all duration-200 group-hover:text-amber-800" />
-                </div>
+              </div>
               </motion.div>
               <motion.h3 
                 className="text-xl font-bold text-gray-900 mb-4 transition-all duration-200 group-hover:text-gray-800"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 1.3 + index * 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.8, delay: 1.2 + index * 0.15, ease: "easeOut" }}
               >
                 {benefit.title}
               </motion.h3>
@@ -173,86 +182,134 @@ const Features = () => {
                 className="text-gray-700 leading-relaxed transition-all duration-200 group-hover:text-gray-600"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 1.5 + index * 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.8, delay: 1.4 + index * 0.15, ease: "easeOut" }}
               >
                 {benefit.description}
               </motion.p>
             </motion.div>
           ))}
         </div>
-        
-        {/* Testimonials Section */}
-        <div className="mt-32">
+
+        {/* First Section CTA Button */}
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ duration: 0.6, delay: 1.8, ease: "easeOut" }}
+        >
+          <Link href="/auth">
+            <button className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px] mx-auto">
+              <span>Get started</span>
+              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
+            </button>
+          </Link>
+        </motion.div>
+
+                {/* Testimonials Section */}
+        <div className="mt-16 sm:mt-32">
           <motion.div
             className="text-center mb-4"
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.7, ease: "easeOut" }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
           >
             <motion.h3 
               className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 1.9, ease: "easeOut" }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
             >
               Trusted by leading companies
             </motion.h3>
             <motion.p 
-              className="text-lg text-gray-700 max-w-3xl mx-auto"
+              className="text-base sm:text-lg lg:text-xl text-gray-700 max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 2.1, ease: "easeOut" }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
             >
               Join companies that trust our platform to find their next great hire
             </motion.p>
           </motion.div>
-          
-          {/* Moving Company Logos Bar */}
-          <motion.div
-            className="relative overflow-hidden py-8 max-w-4xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
+
+              <motion.div
+            className="relative pt-4 pb-8 sm:py-8 max-w-4xl mx-auto overflow-hidden"
+                initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 2.3, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 2.2, ease: "easeOut" }}
           >
-            <div className="flex items-center justify-center space-x-12">
-              {/* Company Logos - Static Display */}
-              <div className="flex items-center justify-center w-48 h-28 p-4">
+            {/* Left fade effect */}
+            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-amber-100 to-transparent z-10 pointer-events-none" />
+            
+            {/* Right fade effect */}
+            <div className="absolute -right-4 top-0 bottom-0 w-44 sm:w-20 bg-gradient-to-l from-amber-100 to-transparent z-10 pointer-events-none" />
+            
+            <div className="flex items-center space-x-8 sm:space-x-12 animate-scroll">
+              {/* Company Logos - Moving Display */}
+              <div className="flex items-center justify-center w-32 h-20 sm:w-48 sm:h-28 p-2 sm:p-4 flex-shrink-0">
                 <img src="/img/momentscience_logo.avif" alt="Moment Science" className="max-w-full max-h-full object-contain brightness-0" />
               </div>
-              <div className="flex items-center justify-center w-40 h-24 p-4">
+              <div className="flex items-center justify-center w-28 h-16 sm:w-40 sm:h-24 p-2 sm:p-4 flex-shrink-0">
                 <img src="/img/clever_logo.avif" alt="Clever" className="max-w-full max-h-full object-contain" />
               </div>
-              <div className="flex items-center justify-center w-44 h-20 p-1">
-                <span className="text-2xl font-bold text-gray-800">
+              <div className="flex items-center justify-center w-32 h-16 sm:w-44 sm:h-20 p-1 flex-shrink-0">
+                <span className="text-lg sm:text-2xl font-bold text-gray-800">
                   Bajaar LLC
                 </span>
               </div>
-              <div className="flex items-center justify-center w-40 h-24 p-4">
+              <div className="flex items-center justify-center w-28 h-16 sm:w-40 sm:h-24 p-2 sm:p-4 flex-shrink-0">
                 <img src="/img/adspostx_logo.svg" alt="AdsPostX" className="max-w-full max-h-full object-contain" />
               </div>
-              <div className="flex items-center justify-center w-40 h-24 p-4">
+              <div className="flex items-center justify-center w-28 h-16 sm:w-40 sm:h-24 p-2 sm:p-4 flex-shrink-0">
                 <img src="/img/blastBucks_logo.webp" alt="BlastBucks" className="max-w-full max-h-full object-contain" />
               </div>
-              <div className="flex items-center justify-center w-40 h-24 p-4">
+              <div className="flex items-center justify-center w-28 h-16 sm:w-40 sm:h-24 p-2 sm:p-4 flex-shrink-0">
                 <img src="/img/enefits_logo.svg" alt="Enefits" className="max-w-full max-h-full object-contain brightness-0" />
               </div>
-            </div>
-          </motion.div>
-        </div>
+              
+              {/* Duplicate logos for seamless loop */}
+              <div className="flex items-center justify-center w-32 h-20 sm:w-48 sm:h-28 p-2 sm:p-4 flex-shrink-0">
+                <img src="/img/momentscience_logo.avif" alt="Moment Science" className="max-w-full max-h-full object-contain brightness-0" />
+              </div>
+              <div className="flex items-center justify-center w-28 h-16 sm:w-40 sm:h-24 p-2 sm:p-4 flex-shrink-0">
+                <img src="/img/clever_logo.avif" alt="Clever" className="max-w-full max-h-full object-contain" />
+              </div>
+              <div className="flex items-center justify-center w-32 h-16 sm:w-44 sm:h-20 p-1 flex-shrink-0">
+                <span className="text-lg sm:text-2xl font-bold text-gray-800">
+                  Bajaar LLC
+                    </span>
+              </div>
+              <div className="flex items-center justify-center w-28 h-16 sm:w-40 sm:h-24 p-2 sm:p-4 flex-shrink-0">
+                <img src="/img/adspostx_logo.svg" alt="AdsPostX" className="max-w-full max-h-full object-contain" />
+              </div>
+              <div className="flex items-center justify-center w-28 h-16 sm:w-40 sm:h-24 p-2 sm:p-4 flex-shrink-0">
+                <img src="/img/blastBucks_logo.webp" alt="BlastBucks" className="max-w-full max-h-full object-contain" />
+              </div>
+              <div className="flex items-center justify-center w-28 h-16 sm:w-40 sm:h-24 p-2 sm:p-4 flex-shrink-0">
+                <img src="/img/enefits_logo.svg" alt="Enefits" className="max-w-full max-h-full object-contain brightness-0" />
+              </div>
+                </div>
+              </motion.div>
+          </div>
 
-        {/* Skills Section */}
-        <div className="mt-12">
+                {/* Expert Skills Section */}
+        <div className="mt-8 sm:mt-16">
           <motion.div
-            className="text-center mb-12"
+            className="text-center mb-4"
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 2.5, ease: "easeOut" }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
           >
             <motion.span 
-              className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-10 inline-block"
+              className="bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-400 rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-10 inline-block"
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 2.7, ease: "easeOut" }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
             >
               <div className="flex items-center space-x-2">
                 <Zap size={16} />
@@ -262,70 +319,77 @@ const Features = () => {
             <motion.h3 
               className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 2.9, ease: "easeOut" }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+              style={{ color: '#111827' }}
             >
-              Wide range of <span>expertise</span>
+              Wide range of <span style={{ color: '#111827' }}>expertise</span>
             </motion.h3>
             <motion.p 
-              className="text-lg text-gray-800 max-w-3xl mx-auto mb-6"
+              className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto mb-6"
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 3.1, ease: "easeOut" }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
             >
               Our platform connects you with professionals across diverse industries and skill sets
             </motion.p>
           </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
+                    <div className="flex flex-wrap justify-center gap-2 sm:gap-4 max-w-4xl mx-auto">
             {skills.map((skill, index) => (
               <motion.div
                 key={skill.category}
-                className="flex items-center space-x-3 px-4 py-2 bg-white/90 rounded-full border border-amber-200/50 shadow-sm hover:bg-white hover:border-amber-300/70 hover:shadow-md transition-all duration-200 group"
+                className="flex items-center space-x-2 sm:space-x-3 px-2 py-1 sm:px-4 sm:py-2 bg-white/90 rounded-full border border-amber-200/50 shadow-sm hover:bg-white hover:border-amber-300/70 hover:shadow-md transition-all duration-200 group"
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
                 transition={{ 
-                  duration: 1, 
-                  delay: 3.3 + index * 0.1, 
+                  duration: 0.6, 
+                  delay: 0.5 + index * 0.05, 
                   ease: "easeOut"
                 }}
                 whileHover={{ scale: 1.1, y: -2 }}
               >
                 <motion.span 
-                  className="text-lg"
+                  className="text-base sm:text-lg"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, delay: 3.5 + index * 0.1, ease: "easeOut" }}
+                  transition={{ duration: 0.8, delay: 3.4 + index * 0.08, ease: "easeOut" }}
                 >
                   {skill.emoji}
                 </motion.span>
                 <motion.span 
-                  className="text-sm font-medium text-gray-700 group-hover:text-gray-900"
+                  className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-gray-900"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, delay: 3.7 + index * 0.1, ease: "easeOut" }}
+                  transition={{ duration: 0.8, delay: 3.6 + index * 0.08, ease: "easeOut" }}
+                  style={{ color: '#374151' }}
                 >
                   {skill.category}
                 </motion.span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+                  </motion.div>
+                ))}
+                              </div>
+              </div>
 
-        {/* Jobs Section */}
-        <div className="mt-20 pt-16 pb-16 bg-gradient-to-b from-amber-50 via-white to-amber-50 relative rounded-3xl">
+                  {/* Jobs Section */}
+        <div id="jobs" className="mt-12 sm:mt-20 pt-12 sm:pt-16 pb-12 sm:pb-16 bg-gradient-to-b from-amber-50 via-white to-amber-50 relative rounded-t-3xl sm:rounded-3xl overflow-hidden">
           <div className="container-custom relative z-10">
             <motion.div
               className="text-center mb-12"
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 4.0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
             >
               <motion.span 
-                className="bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-6 inline-block"
+                className="bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-400 rounded-full text-sm font-medium text-gray-900 px-4 py-2 mb-6 inline-block"
                 initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 4.2 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
               >
                 <div className="flex items-center space-x-2">
                   <Briefcase size={16} />
@@ -335,23 +399,26 @@ const Features = () => {
               <motion.h3 
                 className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 4.4 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                style={{ color: '#111827' }}
               >
-                Join our <span>team</span>
+                Join our <span style={{ color: '#111827' }}>team</span>
               </motion.h3>
               <motion.p 
-                className="text-lg text-gray-800 max-w-3xl mx-auto mb-10"
+                className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto mb-10"
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 4.6 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
               >
                 Discover exciting opportunities and be part of our mission to connect top talent with amazing companies
               </motion.p>
             </motion.div>
 
             {/* Jobs Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
               {jobs.map((job, index) => (
                 <motion.div
                   key={job.title}
@@ -414,22 +481,22 @@ const Features = () => {
                   </motion.div>
                 </motion.div>
               ))}
-            </div>
+              </div>
 
             {/* See More Jobs Button */}
-            <motion.div
+              <motion.div
               className="text-center mb-16"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 6.0 }}
             >
-              <button className="btn-primary text-lg px-8 py-4 flex items-center justify-center space-x-2 group w-full sm:w-auto min-w-[200px] h-[56px] mx-auto">
-                <span>See more jobs</span>
-                <svg className="ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </button>
-            </motion.div>
+                             <Link href="/jobs">
+                 <button className="btn-primary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[240px] h-[48px] sm:h-[56px] mx-auto">
+                   <span>See more jobs</span>
+                   <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
+                 </button>
+               </Link>
+              </motion.div>
 
             {/* Testimonial */}
             <motion.div
@@ -438,15 +505,15 @@ const Features = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.6, delay: 6.2 }}
             >
-              <div className="flex items-center gap-8">
+              <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
                 <motion.div 
-                  className="flex-1 text-left"
+                  className="flex-1 text-center md:text-left"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 6.4 }}
                 >
                   <motion.blockquote 
-                    className="text-xl text-gray-800 italic mb-4"
+                    className="text-lg md:text-xl text-gray-800 italic mb-4"
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 6.6 }}
@@ -462,8 +529,8 @@ const Features = () => {
                     <p className="text-sm text-gray-600">Product Designer</p>
                   </motion.div>
                 </motion.div>
-                <motion.div 
-                  className="w-40 h-40 rounded-2xl overflow-hidden flex-shrink-0"
+              <motion.div
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden flex-shrink-0"
                   initial={{ opacity: 0, x: 20, scale: 0.9 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   transition={{ duration: 0.5, delay: 6.3 }}
@@ -475,9 +542,9 @@ const Features = () => {
                   />
                 </motion.div>
               </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </div>
-        </div>
       </div>
     </section>
   )

@@ -9,6 +9,7 @@ import Features from '@/components/Features';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
+import CookiesBanner from '@/components/CookiesBanner';
 
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
@@ -38,7 +39,7 @@ export default function Home() {
       {/* Hero section - no scroll animation wrapper so it's immediately visible */}
       <Hero />
 
-      <AnimateOnScroll type="fade-up" amount={0.2}>
+      <AnimateOnScroll type="fade-up" amount={0.01} once={false} duration={0.8}>
         <Features />
       </AnimateOnScroll>
 
@@ -47,6 +48,9 @@ export default function Home() {
       </AnimateOnScroll>
 
       <Footer />
+      
+      {/* Cookies Banner */}
+      <CookiesBanner />
     </main>
   );
 }
