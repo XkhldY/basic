@@ -217,3 +217,158 @@ resource "aws_db_instance" "postgres" {
     Type        = "persistent"
   }
 }
+
+# S3 Bucket for development file storage (resumes, documents)
+resource "aws_s3_bucket" "file_storage_dev" {
+  bucket = "${var.project_name}-files-dev-${random_id.bucket_suffix.hex}"
+  
+  tags = {
+    Name        = "${var.project_name}-file-storage-dev"
+    Environment = "dev"
+    Type        = "persistent"
+  }
+}
+
+# Random suffix for bucket names to avoid conflicts
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
+# S3 Bucket for production file storage (resumes, documents)
+resource "aws_s3_bucket" "file_storage_prod" {
+  bucket = "${var.project_name}-files-prod"
+  
+  tags = {
+    Name        = "${var.project_name}-file-storage-prod"
+    Environment = "prod"
+    Type        = "persistent"
+  }
+}
+
+# S3 Bucket Versioning for Dev
+resource "aws_s3_bucket_versioning" "file_storage_dev" {
+  bucket = aws_s3_bucket.file_storage_dev.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# S3 Bucket Versioning for Prod
+resource "aws_s3_bucket_versioning" "file_storage_prod" {
+  bucket = aws_s3_bucket.file_storage_prod.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# S3 Bucket Encryption for Dev
+resource "aws_s3_bucket_server_side_encryption_configuration" "file_storage_dev" {
+  bucket = aws_s3_bucket.file_storage_dev.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# S3 Bucket Encryption for Prod
+resource "aws_s3_bucket_server_side_encryption_configuration" "file_storage_prod" {
+  bucket = aws_s3_bucket.file_storage_prod.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# S3 Bucket Public Access Block for Dev
+resource "aws_s3_bucket_public_access_block" "file_storage_dev" {
+  bucket = aws_s3_bucket.file_storage_dev.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# S3 Bucket Public Access Block for Prod
+resource "aws_s3_bucket_public_access_block" "file_storage_prod" {
+  bucket = aws_s3_bucket.file_storage_prod.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# S3 Bucket Lifecycle Policy for Dev
+resource "aws_s3_bucket_lifecycle_configuration" "file_storage_dev" {
+  bucket = aws_s3_bucket.file_storage_dev.id
+
+  rule {
+    id     = "file_retention"
+    status = "Enabled"
+
+    filter {
+      prefix = ""
+    }
+
+    expiration {
+      days = 3650  # 10 years
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+  }
+}
+
+# S3 Bucket Lifecycle Policy for Prod
+resource "aws_s3_bucket_lifecycle_configuration" "file_storage_prod" {
+  bucket = aws_s3_bucket.file_storage_prod.id
+
+  rule {
+    id     = "file_retention"
+    status = "Enabled"
+
+    filter {
+      prefix = ""
+    }
+
+    expiration {
+      days = 3650  # 10 years
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+  }
+}
+
+# IAM Policy for S3 file access (both dev and prod)
+resource "aws_iam_policy" "s3_file_access" {
+  name = "${var.project_name}-s3-file-access"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.file_storage_dev.arn,
+          "${aws_s3_bucket.file_storage_dev.arn}/*",
+          aws_s3_bucket.file_storage_prod.arn,
+          "${aws_s3_bucket.file_storage_prod.arn}/*"
+        ]
+      }
+    ]
+  })
+}

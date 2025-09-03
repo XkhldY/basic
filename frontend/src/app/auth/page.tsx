@@ -142,7 +142,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-900">
       <div className="relative w-full max-w-md flex flex-col md:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden">
         <div className="md:w-full p-8 md:p-12 flex justify-center items-center">
           <div className="w-full">
@@ -161,7 +161,13 @@ const AuthPage = () => {
               </button>
             </div>
             {activeTab === 'login' ? (
-              <div className="animate-fade-in">
+              <form
+                className="animate-fade-in"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleLogin();
+                }}
+              >
                 <div className="mb-6 relative">
                   <Mail className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400" size={22} />
                   <input 
@@ -183,8 +189,7 @@ const AuthPage = () => {
                   />
                 </div>
                 <button 
-                  type="button" 
-                  onClick={handleLogin}
+                  type="submit" 
                   disabled={isSubmitting}
                   className={`mt-8 w-full font-bold py-3 px-4 rounded-full shadow-lg transition-all duration-300 ${
                     isSubmitting 
@@ -194,9 +199,15 @@ const AuthPage = () => {
                 >
                   {isSubmitting ? 'Logging in...' : 'Login'}
                 </button>
-              </div>
+              </form>
             ) : (
-              <div className="animate-fade-in">
+              <form
+                className="animate-fade-in"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSubmit();
+                }}
+              >
                 <div className="mb-6 relative">
                   <User className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400" size={22} />
                   <input 
@@ -417,8 +428,7 @@ const AuthPage = () => {
                 )}
 
                 <button 
-                  type="button" 
-                  onClick={handleSubmit}
+                  type="submit" 
                   disabled={isSubmitting}
                   className={`w-full font-bold py-3 px-4 rounded-full shadow-lg transition-all duration-300 ${
                     isSubmitting 
@@ -428,7 +438,7 @@ const AuthPage = () => {
                 >
                   {isSubmitting ? 'Registering...' : `Register as ${userType === 'employer' ? 'Employer' : userType === 'admin' ? 'Admin' : 'Candidate'}`}
                 </button>
-              </div>
+              </form>
             )}
           </div>
         </div>
