@@ -65,3 +65,6 @@ backend/job_platform.db
 terraform-compute/job-platform-key
 terraform-persistent/.terraform.tfstate.lock.info
 temp_env
+frontend/test-results/
+frontend/TESTING-RESUME-UPLOAD.md
+frontend/tests/

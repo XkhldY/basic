@@ -35,6 +35,8 @@ __tests__/
 **/*.spec.js
 **/*.spec.ts
 **/*.spec.tsx
+tests/
+test-results/
 
 # ESLint
 .eslintcache

@@ -372,3 +372,77 @@ resource "aws_iam_policy" "s3_file_access" {
     ]
   })
 }
+
+# IAM User for Marie (Account ID: 154989746316)
+resource "aws_iam_user" "marie_deployer" {
+  name = "${var.project_name}-marie-deployer"
+  
+  tags = {
+    Name        = "${var.project_name}-marie-deployer"
+    Environment = var.environment
+    Type        = "iam"
+    Owner       = "Marie"
+    AccountID   = "154989746316"
+  }
+}
+
+# IAM Policy for Marie's deployment access
+resource "aws_iam_user_policy" "marie_deployer_policy" {
+  name = "${var.project_name}-marie-deployer-policy"
+  user = aws_iam_user.marie_deployer.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:*",
+          "rds:*",
+          "vpc:*",
+          "subnet:*",
+          "route-table:*",
+          "internet-gateway:*",
+          "security-group:*",
+          "secretsmanager:*",
+          "s3:*",
+          "kms:*",
+          "cloudwatch:*",
+          "logs:*",
+          "elasticache:*",
+          "iam:PassRole",
+          "iam:GetRole",
+          "iam:GetUser",
+          "iam:GetPolicy",
+          "iam:GetPolicyVersion",
+          "iam:ListAttachedUserPolicies",
+          "iam:ListUserPolicies"
+        ]
+        Resource = "*"
+      },
+
+    ]
+  })
+}
+
+# Access keys for Marie
+resource "aws_iam_access_key" "marie_deployer" {
+  user = aws_iam_user.marie_deployer.name
+}
+
+# IAM Group for deployers (optional - for future team members)
+resource "aws_iam_group" "deployers" {
+  name = "${var.project_name}-deployers"
+}
+
+# Add Marie to the deployers group
+resource "aws_iam_user_group_membership" "marie_deployers" {
+  user   = aws_iam_user.marie_deployer.name
+  groups = [aws_iam_group.deployers.name]
+}
+
+# Attach the existing S3 file access policy to Marie
+resource "aws_iam_user_policy_attachment" "marie_s3_access" {
+  user       = aws_iam_user.marie_deployer.name
+  policy_arn = aws_iam_policy.s3_file_access.arn
+}
