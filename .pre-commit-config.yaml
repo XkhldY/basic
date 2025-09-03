@@ -1,0 +1,16 @@
+repos:
+  - repo: https://github.com/GitGuardian/ggshield
+    rev: v1.43.0   # match your installed version
+    hooks:
+      - id: ggshield
+        args: ["secret", "scan", "pre-commit"]  # ✅ works with v1.43.0
+
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.3.0  # or the latest stable
+    hooks:
+      - id: flake8

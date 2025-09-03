@@ -99,3 +99,40 @@ output "s3_file_access_policy_arn" {
   description = "ARN of the IAM policy for S3 file access"
   value       = aws_iam_policy.s3_file_access.arn
 }
+
+# Marie's IAM User outputs
+output "marie_iam_user_name" {
+  description = "Name of Marie's IAM user"
+  value       = aws_iam_user.marie_deployer.name
+}
+
+output "marie_iam_user_arn" {
+  description = "ARN of Marie's IAM user"
+  value       = aws_iam_user.marie_deployer.arn
+}
+
+output "marie_access_key_id" {
+  description = "Access Key ID for Marie's deployment access"
+  value       = aws_iam_access_key.marie_deployer.id
+}
+
+output "marie_secret_access_key" {
+  description = "Secret Access Key for Marie's deployment access"
+  value       = aws_iam_access_key.marie_deployer.secret
+  sensitive   = true
+}
+
+output "marie_deployer_policy_arn" {
+  description = "ARN of Marie's deployment policy"
+  value       = aws_iam_user_policy.marie_deployer_policy.id
+}
+
+output "deployers_group_name" {
+  description = "Name of the deployers IAM group"
+  value       = aws_iam_group.deployers.name
+}
+
+output "deployers_group_arn" {
+  description = "ARN of the deployers IAM group"
+  value       = aws_iam_group.deployers.arn
+}
