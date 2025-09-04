@@ -128,9 +128,8 @@ const Features = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            style={{ color: '#111827' }}
           >
-            Everything you need to <span style={{ color: '#111827' }}>succeed</span>
+            Everything you need to <span>succeed</span>
           </motion.h2>
           <motion.p 
             className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto"
@@ -322,9 +321,8 @@ const Features = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.1 }}
               transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-              style={{ color: '#111827' }}
             >
-              Wide range of <span style={{ color: '#111827' }}>expertise</span>
+              Wide range of <span>expertise</span>
             </motion.h3>
             <motion.p 
               className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto mb-6"
@@ -365,7 +363,6 @@ const Features = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 3.6 + index * 0.08, ease: "easeOut" }}
-                  style={{ color: '#374151' }}
                 >
                   {skill.category}
                 </motion.span>
@@ -402,9 +399,8 @@ const Features = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                style={{ color: '#111827' }}
               >
-                Join our <span style={{ color: '#111827' }}>team</span>
+                Join our <span>team</span>
               </motion.h3>
               <motion.p 
                 className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto mb-10"
