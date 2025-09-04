@@ -84,77 +84,31 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
         
-    - name: Install Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: '1.5.0'
+
         
     - name: Install required tools
       run: |
         sudo apt-get update
         sudo apt-get install -y jq
         
-    - name: Get infrastructure info
-      id: infrastructure
+
+        
+    - name: Setup SSH key
       run: |
-        echo "Getting infrastructure information..."
-        
-        # Get EC2 IP from compute terraform
-        cd terraform-compute
-        
-        # Initialize terraform
-        terraform init
-        
-        # Get EC2 IP
-        EC2_IP=$(terraform output -raw ec2_public_ip 2>/dev/null || echo "")
-        if [ -z "$EC2_IP" ]; then
-          echo "❌ Could not get EC2 IP. Run 'terraform apply' in terraform-compute first."
-          exit 1
-        fi
-        echo "EC2_IP=$EC2_IP" >> $GITHUB_OUTPUT
-        
-        # Get database secret ARN and RDS endpoint
-        DB_SECRET_ARN=$(terraform output -raw db_secret_arn 2>/dev/null || echo "")
-        RDS_ENDPOINT=$(terraform output -raw rds_endpoint 2>/dev/null || echo "")
-        
-        if [ -z "$DB_SECRET_ARN" ]; then
-          echo "❌ Could not get database secret ARN. Run 'terraform apply' in terraform-compute first."
-          exit 1
-        fi
-        
-        if [ -z "$RDS_ENDPOINT" ]; then
-          echo "❌ Could not get RDS endpoint. Run 'terraform apply' in terraform-compute first."
-          exit 1
-        fi
-        
-        echo "DB_SECRET_ARN=$DB_SECRET_ARN" >> $GITHUB_OUTPUT
-        echo "RDS_ENDPOINT=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
-        
-        cd ..
-        
-        echo "✅ Infrastructure info retrieved:"
-        echo "  EC2 IP: $EC2_IP"
-        echo "  RDS Endpoint: $RDS_ENDPOINT"
-        echo "  DB Secret ARN: $DB_SECRET_ARN"
-        
-    - name: Generate SSH key
-      run: |
-        # Generate SSH key for deployment
-        ssh-keygen -t rsa -b 4096 -f ~/.ssh/deploy-key -N "" -C "github-actions@github.com"
+        # Create SSH key file from GitHub secret
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy-key
         chmod 600 ~/.ssh/deploy-key
         
         # Add the private key to SSH agent
         eval "$(ssh-agent -s)"
         ssh-add ~/.ssh/deploy-key
         
-        # Add the public key to the server (this would need to be done manually first)
-        echo "⚠️  Make sure to add the public key to your EC2 instance:"
-        echo "   cat ~/.ssh/deploy-key.pub"
-        echo "   Then add it to ~/.ssh/authorized_keys on your EC2 instance"
+        echo "✅ SSH key configured from GitHub Secrets"
         
     - name: Wait for SSH connection
       run: |
-        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        EC2_IP="${{ secrets.EC2_IP }}"
         SSH_KEY="~/.ssh/deploy-key"
         
         echo "Waiting for SSH connection to $EC2_IP..."
@@ -181,7 +135,7 @@ jobs:
     - name: Check server setup
       id: server_check
       run: |
-        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        EC2_IP="${{ secrets.EC2_IP }}"
         SSH_KEY="~/.ssh/deploy-key"
         
         echo "Checking if server setup is needed..."
@@ -198,7 +152,7 @@ jobs:
     - name: Setup server (if needed)
       if: steps.server_check.outputs.needs_setup == 'true'
       run: |
-        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        EC2_IP="${{ secrets.EC2_IP }}"
         SSH_KEY="~/.ssh/deploy-key"
         
         echo "Setting up server infrastructure..."
@@ -209,10 +163,10 @@ jobs:
         
     - name: Deploy application
       run: |
-        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        EC2_IP="${{ secrets.EC2_IP }}"
         SSH_KEY="~/.ssh/deploy-key"
-        DB_SECRET_ARN="${{ steps.infrastructure.outputs.DB_SECRET_ARN }}"
-        RDS_ENDPOINT="${{ steps.infrastructure.outputs.RDS_ENDPOINT }}"
+        DB_SECRET_ARN="${{ secrets.DB_SECRET_ARN }}"
+        RDS_ENDPOINT="${{ secrets.RDS_ENDPOINT }}"
         
         echo "Deploying application to $EC2_IP..."
         
@@ -235,7 +189,7 @@ jobs:
         
     - name: Test deployment
       run: |
-        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        EC2_IP="${{ secrets.EC2_IP }}"
         
         echo "Testing deployment..."
         
@@ -259,7 +213,7 @@ jobs:
         
     - name: Deployment summary
       run: |
-        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        EC2_IP="${{ secrets.EC2_IP }}"
         
         echo ""
         echo "🎉 Application deployment completed successfully!"
