@@ -68,3 +68,5 @@ temp_env
 frontend/test-results/
 frontend/TESTING-RESUME-UPLOAD.md
 frontend/tests/
+DEPLOYMENT_S3_GUIDE.md
+.env.production
