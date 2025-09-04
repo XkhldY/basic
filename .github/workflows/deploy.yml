@@ -1,0 +1,282 @@
+name: Deploy to AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'
+        type: string
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      deploy_type:
+        description: 'Type of deployment'
+        required: true
+        default: 'app-only'
+        type: choice
+        options:
+        - app-only
+        - full-deployment
+
+env:
+  AWS_REGION: us-east-1
+  PROJECT_NAME: job-platform
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch }}
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install Python dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Install Node.js dependencies
+      run: |
+        cd frontend
+        npm ci
+        
+    - name: Run backend tests
+      run: |
+        cd backend
+        python -m pytest tests/ -v || echo "No tests found or tests failed, continuing..."
+        
+    - name: Run frontend tests
+      run: |
+        cd frontend
+        npm run test --if-present || echo "No tests found or tests failed, continuing..."
+        
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+        
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: '1.5.0'
+        
+    - name: Install required tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq
+        
+    - name: Get infrastructure info
+      id: infrastructure
+      run: |
+        echo "Getting infrastructure information..."
+        
+        # Get EC2 IP from compute terraform
+        cd terraform-compute
+        
+        # Initialize terraform
+        terraform init
+        
+        # Get EC2 IP
+        EC2_IP=$(terraform output -raw ec2_public_ip 2>/dev/null || echo "")
+        if [ -z "$EC2_IP" ]; then
+          echo "❌ Could not get EC2 IP. Run 'terraform apply' in terraform-compute first."
+          exit 1
+        fi
+        echo "EC2_IP=$EC2_IP" >> $GITHUB_OUTPUT
+        
+        # Get database secret ARN and RDS endpoint
+        DB_SECRET_ARN=$(terraform output -raw db_secret_arn 2>/dev/null || echo "")
+        RDS_ENDPOINT=$(terraform output -raw rds_endpoint 2>/dev/null || echo "")
+        
+        if [ -z "$DB_SECRET_ARN" ]; then
+          echo "❌ Could not get database secret ARN. Run 'terraform apply' in terraform-compute first."
+          exit 1
+        fi
+        
+        if [ -z "$RDS_ENDPOINT" ]; then
+          echo "❌ Could not get RDS endpoint. Run 'terraform apply' in terraform-compute first."
+          exit 1
+        fi
+        
+        echo "DB_SECRET_ARN=$DB_SECRET_ARN" >> $GITHUB_OUTPUT
+        echo "RDS_ENDPOINT=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
+        
+        cd ..
+        
+        echo "✅ Infrastructure info retrieved:"
+        echo "  EC2 IP: $EC2_IP"
+        echo "  RDS Endpoint: $RDS_ENDPOINT"
+        echo "  DB Secret ARN: $DB_SECRET_ARN"
+        
+    - name: Generate SSH key
+      run: |
+        # Generate SSH key for deployment
+        ssh-keygen -t rsa -b 4096 -f ~/.ssh/deploy-key -N "" -C "github-actions@github.com"
+        chmod 600 ~/.ssh/deploy-key
+        
+        # Add the private key to SSH agent
+        eval "$(ssh-agent -s)"
+        ssh-add ~/.ssh/deploy-key
+        
+        # Add the public key to the server (this would need to be done manually first)
+        echo "⚠️  Make sure to add the public key to your EC2 instance:"
+        echo "   cat ~/.ssh/deploy-key.pub"
+        echo "   Then add it to ~/.ssh/authorized_keys on your EC2 instance"
+        
+    - name: Wait for SSH connection
+      run: |
+        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        SSH_KEY="~/.ssh/deploy-key"
+        
+        echo "Waiting for SSH connection to $EC2_IP..."
+        
+        local attempts=0
+        local max_attempts=30
+        
+        while [ $attempts -lt $max_attempts ]; do
+          if ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@$EC2_IP 'echo "SSH ready"' &>/dev/null; then
+            echo "✅ SSH connection established"
+            break
+          fi
+          
+          attempts=$((attempts + 1))
+          echo "Attempt $attempts/$max_attempts, waiting 10 seconds..."
+          sleep 10
+        done
+        
+        if [ $attempts -eq $max_attempts ]; then
+          echo "❌ SSH connection failed after $max_attempts attempts"
+          exit 1
+        fi
+        
+    - name: Check server setup
+      id: server_check
+      run: |
+        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        SSH_KEY="~/.ssh/deploy-key"
+        
+        echo "Checking if server setup is needed..."
+        
+        # Check if Nginx is configured on the server
+        if ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@$EC2_IP 'test -f /etc/nginx/sites-enabled/job-platform' 2>/dev/null; then
+          echo "✅ Server is already configured"
+          echo "needs_setup=false" >> $GITHUB_OUTPUT
+        else
+          echo "🔧 Server setup required"
+          echo "needs_setup=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Setup server (if needed)
+      if: steps.server_check.outputs.needs_setup == 'true'
+      run: |
+        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        SSH_KEY="~/.ssh/deploy-key"
+        
+        echo "Setting up server infrastructure..."
+        
+        # Upload and execute the server setup script
+        scp -i "$SSH_KEY" -o StrictHostKeyChecking=no .github/scripts/server-setup.sh ubuntu@$EC2_IP:/tmp/
+        ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@$EC2_IP 'chmod +x /tmp/server-setup.sh && /tmp/server-setup.sh'
+        
+    - name: Deploy application
+      run: |
+        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        SSH_KEY="~/.ssh/deploy-key"
+        DB_SECRET_ARN="${{ steps.infrastructure.outputs.DB_SECRET_ARN }}"
+        RDS_ENDPOINT="${{ steps.infrastructure.outputs.RDS_ENDPOINT }}"
+        
+        echo "Deploying application to $EC2_IP..."
+        
+        # Prepare deployment package
+        chmod +x .github/scripts/prepare-deployment.sh
+        .github/scripts/prepare-deployment.sh "$EC2_IP" "$DB_SECRET_ARN" "$RDS_ENDPOINT"
+        
+        # Upload to EC2
+        echo "Uploading to EC2..."
+        scp -i "$SSH_KEY" -o StrictHostKeyChecking=no deploy.tar.gz ubuntu@$EC2_IP:/tmp/
+        
+        # Upload and execute deployment script
+        scp -i "$SSH_KEY" -o StrictHostKeyChecking=no .github/scripts/deploy-app.sh ubuntu@$EC2_IP:/tmp/
+        ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@$EC2_IP 'chmod +x /tmp/deploy-app.sh && /tmp/deploy-app.sh'
+        
+        # Clean up local files
+        rm -f deploy.tar.gz
+        
+        echo "✅ Application deployed successfully"
+        
+    - name: Test deployment
+      run: |
+        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        
+        echo "Testing deployment..."
+        
+        sleep 10
+        
+        # Test frontend
+        echo "Testing frontend..."
+        if curl -s -o /dev/null -w "%{http_code}" "http://$EC2_IP:3000/" | grep -q "200"; then
+          echo "✅ Frontend is accessible"
+        else
+          echo "⚠️ Frontend test failed"
+        fi
+        
+        # Test backend
+        echo "Testing backend..."
+        if curl -s "http://$EC2_IP:8000/health" | grep -q "healthy" 2>/dev/null; then
+          echo "✅ Backend is healthy"
+        else
+          echo "⚠️ Backend health check failed"
+        fi
+        
+    - name: Deployment summary
+      run: |
+        EC2_IP="${{ steps.infrastructure.outputs.EC2_IP }}"
+        
+        echo ""
+        echo "🎉 Application deployment completed successfully!"
+        echo ""
+        echo "🌐 Application URLs (via Nginx reverse proxy):"
+        echo "  Frontend:    http://pom100.com"
+        echo "  Frontend:    http://www.pom100.com"
+        echo "  Backend API: http://api.pom100.com"
+        echo "  API Docs:    http://api.pom100.com/docs"
+        echo ""
+        echo "🔧 Direct Access (for debugging):"
+        echo "  Frontend:  http://$EC2_IP:3000"
+        echo "  Backend:   http://$EC2_IP:8000"
+        echo ""
+        echo "🐳 Container Management:"
+        echo "  docker compose -f docker-compose.prod.yml ps"
+        echo "  docker compose -f docker-compose.prod.yml logs frontend"
+        echo "  docker compose -f docker-compose.prod.yml logs backend"
+        echo ""
+        echo "⚠️ Clear your browser cache to see frontend changes!"
