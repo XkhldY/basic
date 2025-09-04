@@ -65,10 +65,10 @@ const Contact = () => {
               <MessageSquare size={16} />
                               <span>Get in touch</span>
             </div>
-                         <h2 className="text-3xl lg:text-5xl text-slate-900 dark:text-white leading-tight mb-6 sm:mb-10 normal-case font-semibold">
+                         <h2 className="text-3xl lg:text-5xl text-white leading-tight mb-6 sm:mb-10 normal-case font-semibold">
               Ready to find your <span>perfect match?</span>
             </h2>
-            <p className="text-base text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+            <p className="text-base text-gray-200 max-w-3xl mx-auto">
               Whether you're hiring top talent or looking for your next opportunity, 
               let's start the conversation that could change everything.
             </p>

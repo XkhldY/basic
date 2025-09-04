@@ -27,7 +27,7 @@ const Hero = () => {
               {/* Main Heading */}
               <div className="space-y-6">
                 <motion.h1
-                  className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl font-semibold text-gray-900 dark:text-white leading-tight normal-case"
+                  className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl font-semibold text-white leading-tight normal-case"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.3 }}
@@ -37,7 +37,7 @@ const Hero = () => {
                   <span>top talent</span>
                 </motion.h1>
                 <motion.p
-                  className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8"
+                  className="text-base sm:text-lg lg:text-xl text-gray-200 max-w-3xl mx-auto mb-8"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.5 }}
@@ -55,7 +55,7 @@ const Hero = () => {
                 transition={{ duration: 1, delay: 0.7 }}
               >
                 {features.map((feature) => (
-                  <div key={feature.text} className="flex items-center space-x-2 text-gray-700 dark:text-gray-200 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 dark:border-gray-700/20 shadow-lg">
+                  <div key={feature.text} className="flex items-center space-x-2 text-white bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/30 shadow-lg">
                     <feature.icon size={20} className={feature.color} />
                     <span className="font-medium">{feature.text}</span>
                   </div>
