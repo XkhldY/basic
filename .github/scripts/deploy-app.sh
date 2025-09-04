@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# deploy-app.sh
+# Script to deploy application on EC2 instance
+
 set -e
 
 echo "📁 Setting up application..."

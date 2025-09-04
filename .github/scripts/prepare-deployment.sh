@@ -1,11 +1,21 @@
 #!/bin/bash
+
+# prepare-deployment.sh
+# Script to prepare deployment package for GitHub Actions
+
 set -e
 
 EC2_IP="$1"
 DB_SECRET_ARN="$2"
 RDS_ENDPOINT="$3"
 
-echo "Deploying application to $EC2_IP..."
+if [ -z "$EC2_IP" ] || [ -z "$DB_SECRET_ARN" ] || [ -z "$RDS_ENDPOINT" ]; then
+    echo "❌ Missing required parameters"
+    echo "Usage: $0 <EC2_IP> <DB_SECRET_ARN> <RDS_ENDPOINT>"
+    exit 1
+fi
+
+echo "🚀 Preparing deployment package..."
 
 # Update frontend config for production
 echo "Updating frontend config for production..."
@@ -24,7 +34,7 @@ CONFIG_EOF
 
 # Create production environment file for backend
 echo "Creating production environment file..."
-cat > .env << 'ENV_EOF'
+cat > .env << ENV_EOF
 # Production environment variables - automatically generated during deployment
 # Database credentials are retrieved from AWS Secrets Manager on the EC2 instance
 DB_HOST=$RDS_ENDPOINT
@@ -46,4 +56,4 @@ tar --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='front
 mv frontend/public/config.js.backup frontend/public/config.js
 rm -f .env
 
-echo "✅ Deployment package created successfully"
+echo "✅ Deployment package created: deploy.tar.gz"
