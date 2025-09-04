@@ -113,8 +113,8 @@ jobs:
         
         echo "Waiting for SSH connection to $EC2_IP..."
         
-        local attempts=0
-        local max_attempts=30
+        attempts=0
+        max_attempts=30
         
         while [ $attempts -lt $max_attempts ]; do
           if ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@$EC2_IP 'echo "SSH ready"' &>/dev/null; then
