@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { ArrowLeft, MapPin, DollarSign, Clock, Building, Users, Send, CheckCircle } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
@@ -13,6 +14,7 @@ interface JobDetail {
   requirements: string | null;
   responsibilities: string | null;
   company_name: string;
+  employer_id: number;
   location: string | null;
   location_type: string;
   employment_type: string;
@@ -154,7 +156,9 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
                 <div className="flex items-center text-lg text-gray-600 mb-4">
                   <Building className="h-5 w-5 mr-2" />
-                  <span className="font-medium">{job.company_name}</span>
+                  <Link href={`/company/${job.employer_id}`} className="font-medium text-blue-600 hover:underline">
+                    {job.company_name}
+                  </Link>
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500">
