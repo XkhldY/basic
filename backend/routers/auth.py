@@ -9,6 +9,7 @@ from schemas.user import (
     LoginRequest,
     TokenResponse,
     UserResponse,
+    UserPublicProfile,
     ProfileUpdateRequest,
     AdvancedCandidateProfileUpdate,
     AdvancedEmployerProfileUpdate,
@@ -153,6 +154,18 @@ async def get_current_user_info(
 ):
     """Get current user information"""
     return current_user
+
+
+@router.get("/users/{user_id}", response_model=UserPublicProfile)
+async def get_user_public_profile(user_id: int, db: Session = Depends(get_db)):
+    """Get a user's public profile."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found."
+        )
+    return user
 
 
 @router.post("/register/admin", response_model=dict)

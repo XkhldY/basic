@@ -28,10 +28,13 @@ async def get_jobs(
     location_type: Optional[LocationTypeEnum] = Query(None),
     experience_level: Optional[str] = Query(None),
     salary_min: Optional[float] = Query(None, ge=0),
-    company: Optional[str] = Query(None)
+    salary_max: Optional[float] = Query(None, ge=0),
+    company: Optional[str] = Query(None),
+    industry: Optional[str] = Query(None)
 ):
     """Get all active jobs with filtering and search"""
-    query = db.query(Job).filter(Job.status == JobStatus.ACTIVE)
+    # Join with User table to filter by employer attributes like industry
+    query = db.query(Job).join(User, Job.employer_id == User.id).filter(Job.status == JobStatus.ACTIVE)
     
     # Apply filters
     if search:
@@ -57,9 +60,15 @@ async def get_jobs(
         
     if salary_min:
         query = query.filter(Job.salary_min >= salary_min)
+
+    if salary_max:
+        query = query.filter(Job.salary_max <= salary_max)
         
     if company:
         query = query.filter(Job.company_name.ilike(f"%{company}%"))
+
+    if industry:
+        query = query.filter(User.industry.ilike(f"%{industry}%"))
     
     # Order by newest first
     query = query.order_by(desc(Job.created_at))
