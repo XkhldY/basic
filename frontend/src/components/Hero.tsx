@@ -69,6 +69,7 @@ const Hero = () => {
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ duration: 1, delay: 0.9 }}
                >
+                                 {/* Commented out for now - will be replaced with waitlist
                                  <Link href="/auth">
                    <motion.button 
                      className="btn-primary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px]"
@@ -79,16 +80,28 @@ const Hero = () => {
                     <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
                   </motion.button>
                 </Link>
-                                 <Link href="/jobs">
-                   <motion.button 
-                     className="btn-secondary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px] border-0 text-gray-900"
-                     whileHover={{ scale: 1.02 }}
-                     whileTap={{ scale: 0.98 }}
-                   >
-                    <span>Browse jobs</span>
+                                 */}
+                                 <motion.button 
+                   onClick={() => window.location.href = '/waitlist'}
+                   className="btn-primary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px]"
+                   whileHover={{ scale: 1.02 }}
+                   whileTap={{ scale: 0.98 }}
+                 >
+                  <span>Join waitlist</span>
+                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
+                </motion.button>
+                                {/* Commented out Browse jobs button
+                                <Link href="/jobs">
+                  <motion.button 
+                    className="btn-secondary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px] border-0 text-gray-900"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                   <span>Browse jobs</span>
                     <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
                   </motion.button>
                 </Link>
+                                */}
               </motion.div>
             </motion.div>
           </div>
