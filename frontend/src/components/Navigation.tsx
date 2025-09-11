@@ -212,6 +212,7 @@ const Navigation = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
+            {/* Commented out Sign in button for now
             <Link href="/auth">
               <button className={`font-medium transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 ${
                 isMounted && currentSection === 'features'
@@ -225,9 +226,10 @@ const Navigation = () => {
                 Sign in
               </button>
             </Link>
-            <Link href="/auth">
+            */}
+            <Link href="/waitlist">
               <button className="btn-primary">
-                Get started
+                Join waitlist
               </button>
             </Link>
           </motion.div>
@@ -356,14 +358,16 @@ const Navigation = () => {
                 Contact
               </Link>
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col items-center w-full">
-                                 <Link href="/auth">
-                   <button className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium transition-colors duration-200 mb-2 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
-                     Sign in
-                   </button>
-                 </Link>
+                {/* Commented out Sign in button for now
                 <Link href="/auth">
+                  <button className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium transition-colors duration-200 mb-2 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
+                    Sign in
+                  </button>
+                </Link>
+                */}
+                <Link href="/waitlist">
                   <button className="btn-primary px-4 py-2 text-sm" style={{ width: '128px' }}>
-                    Get started
+                    Join waitlist
                   </button>
                 </Link>
               </div>
