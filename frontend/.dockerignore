@@ -107,3 +107,6 @@ temp/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Generated files
+public/favicon.ico
