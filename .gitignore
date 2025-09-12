@@ -6,6 +6,7 @@ backend/.venv
 
 # Build artifacts
 frontend/.next
+frontend/public/favicon.ico
 
 # Development files
 .claude
@@ -70,3 +71,6 @@ frontend/TESTING-RESUME-UPLOAD.md
 frontend/tests/
 DEPLOYMENT_S3_GUIDE.md
 .env.production
+.bmad-core
+.cursor
+web-bundles

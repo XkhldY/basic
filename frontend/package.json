@@ -13,6 +13,7 @@
     "playwright:install": "playwright install --with-deps"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.9.4",
     "@hookform/resolvers": "^5.2.1",
     "autoprefixer": "^10.4.14",
     "axios": "^1.6.2",
