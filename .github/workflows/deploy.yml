@@ -75,6 +75,8 @@ jobs:
         fi
         
     - name: Prepare deployment package
+      env:
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
       run: |
         EC2_IP="${{ secrets.EC2_IP }}"
         DB_SECRET_ARN="${{ secrets.DB_SECRET_ARN }}"
