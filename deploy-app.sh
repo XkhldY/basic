@@ -158,6 +158,7 @@ DB_SECRET_ARN=$DB_SECRET_ARN
 ENVIRONMENT=production
 DEBUG=false
 NEXT_PUBLIC_API_URL=https://api.pom100.com
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}
 CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000,http://pom100.com,http://www.pom100.com,https://pom100.com,https://www.pom100.com
 EOF
     

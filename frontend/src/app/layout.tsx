@@ -20,6 +20,19 @@ export const metadata: Metadata = {
   },
 };
 
+// Conditional Clerk wrapper
+function ConditionalClerkProvider({ children }: { children: React.ReactNode }) {
+  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  
+  // Only render ClerkProvider if we have a valid-looking key
+  if (clerkKey && clerkKey.startsWith('pk_') && clerkKey.length > 20) {
+    return <ClerkProvider>{children}</ClerkProvider>;
+  }
+  
+  // Fallback when Clerk key is not available or invalid
+  return <>{children}</>;
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,11 +41,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${instrumentSans.className} antialiased`}>
-        <ClerkProvider>
+        <ConditionalClerkProvider>
           <AuthProvider>
             {children}
           </AuthProvider>
-        </ClerkProvider>
+        </ConditionalClerkProvider>
       </body>
     </html>
   );
