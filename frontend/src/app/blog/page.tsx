@@ -6,7 +6,8 @@ import { Calendar, ArrowRight, Search, X } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { BlogPost } from '@/types/blog';
-import { unifiedBlogService, getAPIConfig } from '@/services/api';
+import { unifiedBlogService } from '@/services/blog';
+import Link from 'next/link';
 
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -32,10 +33,6 @@ export default function BlogPage() {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        
-        // Debug: Show current API configuration
-        const config = getAPIConfig();
-        console.log('Fetching posts with config:', config);
         
         const response = await unifiedBlogService.getPosts({
           limit: 20, // Load more articles initially to test pagination
@@ -460,6 +457,20 @@ export default function BlogPage() {
                         ))}
                       </div>
                     </div>
+
+                    {/* Read More Button */}
+                    <div className="mt-4 flex justify-center">
+                      <Link 
+                        href={`/blog/${post.slug}`}
+                        className="focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
+                        style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                      >
+                        <div className="flex items-center space-x-1 text-amber-400 group-hover:text-amber-300 transition-colors duration-200 cursor-pointer">
+                          <span className="text-sm font-medium">Read more</span>
+                          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
+                        </div>
+                      </Link>
+                    </div>
                   </motion.article>
                 ))}
               </div>
@@ -509,7 +520,7 @@ export default function BlogPage() {
                   <div className="md:w-2/3 flex flex-col justify-between">
                     <div>
                       {/* Title */}
-                      <h2 id={`desktop-title-${post.id}`} className="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-gray-200 transition-colors duration-200 text-justify">
+                      <h2 id={`desktop-title-${post.id}`} className="text-xl md:text-3xl font-bold text-white mb-4 group-hover:text-gray-200 transition-colors duration-200 text-justify">
                         {post.title}
                       </h2>
 
@@ -540,10 +551,16 @@ export default function BlogPage() {
                         {post.readTime} min read
                       </div>
                       
-                      <div className="flex items-center space-x-1 text-amber-400 group-hover:text-amber-300 transition-colors duration-200">
-                        <span className="text-sm font-medium">Read more</span>
-                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
-                      </div>
+                      <Link 
+                        href={`/blog/${post.slug}`}
+                        className="focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
+                        style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                      >
+                        <div className="flex items-center space-x-1 text-amber-400 group-hover:text-amber-300 transition-colors duration-200 cursor-pointer">
+                          <span className="text-sm font-medium">Read more</span>
+                          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
+                        </div>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -675,6 +692,20 @@ export default function BlogPage() {
                       <div className="text-sm text-gray-400 bg-white/10 px-2 py-1 rounded-full self-start">
                         {post.readTime} min read
                       </div>
+                    </div>
+
+                    {/* Read More Button */}
+                    <div className="mt-4 flex justify-center">
+                      <Link 
+                        href={`/blog/${post.slug}`}
+                        className="focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
+                        style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                      >
+                        <div className="flex items-center space-x-1 text-amber-400 group-hover:text-amber-300 transition-colors duration-200 cursor-pointer">
+                          <span className="text-sm font-medium">Read more</span>
+                          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
+                        </div>
+                      </Link>
                     </div>
                   </div>
                 </motion.article>
