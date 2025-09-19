@@ -3,9 +3,11 @@
 import { motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
 const Navigation = () => {
+  const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -80,6 +82,42 @@ const Navigation = () => {
     setIsMenuOpen(!isMenuOpen)
   }
 
+  const navigateToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      // If we're on the home page, scroll to the section
+      const offset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    } else {
+      // If we're not on the home page, navigate to home page with hash
+      router.push(`/#${sectionId}`);
+      // Wait for navigation to complete, then scroll with proper timing
+      const scrollToTarget = () => {
+        const targetElement = document.getElementById(sectionId);
+        if (targetElement) {
+          const offset = 80; // Same offset as when on home page
+          const elementPosition = targetElement.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - offset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        } else {
+          // If element not found yet, try again after a short delay
+          setTimeout(scrollToTarget, 50);
+        }
+      };
+      
+      // Start trying to scroll after navigation
+      setTimeout(scrollToTarget, 100);
+    }
+  }
+
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] transform ${
       isVisible ? 'translate-y-0' : '-translate-y-full'
@@ -130,16 +168,7 @@ const Navigation = () => {
               <Link href="/#features" 
                 onClick={(e) => {
                   e.preventDefault();
-                  const element = document.getElementById('features');
-                  if (element) {
-                    const offset = 80;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - offset;
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    });
-                  }
+                  navigateToSection('features');
                 }}
                 className={`transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer ${
                   isMounted && currentSection === 'features'
@@ -155,16 +184,7 @@ const Navigation = () => {
               <Link href="/#jobs" 
                 onClick={(e) => {
                   e.preventDefault();
-                  const element = document.getElementById('jobs');
-                  if (element) {
-                    const offset = 80;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - offset;
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    });
-                  }
+                  navigateToSection('jobs');
                 }}
                 className={`transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer ${
                   isMounted && currentSection === 'features'
@@ -177,19 +197,22 @@ const Navigation = () => {
                 }`} style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
                 Jobs
               </Link>
+              <Link href="/blog" 
+                className={`transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer ${
+                  isMounted && currentSection === 'features'
+                    ? 'text-gray-800 hover:text-gray-900' 
+                    : isMounted && currentSection === 'contact'
+                      ? 'text-gray-300 hover:text-white'
+                      : isMounted && isScrolled 
+                        ? 'text-gray-300 hover:text-white' 
+                        : 'text-white hover:text-gray-200'
+                }`} style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
+                Blog
+              </Link>
               <Link href="/#contact" 
                 onClick={(e) => {
                   e.preventDefault();
-                  const element = document.getElementById('contact');
-                  if (element) {
-                    const offset = 80;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - offset;
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    });
-                  }
+                  navigateToSection('contact');
                 }}
                 className={`transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer ${
                   isMounted && currentSection === 'features'
@@ -212,22 +235,9 @@ const Navigation = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Link href="/auth">
-              <button className={`font-medium transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 ${
-                isMounted && currentSection === 'features'
-                  ? 'text-gray-800 hover:text-gray-900' 
-                  : isMounted && currentSection === 'contact'
-                    ? 'text-gray-300 hover:text-white'
-                    : isMounted && isScrolled 
-                      ? 'text-gray-300 hover:text-white' 
-                      : 'text-white hover:text-gray-200'
-              }`} style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
-                Sign in
-              </button>
-            </Link>
-            <Link href="/auth">
+            <Link href="/waitlist">
               <button className="btn-primary">
-                Get started
+                Join the waitlist
               </button>
             </Link>
           </motion.div>
@@ -296,16 +306,7 @@ const Navigation = () => {
                 href="/#features" 
                 onClick={(e) => {
                   e.preventDefault();
-                  const element = document.getElementById('features');
-                  if (element) {
-                    const offset = 0;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - offset;
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    });
-                  }
+                  navigateToSection('features');
                   setIsMenuOpen(false);
                 }}
                 className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer text-right"
@@ -317,16 +318,7 @@ const Navigation = () => {
                 href="/#jobs" 
                 onClick={(e) => {
                   e.preventDefault();
-                  const element = document.getElementById('jobs');
-                  if (element) {
-                    const offset = 0;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - offset;
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    });
-                  }
+                  navigateToSection('jobs');
                   setIsMenuOpen(false);
                 }}
                 className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer text-right"
@@ -335,19 +327,18 @@ const Navigation = () => {
                 Jobs
               </Link>
               <Link 
+                href="/blog" 
+                onClick={() => setIsMenuOpen(false)}
+                className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer text-right"
+                style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+              >
+                Blog
+              </Link>
+              <Link 
                 href="/#contact" 
                 onClick={(e) => {
                   e.preventDefault();
-                  const element = document.getElementById('contact');
-                  if (element) {
-                    const offset = 0;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - offset;
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    });
-                  }
+                  navigateToSection('contact');
                   setIsMenuOpen(false);
                 }}
                 className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer text-right"
@@ -356,14 +347,9 @@ const Navigation = () => {
                 Contact
               </Link>
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col items-center w-full">
-                                 <Link href="/auth">
-                   <button className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium transition-colors duration-200 mb-2 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
-                     Sign in
-                   </button>
-                 </Link>
-                <Link href="/auth">
-                  <button className="btn-primary px-4 py-2 text-sm" style={{ width: '128px' }}>
-                    Get started
+                <Link href="/waitlist">
+                  <button className="btn-primary px-4 py-2 text-sm" style={{ width: '140px' }}>
+                    Join the waitlist
                   </button>
                 </Link>
               </div>
