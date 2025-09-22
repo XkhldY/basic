@@ -567,6 +567,9 @@ let newsAPICache: BlogPost[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// Slug-based cache for individual posts
+let slugCache: Map<string, BlogPost> = new Map();
+
 // Cache management functions
 function getCacheKey(filters?: any): string {
   return JSON.stringify(filters || {});
@@ -597,6 +600,7 @@ function clearCache(): void {
   cache.clear();
   newsAPICache = null;
   cacheTimestamp = 0;
+  slugCache.clear();
 }
 
 // Export cache management functions for manual control
@@ -606,6 +610,7 @@ export const cacheManager = {
     cacheSize: cache.size,
     hasNewsAPICache: !!newsAPICache,
     newsAPICacheAge: newsAPICache ? Date.now() - cacheTimestamp : 0,
+    slugCacheSize: slugCache.size,
     cacheEntries: Array.from(cache.keys())
   }),
   forceRefresh: () => {
@@ -666,12 +671,15 @@ function processPosts(allPosts: BlogPost[], filters?: any): { posts: BlogPost[];
   const limit = filters?.limit || filteredPosts.length;
   const paginatedPosts = filteredPosts.slice(offset, offset + limit);
 
-  console.log('🎯 Final result:', {
+  console.log('🎯 Pagination debug:', {
     totalPosts: total,
     paginatedPosts: paginatedPosts.length,
     offset: offset,
     limit: limit,
-    firstPostTitle: paginatedPosts[0]?.title
+    sliceRange: `${offset} to ${offset + limit}`,
+    firstPostTitle: paginatedPosts[0]?.title,
+    lastPostTitle: paginatedPosts[paginatedPosts.length - 1]?.title,
+    allPostTitles: filteredPosts.map(p => p.title.substring(0, 30))
   });
   
   return {
@@ -693,25 +701,24 @@ export const unifiedBlogService = {
   }): Promise<{ posts: BlogPost[]; total: number }> {
     const cacheKey = getCacheKey(filters);
     
-    // Check enhanced cache first
-    const cachedData = getFromCache(cacheKey);
-    if (cachedData) {
-      console.log('📦 Using enhanced cache');
-      return processPosts(cachedData, filters);
-    }
+    // Temporarily disable cache to debug pagination issues
+    // const cachedData = getFromCache(cacheKey);
+    // if (cachedData) {
+    //   console.log('📦 Using enhanced cache');
+    //   return processPosts(cachedData, filters);
+    // }
 
     try {
-      // Check if we have cached NewsAPI data
-      const now = Date.now();
-      if (newsAPICache && (now - cacheTimestamp) < CACHE_DURATION) {
-        console.log('📦 Using cached NewsAPI data');
-        const allPosts = [...newsAPICache, ...mockBlogPosts.slice(0, 2)];
-        
-        // Cache the processed result
-        setCache(cacheKey, allPosts, STATIC_TTL);
-        
-        return processPosts(allPosts, filters);
-      }
+      // Temporarily disable NewsAPI cache to debug pagination issues
+      // if (newsAPICache && (now - cacheTimestamp) < CACHE_DURATION) {
+      //   console.log('📦 Using cached NewsAPI data');
+      //   const allPosts = [...newsAPICache, ...mockBlogPosts.slice(0, 2)];
+      //   
+      //   // Cache the processed result
+      //   setCache(cacheKey, allPosts, STATIC_TTL);
+      //   
+      //   return processPosts(allPosts, filters);
+      // }
 
       // Try to get NewsAPI data first
       console.log('🔄 Attempting to fetch NewsAPI data...');
@@ -772,22 +779,34 @@ export const unifiedBlogService = {
             isFeatured: index < 2
           }));
 
+          // Remove duplicates from NewsAPI data based on title
+          const uniqueNewsPosts = newsPosts.filter((post, index, self) => 
+            index === self.findIndex(p => p.title === post.title)
+          );
+
           console.log('✅ NewsAPI posts created:', newsPosts.length, 'posts');
+          console.log('🔄 After deduplication:', uniqueNewsPosts.length, 'unique posts');
           console.log('📝 First NewsAPI post:', {
-            title: newsPosts[0]?.title,
-            author: newsPosts[0]?.author.name,
-            category: newsPosts[0]?.category,
-            slug: newsPosts[0]?.slug
+            title: uniqueNewsPosts[0]?.title,
+            author: uniqueNewsPosts[0]?.author.name,
+            category: uniqueNewsPosts[0]?.category,
+            slug: uniqueNewsPosts[0]?.slug
           });
           
           // Cache the NewsAPI data
-          newsAPICache = newsPosts;
+          newsAPICache = uniqueNewsPosts;
           cacheTimestamp = Date.now();
           console.log('💾 NewsAPI data cached');
           
-          // Use NewsAPI data as primary, add some mock data for variety
-          const allPosts = [...newsPosts, ...mockBlogPosts.slice(0, 2)];
-          console.log('📊 Total posts (NewsAPI + mock):', allPosts.length);
+          // Populate slug cache for efficient individual post lookups
+          uniqueNewsPosts.forEach(post => {
+            slugCache.set(post.slug, post);
+          });
+          console.log('💾 Slug cache populated with', uniqueNewsPosts.length, 'posts');
+          
+          // Use NewsAPI data as primary, don't mix with mock data to avoid duplicates
+          const allPosts = uniqueNewsPosts;
+          console.log('📊 Total posts (NewsAPI only):', allPosts.length);
           console.log('🔍 First 3 posts:', allPosts.slice(0, 3).map(p => ({ title: p.title, category: p.category, id: p.id })));
           
           // Cache the processed result
@@ -810,6 +829,12 @@ export const unifiedBlogService = {
     console.log('⚠️ Using mock data only - NewsAPI unavailable');
     const result = await blogService.getPosts(filters);
     
+    // Populate slug cache with mock data
+    result.posts.forEach(post => {
+      slugCache.set(post.slug, post);
+    });
+    console.log('💾 Slug cache populated with', result.posts.length, 'mock posts');
+    
     // Cache the mock data result with shorter TTL since it's fallback
     setCache(cacheKey, result.posts, DEFAULT_TTL);
     
@@ -818,69 +843,41 @@ export const unifiedBlogService = {
 
   // Get a single blog post by slug
   async getPost(slug: string): Promise<BlogPost | null> {
+    console.log('🔍 Looking for post with slug:', slug);
+    
+    // First check the efficient slug cache
+    if (slugCache.has(slug)) {
+      const cachedPost = slugCache.get(slug)!;
+      console.log('✅ Found post in slug cache:', cachedPost.title);
+      return cachedPost;
+    }
+    
+    // If not in slug cache, check mock data as fallback
+    console.log('🔍 Checking mock data for slug:', slug);
+    const mockPost = await blogService.getPost(slug);
+    if (mockPost) {
+      // Add to slug cache for future lookups
+      slugCache.set(slug, mockPost);
+      console.log('✅ Found post in mock data:', mockPost.title);
+      return mockPost;
+    }
+    
+    // If still not found, try to populate cache by fetching posts
+    console.log('🔄 Post not in cache, attempting to populate cache...');
     try {
-      // First check mock data
-      const mockPost = await blogService.getPost(slug);
-      if (mockPost) return mockPost;
-
-      // If not found in mock data, check cached NewsAPI data
-      if (newsAPICache) {
-        console.log('🔍 Searching cached NewsAPI data for slug:', slug);
-        const cachedPost = newsAPICache.find(post => post.slug === slug);
-        if (cachedPost) {
-          console.log('✅ Found post in cache:', cachedPost.title);
-          return cachedPost;
-        }
-      }
-
-      // If not in cache, try to fetch fresh NewsAPI data
-      console.log('🔄 Fetching fresh NewsAPI data for slug:', slug);
+      // This will populate the slug cache if successful
+      await this.getPosts({ limit: 50 });
       
-      // Determine the base URL for API calls
-      const baseUrl = typeof window !== 'undefined' 
-        ? '' // Client-side: use relative URL
-        : process.env.VERCEL_URL 
-          ? `https://${process.env.VERCEL_URL}` // Vercel deployment
-          : 'http://localhost:3000'; // Local development
-      
-      const apiUrl = `${baseUrl}/api/news/everything?pageSize=50&q=technology`;
-      console.log('📡 Fetching from:', apiUrl);
-      
-      const newsResponse = await fetch(apiUrl);
-      if (newsResponse.ok) {
-        const newsData = await newsResponse.json();
-        if (newsData.articles) {
-          const newsPost = newsData.articles.find((article: any) => 
-            createUniqueSlug(article.title, article.url, article.publishedAt) === slug
-          );
-          
-          if (newsPost) {
-            console.log('✅ Found NewsAPI post:', newsPost.title);
-            return {
-              id: slug,
-              title: newsPost.title.substring(0, 100),
-              excerpt: newsPost.description ? newsPost.description.substring(0, 200) : newsPost.title.substring(0, 200),
-              content: newsPost.content ? newsPost.content.substring(0, 2000) + '...' : newsPost.description || newsPost.title,
-              author: {
-                name: (newsPost.author || newsPost.source.name || 'News Reporter').split(',')[0].trim(),
-                role: newsPost.author ? 'Journalist' : 'News Source'
-              },
-              publishedAt: newsPost.publishedAt,
-              readTime: Math.max(1, Math.ceil((newsPost.content || newsPost.description || '').split(' ').length / 200)),
-              tags: ['News', 'Current Events'],
-              category: 'News',
-              featuredImage: newsPost.urlToImage || undefined,
-              slug: slug,
-              isPublished: true,
-              isFeatured: false
-            };
-          }
-        }
+      // Check slug cache again after population
+      if (slugCache.has(slug)) {
+        const cachedPost = slugCache.get(slug)!;
+        console.log('✅ Found post after cache population:', cachedPost.title);
+        return cachedPost;
       }
     } catch (error) {
-      console.log('❌ Error fetching post from NewsAPI:', error);
+      console.log('❌ Error populating cache:', error);
     }
-
+    
     console.log('❌ Post not found:', slug);
     return null;
   },

@@ -10,16 +10,17 @@ import Image from 'next/image';
 
 interface BlogPageClientProps {
   initialPosts: BlogPost[];
+  initialHasMore?: boolean;
   hasError?: boolean;
   errorMessage?: string;
 }
 
-export default function BlogPageClient({ initialPosts, hasError = false, errorMessage = '' }: BlogPageClientProps) {
+export default function BlogPageClient({ initialPosts, initialHasMore = true, hasError = false, errorMessage = '' }: BlogPageClientProps) {
   const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(hasError ? errorMessage : null);
-  const [hasMore, setHasMore] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [currentOffset, setCurrentOffset] = useState(initialPosts.length); // Track actual offset
   const [showAllArticles, setShowAllArticles] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,34 +43,44 @@ export default function BlogPageClient({ initialPosts, hasError = false, errorMe
   };
 
   const loadMorePosts = async () => {
-    console.log('loadMorePosts called', { loadingMore, hasMore, currentPage, postsLength: posts.length });
-    
-    if (loadingMore) {
-      console.log('Already loading, skipping');
-      return;
-    }
+    if (loadingMore || !hasMore) return;
 
     try {
       setLoadingMore(true);
-      console.log('Setting loading to true');
+      console.log('🔄 Loading more posts:', { currentOffset, postsPerPage, currentPostsLength: posts.length });
       
-      // Since we already have all articles loaded, we just need to update the display
-      // The articles are already in the posts array, we just need to show more
-      setCurrentPage(prevPage => {
-        const newPage = prevPage + 1;
-        console.log('Updating page from', prevPage, 'to', newPage);
-        return newPage;
+      const response = await unifiedBlogService.getPosts({
+        limit: postsPerPage,
+        offset: currentOffset
       });
       
-      // Simulate loading delay for better UX
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('📦 Response received:', { 
+        postsReturned: response.posts.length, 
+        total: response.total,
+        firstPostTitle: response.posts[0]?.title,
+        lastPostTitle: response.posts[response.posts.length - 1]?.title
+      });
       
+      setPosts(prevPosts => [...prevPosts, ...response.posts]);
+      setCurrentOffset(prevOffset => prevOffset + response.posts.length);
+      // Check if there are more posts available
+      // If we got fewer posts than requested, or if we've reached the total, there are no more
+      const hasMorePosts = response.posts.length === postsPerPage && response.posts.length < response.total;
+      setHasMore(hasMorePosts);
+      
+      console.log('✅ Updated state:', { 
+        newPostsLength: posts.length + response.posts.length,
+        newOffset: currentOffset + response.posts.length,
+        hasMore: hasMorePosts,
+        postsReturned: response.posts.length,
+        postsPerPage,
+        total: response.total
+      });
     } catch (err) {
       console.error('Error loading more posts:', err);
       setError('Failed to load more articles. Please try again.');
     } finally {
       setLoadingMore(false);
-      console.log('Setting loading to false');
     }
   };
 
@@ -83,11 +94,14 @@ export default function BlogPageClient({ initialPosts, hasError = false, errorMe
       // Load first batch of articles (5 more)
       const response = await unifiedBlogService.getPosts({
         limit: postsPerPage,
-        offset: posts.length
+        offset: currentOffset
       });
       
       setPosts(prevPosts => [...prevPosts, ...response.posts]);
-      setHasMore(response.posts.length === postsPerPage);
+      setCurrentOffset(prevOffset => prevOffset + response.posts.length);
+      // Check if there are more posts available
+      const hasMorePosts = response.posts.length === postsPerPage && response.posts.length < response.total;
+      setHasMore(hasMorePosts);
     } catch (err) {
       console.error('Error loading more articles:', err);
       setError('Failed to load articles. Please try again.');
@@ -98,10 +112,13 @@ export default function BlogPageClient({ initialPosts, hasError = false, errorMe
 
   // Handle carousel scroll to update active dot
   const handleCarouselScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scrollLeft = e.currentTarget.scrollLeft;
-    const cardWidth = 320; // w-80 = 320px
-    const newIndex = Math.round(scrollLeft / cardWidth);
-    setCurrentCardIndex(Math.min(newIndex, 2)); // Max index is 2 (3 cards)
+    const cardElement = e.currentTarget.firstElementChild as HTMLElement;
+    if (!cardElement) return;
+    
+    const cardWidth = cardElement.offsetWidth;
+    const gap = 24; // Corresponds to space-x-6 (1.5rem = 24px)
+    const newIndex = Math.round(e.currentTarget.scrollLeft / (cardWidth + gap));
+    setCurrentCardIndex(Math.min(newIndex, mobilePostsPerPage - 1));
   };
 
   // Load more articles for infinite scroll
@@ -113,11 +130,14 @@ export default function BlogPageClient({ initialPosts, hasError = false, errorMe
       
       const response = await unifiedBlogService.getPosts({
         limit: postsPerPage,
-        offset: posts.length
+        offset: currentOffset
       });
       
       setPosts(prevPosts => [...prevPosts, ...response.posts]);
-      setHasMore(response.posts.length === postsPerPage);
+      setCurrentOffset(prevOffset => prevOffset + response.posts.length);
+      // Check if there are more posts available
+      const hasMorePosts = response.posts.length === postsPerPage && response.posts.length < response.total;
+      setHasMore(hasMorePosts);
     } catch (err) {
       console.error('Error loading more articles:', err);
       setError('Failed to load more articles. Please try again.');
@@ -395,12 +415,17 @@ export default function BlogPageClient({ initialPosts, hasError = false, errorMe
                                 : 'bg-white/30 hover:bg-white/50'
                             }`}
                             onClick={() => {
-                              const container = document.querySelector('.overflow-x-auto');
+                              const container = document.querySelector('.overflow-x-auto') as HTMLElement;
                               if (container) {
-                                container.scrollTo({
-                                  left: dotIndex * 336, // 320px width + 16px gap
-                                  behavior: 'smooth'
-                                });
+                                const firstCard = container.firstElementChild as HTMLElement;
+                                if (firstCard) {
+                                  const cardWidth = firstCard.offsetWidth;
+                                  const gap = 24; // space-x-6 = 1.5rem = 24px
+                                  container.scrollTo({
+                                    left: dotIndex * (cardWidth + gap),
+                                    behavior: 'smooth'
+                                  });
+                                }
                               }
                             }}
                           />
@@ -430,7 +455,7 @@ export default function BlogPageClient({ initialPosts, hasError = false, errorMe
 
           {/* Desktop: Vertical List */}
           <div className="hidden md:block space-y-12">
-            {filteredPosts.slice(0, (currentPage + 1) * postsPerPage).map((post, index) => (
+            {filteredPosts.map((post, index) => (
               <motion.article
                 key={post.id}
                 className="bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-8 hover:border-amber-300/50 hover:bg-white/20 transition-all duration-300 group"
@@ -524,17 +549,7 @@ export default function BlogPageClient({ initialPosts, hasError = false, errorMe
           </div>
 
           {/* Desktop: Load More Button */}
-          {(() => {
-            const shouldShow = filteredPosts.length > (currentPage + 1) * postsPerPage;
-            console.log('Button condition check:', {
-              filteredPostsLength: filteredPosts.length,
-              currentPage,
-              postsPerPage,
-              shouldShow,
-              articlesShown: (currentPage + 1) * postsPerPage
-            });
-            return shouldShow;
-          })() && (
+          {hasMore && (
             <motion.div
               className="text-center mt-12 hidden md:block"
               initial={{ opacity: 0, y: 20 }}
@@ -681,6 +696,15 @@ export default function BlogPageClient({ initialPosts, hasError = false, errorMe
                   <div className="text-gray-400 text-sm">Please wait while we fetch the latest content</div>
                 </div>
               )}
+
+              {/* Mobile: No More Articles Message */}
+              {!hasMore && posts.length > 0 && (
+                <div className="text-center mt-8">
+                  <p className="text-gray-400 text-sm">
+                    You've reached the end of our articles. Check back soon for more insights!
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -714,19 +738,13 @@ export default function BlogPageClient({ initialPosts, hasError = false, errorMe
             </motion.div>
           )}
 
-          {/* No More Posts Message */}
-          {!hasMore && posts.length > 0 && filteredPosts.length <= postsPerPage && (
-            <motion.div
-              className="text-center mt-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
+          {/* Desktop: No More Posts Message */}
+          {!hasMore && posts.length > 0 && (
+            <div className="text-center mt-12 hidden md:block">
               <p className="text-gray-400 text-sm">
                 You've reached the end of our articles. Check back soon for more insights!
               </p>
-            </motion.div>
+            </div>
           )}
         </div>
       </section>

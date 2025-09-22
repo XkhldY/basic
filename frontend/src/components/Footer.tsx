@@ -95,7 +95,7 @@ const Footer = () => {
                              <h4 className="text-xs sm:text-base font-semibold mb-2 sm:mb-4 text-white">Contact & Social</h4>
                <div className="space-y-2 sm:space-y-3 mb-0 sm:mb-0">
                  <a 
-                   href="#"
+                   href="mailto:info@hirewithpom.com"
                    onClick={(e) => {
                      e.preventDefault();
                      console.log('Email link clicked - opening Gmail...');

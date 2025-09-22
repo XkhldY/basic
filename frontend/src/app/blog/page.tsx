@@ -32,17 +32,20 @@ export const dynamic = 'force-dynamic';
 export default async function BlogPage() {
   // Fetch posts at request time to ensure NewsAPI is available
   let initialPosts: BlogPost[] = [];
+  let initialHasMore = true;
   let hasError = false;
   let errorMessage = '';
   
   try {
     console.log('🔄 Fetching posts at request time...');
         const response = await unifiedBlogService.getPosts({
-          limit: 20, // Load more articles initially to test pagination
+          limit: 5, // Load 5 posts initially for desktop pagination
           offset: 0
         });
     initialPosts = response.posts;
-    console.log('✅ Successfully fetched posts:', initialPosts.length);
+    // Check if there are more posts available by comparing returned posts with total
+    initialHasMore = response.posts.length < response.total;
+    console.log('✅ Successfully fetched posts:', initialPosts.length, 'total:', response.total, 'hasMore:', initialHasMore);
   } catch (error) {
     console.error('Error fetching posts at request time:', error);
     hasError = true;
@@ -98,6 +101,7 @@ export default async function BlogPage() {
       {/* Client Component for Interactive Features */}
       <BlogPageClient 
         initialPosts={initialPosts} 
+        initialHasMore={initialHasMore}
         hasError={hasError}
         errorMessage={errorMessage}
       />

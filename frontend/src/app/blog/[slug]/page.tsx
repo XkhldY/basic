@@ -7,6 +7,8 @@ import { unifiedBlogService } from '@/services/blog'
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 import ShareButton from '@/components/ShareButton'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface BlogPostPageProps {
   params: {
@@ -31,8 +33,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: BlogPostPageProps) {
   try {
     const resolvedParams = await params;
-    const response = await unifiedBlogService.getPosts({ limit: 100 })
-    const post = response.posts.find(p => p.slug === resolvedParams.slug)
+    const post = await unifiedBlogService.getPost(resolvedParams.slug);
     
     if (!post) {
       return {
@@ -70,12 +71,16 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
 const BlogPostPage = async ({ params }: BlogPostPageProps) => {
   let post: BlogPost | null = null
   let error: string | null = null
-  let isLoading = false
+
+  // Construct the full URL for sharing
+  const resolvedParams = await params;
+  const baseUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const shareUrl = `${baseUrl}/blog/${resolvedParams.slug}`;
 
   try {
-    const resolvedParams = await params;
-    const response = await unifiedBlogService.getPosts({ limit: 100 })
-    post = response.posts.find(p => p.slug === resolvedParams.slug) || null
+    post = await unifiedBlogService.getPost(resolvedParams.slug);
     
     if (!post) {
       notFound()
@@ -91,21 +96,6 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
       month: 'long',
       day: 'numeric'
     })
-  }
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#ffc759] mx-auto mb-4"></div>
-          <h1 className="text-white text-xl font-bold mb-2">Loading Article</h1>
-          <p className="text-gray-300">
-            Please wait while we fetch the article content...
-          </p>
-        </div>
-      </div>
-    )
   }
 
   // Error state
@@ -243,7 +233,7 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
                   <ShareButton 
                     title={post.title}
                     excerpt={post.excerpt}
-                    url={typeof window !== 'undefined' ? window.location.href : ''}
+                    url={shareUrl}
                   />
                 </div>
                 
@@ -252,7 +242,7 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
                   <ShareButton 
                     title={post.title}
                     excerpt={post.excerpt}
-                    url={typeof window !== 'undefined' ? window.location.href : ''}
+                    url={shareUrl}
                   />
                 </div>
               </div>
@@ -276,12 +266,29 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
             {/* Article Content */}
             <article className="prose prose-lg prose-invert max-w-none">
               <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 md:p-12 border border-white/10">
-                <div 
-                  className="text-gray-200 leading-relaxed text-sm md:text-lg"
-                  dangerouslySetInnerHTML={{ 
-                    __html: post.content.replace(/\n/g, '<br>') 
-                  }}
-                />
+                <div className="text-gray-200 leading-relaxed text-sm md:text-lg prose prose-invert max-w-none">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      // Custom styling for markdown elements
+                      h1: ({ children }) => <h1 className="text-white text-2xl md:text-3xl font-bold mb-4">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-white text-xl md:text-2xl font-bold mb-3">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-white text-lg md:text-xl font-bold mb-2">{children}</h3>,
+                      p: ({ children }) => <p className="text-gray-200 mb-4 leading-relaxed">{children}</p>,
+                      strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+                      em: ({ children }) => <em className="text-gray-300 italic">{children}</em>,
+                      code: ({ children }) => <code className="bg-white/10 text-amber-300 px-2 py-1 rounded text-sm">{children}</code>,
+                      pre: ({ children }) => <pre className="bg-white/10 text-gray-200 p-4 rounded-lg overflow-x-auto">{children}</pre>,
+                      blockquote: ({ children }) => <blockquote className="border-l-4 border-amber-400 pl-4 italic text-gray-300 my-4">{children}</blockquote>,
+                      ul: ({ children }) => <ul className="list-disc list-inside text-gray-200 mb-4 space-y-1">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal list-inside text-gray-200 mb-4 space-y-1">{children}</ol>,
+                      li: ({ children }) => <li className="text-gray-200">{children}</li>,
+                      a: ({ href, children }) => <a href={href} className="text-amber-400 hover:text-amber-300 underline" target="_blank" rel="noopener noreferrer">{children}</a>,
+                    }}
+                  >
+                    {post.content}
+                  </ReactMarkdown>
+                </div>
               </div>
             </article>
 

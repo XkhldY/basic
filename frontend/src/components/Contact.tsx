@@ -60,7 +60,7 @@ const Contact = () => {
               <span>Get in touch</span>
             </div>
             <h2 className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 sm:mb-10 normal-case font-semibold">
-              Ready to find your <span style={{ color: '#111827' }}>perfect match?</span>
+              Ready to find your <span>perfect match?</span>
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto">
               Whether you're hiring top talent or looking for your next opportunity, 
