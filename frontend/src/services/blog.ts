@@ -1,5 +1,21 @@
 import { BlogPost, BlogCategory } from '@/types/blog';
 
+// Helper function to create unique slug from article data
+function createUniqueSlug(title: string, url: string, publishedAt: string): string {
+  // Extract a unique identifier from the URL or create one from title + date
+  const urlHash = url ? url.split('/').pop()?.split('?')[0] : '';
+  const titleSlug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .substring(0, 50); // Limit length
+  
+  // Use URL hash if available, otherwise use title + date
+  const uniqueId = urlHash || `${titleSlug}-${publishedAt.split('T')[0]}`;
+  
+  return `news-${uniqueId}`;
+}
+
 // Mock data for blog posts
 const mockBlogPosts: BlogPost[] = [
   {
@@ -532,6 +548,361 @@ export const blogService = {
         post.category.toLowerCase().includes(searchTerm)
       )
       .slice(0, limit);
+  }
+};
+
+// Enhanced cache system for better performance
+interface CacheEntry {
+  data: BlogPost[];
+  timestamp: number;
+  ttl: number;
+}
+
+const cache = new Map<string, CacheEntry>();
+const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+const STATIC_TTL = 60 * 60 * 1000; // 1 hour for static content
+
+// Simple cache to store NewsAPI data (legacy)
+let newsAPICache: BlogPost[] | null = null;
+let cacheTimestamp: number = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Cache management functions
+function getCacheKey(filters?: any): string {
+  return JSON.stringify(filters || {});
+}
+
+function getFromCache(key: string): BlogPost[] | null {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  
+  const now = Date.now();
+  if (now - entry.timestamp > entry.ttl) {
+    cache.delete(key);
+    return null;
+  }
+  
+  return entry.data;
+}
+
+function setCache(key: string, data: BlogPost[], ttl: number = DEFAULT_TTL): void {
+  cache.set(key, {
+    data,
+    timestamp: Date.now(),
+    ttl
+  });
+}
+
+function clearCache(): void {
+  cache.clear();
+  newsAPICache = null;
+  cacheTimestamp = 0;
+}
+
+// Export cache management functions for manual control
+export const cacheManager = {
+  clearCache,
+  getCacheStats: () => ({
+    cacheSize: cache.size,
+    hasNewsAPICache: !!newsAPICache,
+    newsAPICacheAge: newsAPICache ? Date.now() - cacheTimestamp : 0,
+    cacheEntries: Array.from(cache.keys())
+  }),
+  forceRefresh: () => {
+    clearCache();
+    console.log('🔄 Cache cleared - next request will fetch fresh data');
+  }
+};
+
+// Helper function to process posts with filters
+function processPosts(allPosts: BlogPost[], filters?: any): { posts: BlogPost[]; total: number } {
+  // Apply filters
+  let filteredPosts = allPosts;
+  
+  if (filters?.category) {
+    filteredPosts = filteredPosts.filter(post => post.category === filters.category);
+    console.log('🔍 Filtered by category:', filters.category, '->', filteredPosts.length, 'posts');
+  }
+
+  if (filters?.tags && filters.tags.length > 0) {
+    filteredPosts = filteredPosts.filter(post => 
+      filters.tags!.some(tag => post.tags.includes(tag))
+    );
+    console.log('🏷️ Filtered by tags:', filters.tags, '->', filteredPosts.length, 'posts');
+  }
+
+  if (filters?.search) {
+    const searchTerm = filters.search.toLowerCase();
+    filteredPosts = filteredPosts.filter(post => 
+      post.title.toLowerCase().includes(searchTerm) ||
+      post.excerpt.toLowerCase().includes(searchTerm) ||
+      post.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+    );
+    console.log('🔍 Filtered by search:', searchTerm, '->', filteredPosts.length, 'posts');
+  }
+
+  // Apply sorting
+  if (filters?.sortBy) {
+    switch (filters.sortBy) {
+      case 'newest':
+        filteredPosts.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+        break;
+      case 'oldest':
+        filteredPosts.sort((a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime());
+        break;
+      case 'popular':
+        filteredPosts.sort((a, b) => b.readTime - a.readTime);
+        break;
+      case 'trending':
+        filteredPosts.sort(() => Math.random() - 0.5);
+        break;
+    }
+    console.log('📊 Sorted by:', filters.sortBy);
+  }
+
+  // Apply pagination
+  const total = filteredPosts.length;
+  const offset = filters?.offset || 0;
+  const limit = filters?.limit || filteredPosts.length;
+  const paginatedPosts = filteredPosts.slice(offset, offset + limit);
+
+  console.log('🎯 Final result:', {
+    totalPosts: total,
+    paginatedPosts: paginatedPosts.length,
+    offset: offset,
+    limit: limit,
+    firstPostTitle: paginatedPosts[0]?.title
+  });
+  
+  return {
+    posts: paginatedPosts,
+    total
+  };
+}
+
+// Unified blog service that can handle both mock data and NewsAPI
+export const unifiedBlogService = {
+  // Get all blog posts (combines mock data and NewsAPI data)
+  async getPosts(filters?: {
+    category?: string;
+    tags?: string[];
+    search?: string;
+    sortBy?: 'newest' | 'oldest' | 'popular' | 'trending';
+    limit?: number;
+    offset?: number;
+  }): Promise<{ posts: BlogPost[]; total: number }> {
+    const cacheKey = getCacheKey(filters);
+    
+    // Check enhanced cache first
+    const cachedData = getFromCache(cacheKey);
+    if (cachedData) {
+      console.log('📦 Using enhanced cache');
+      return processPosts(cachedData, filters);
+    }
+
+    try {
+      // Check if we have cached NewsAPI data
+      const now = Date.now();
+      if (newsAPICache && (now - cacheTimestamp) < CACHE_DURATION) {
+        console.log('📦 Using cached NewsAPI data');
+        const allPosts = [...newsAPICache, ...mockBlogPosts.slice(0, 2)];
+        
+        // Cache the processed result
+        setCache(cacheKey, allPosts, STATIC_TTL);
+        
+        return processPosts(allPosts, filters);
+      }
+
+      // Try to get NewsAPI data first
+      console.log('🔄 Attempting to fetch NewsAPI data...');
+      
+      // Determine the base URL for API calls
+      const baseUrl = typeof window !== 'undefined' 
+        ? '' // Client-side: use relative URL
+        : process.env.VERCEL_URL 
+          ? `https://${process.env.VERCEL_URL}` // Vercel deployment
+          : 'http://localhost:3000'; // Local development
+      
+      const apiUrl = `${baseUrl}/api/news/everything?pageSize=20&q=technology`;
+      console.log('📡 Fetching from:', apiUrl);
+      
+      // Add timeout and better error handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const newsResponse = await fetch(apiUrl, {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      console.log('📡 NewsAPI response status:', newsResponse.status);
+      
+      if (newsResponse.ok) {
+        const newsData = await newsResponse.json();
+        console.log('📰 NewsAPI data received:', {
+          status: newsData.status,
+          totalResults: newsData.totalResults,
+          articlesCount: newsData.articles?.length || 0,
+          firstArticle: newsData.articles?.[0]?.title || 'No articles'
+        });
+        
+        if (newsData.articles && newsData.articles.length > 0) {
+          console.log('🔄 Converting NewsAPI articles to blog posts...');
+          // Convert NewsAPI articles to BlogPost format
+          const newsPosts: BlogPost[] = newsData.articles.map((article: any, index: number) => ({
+            id: `news-${index}`,
+            title: article.title.substring(0, 100),
+            excerpt: article.description ? article.description.substring(0, 200) : article.title.substring(0, 200),
+            content: article.content ? article.content.substring(0, 2000) + '...' : article.description || article.title,
+            author: {
+              name: (article.author || article.source.name || 'News Reporter').split(',')[0].trim(),
+              role: article.author ? 'Journalist' : 'News Source'
+            },
+            publishedAt: article.publishedAt,
+            readTime: Math.max(1, Math.ceil((article.content || article.description || '').split(' ').length / 200)),
+            tags: ['News', 'Current Events'],
+            category: 'News',
+            featuredImage: article.urlToImage || undefined,
+            slug: createUniqueSlug(article.title, article.url, article.publishedAt),
+            isPublished: true,
+            isFeatured: index < 2
+          }));
+
+          console.log('✅ NewsAPI posts created:', newsPosts.length, 'posts');
+          console.log('📝 First NewsAPI post:', {
+            title: newsPosts[0]?.title,
+            author: newsPosts[0]?.author.name,
+            category: newsPosts[0]?.category,
+            slug: newsPosts[0]?.slug
+          });
+          
+          // Cache the NewsAPI data
+          newsAPICache = newsPosts;
+          cacheTimestamp = Date.now();
+          console.log('💾 NewsAPI data cached');
+          
+          // Use NewsAPI data as primary, add some mock data for variety
+          const allPosts = [...newsPosts, ...mockBlogPosts.slice(0, 2)];
+          console.log('📊 Total posts (NewsAPI + mock):', allPosts.length);
+          console.log('🔍 First 3 posts:', allPosts.slice(0, 3).map(p => ({ title: p.title, category: p.category, id: p.id })));
+          
+          // Cache the processed result
+          setCache(cacheKey, allPosts, STATIC_TTL);
+          
+          return processPosts(allPosts, filters);
+        } else {
+          console.log('❌ No articles found in NewsAPI response');
+        }
+      } else {
+        console.log('❌ NewsAPI response not OK:', newsResponse.status, newsResponse.statusText);
+        const errorText = await newsResponse.text();
+        console.log('❌ Error details:', errorText);
+      }
+    } catch (error) {
+      console.log('❌ NewsAPI not available, using mock data only:', error);
+    }
+
+    // Fallback to mock data only
+    console.log('⚠️ Using mock data only - NewsAPI unavailable');
+    const result = await blogService.getPosts(filters);
+    
+    // Cache the mock data result with shorter TTL since it's fallback
+    setCache(cacheKey, result.posts, DEFAULT_TTL);
+    
+    return result;
+  },
+
+  // Get a single blog post by slug
+  async getPost(slug: string): Promise<BlogPost | null> {
+    try {
+      // First check mock data
+      const mockPost = await blogService.getPost(slug);
+      if (mockPost) return mockPost;
+
+      // If not found in mock data, check cached NewsAPI data
+      if (newsAPICache) {
+        console.log('🔍 Searching cached NewsAPI data for slug:', slug);
+        const cachedPost = newsAPICache.find(post => post.slug === slug);
+        if (cachedPost) {
+          console.log('✅ Found post in cache:', cachedPost.title);
+          return cachedPost;
+        }
+      }
+
+      // If not in cache, try to fetch fresh NewsAPI data
+      console.log('🔄 Fetching fresh NewsAPI data for slug:', slug);
+      
+      // Determine the base URL for API calls
+      const baseUrl = typeof window !== 'undefined' 
+        ? '' // Client-side: use relative URL
+        : process.env.VERCEL_URL 
+          ? `https://${process.env.VERCEL_URL}` // Vercel deployment
+          : 'http://localhost:3000'; // Local development
+      
+      const apiUrl = `${baseUrl}/api/news/everything?pageSize=50&q=technology`;
+      console.log('📡 Fetching from:', apiUrl);
+      
+      const newsResponse = await fetch(apiUrl);
+      if (newsResponse.ok) {
+        const newsData = await newsResponse.json();
+        if (newsData.articles) {
+          const newsPost = newsData.articles.find((article: any) => 
+            createUniqueSlug(article.title, article.url, article.publishedAt) === slug
+          );
+          
+          if (newsPost) {
+            console.log('✅ Found NewsAPI post:', newsPost.title);
+            return {
+              id: slug,
+              title: newsPost.title.substring(0, 100),
+              excerpt: newsPost.description ? newsPost.description.substring(0, 200) : newsPost.title.substring(0, 200),
+              content: newsPost.content ? newsPost.content.substring(0, 2000) + '...' : newsPost.description || newsPost.title,
+              author: {
+                name: (newsPost.author || newsPost.source.name || 'News Reporter').split(',')[0].trim(),
+                role: newsPost.author ? 'Journalist' : 'News Source'
+              },
+              publishedAt: newsPost.publishedAt,
+              readTime: Math.max(1, Math.ceil((newsPost.content || newsPost.description || '').split(' ').length / 200)),
+              tags: ['News', 'Current Events'],
+              category: 'News',
+              featuredImage: newsPost.urlToImage || undefined,
+              slug: slug,
+              isPublished: true,
+              isFeatured: false
+            };
+          }
+        }
+      }
+    } catch (error) {
+      console.log('❌ Error fetching post from NewsAPI:', error);
+    }
+
+    console.log('❌ Post not found:', slug);
+    return null;
+  },
+
+  // Get featured posts
+  async getFeaturedPosts(limit: number = 2): Promise<BlogPost[]> {
+    return blogService.getFeaturedPosts(limit);
+  },
+
+  // Get all categories
+  async getCategories(): Promise<BlogCategory[]> {
+    return blogService.getCategories();
+  },
+
+  // Get related posts
+  async getRelatedPosts(postId: string, limit: number = 3): Promise<BlogPost[]> {
+    return blogService.getRelatedPosts(postId, limit);
+  },
+
+  // Search posts
+  async searchPosts(query: string, limit: number = 10): Promise<BlogPost[]> {
+    return blogService.searchPosts(query, limit);
   }
 };
 

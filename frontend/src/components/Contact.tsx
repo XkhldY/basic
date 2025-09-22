@@ -9,47 +9,41 @@ const Contact = () => {
   const [showEmailFallback, setShowEmailFallback] = useState(false)
 
   return (
-    <section id="contact" className="pt-0 sm:pt-12 pb-12 sm:pb-16 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950 relative overflow-hidden">
-      {/* Background with Modern 2025 Texture */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 animate-gradient-shift" />
+    <section id="contact" className="pt-0 sm:pt-12 pb-12 sm:pb-16 bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 relative overflow-hidden">
+      {/* Background with Subtle Animations */}
+      <div className="absolute inset-0 bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50" />
       
-      {/* Modern Texture Layers */}
+      {/* Visible but Elegant Geometric Patterns */}
       <div className="absolute inset-0 opacity-40">
-        {/* Geometric Grid Pattern */}
+        {/* Clear Grid Pattern - Matching spacing but keeping amber theme */}
         <div className="absolute inset-0" style={{
           backgroundImage: `
-            linear-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(59, 130, 246, 0.15) 1px, transparent 1px)
+            linear-gradient(rgba(251, 191, 36, 0.25) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(251, 191, 36, 0.25) 1px, transparent 1px)
           `,
           backgroundSize: '40px 40px'
         }} />
-        
-        {/* Floating Particles */}
-        <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1.5 h-1.5 bg-blue-400/60 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${3 + Math.random() * 4}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 2}s`
-              }}
-            />
-          ))}
-        </div>
-        
-        {/* Subtle Noise Texture */}
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          backgroundSize: '200px 200px'
-        }} />
       </div>
       
-      {/* Animated Mesh Flow */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/15 to-transparent animate-mesh-flow" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-400/15 to-transparent animate-mesh-flow-reverse" />
+      {/* Visible Floating Elements */}
+      <div className="absolute inset-0">
+        {[...Array(80)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float ${4 + Math.random() * 2}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 2.5}s`
+            }}
+          />
+            ))}
+          </div>
+      
+      {/* Visible Mesh Flow */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/15 to-transparent animate-mesh-flow" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-200/20 to-transparent animate-mesh-flow-reverse" />
 
       <div className="container-custom relative z-10">
         <div className="max-w-6xl mx-auto">
@@ -61,14 +55,14 @@ const Contact = () => {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#ffc759] to-[#ffb84d] border border-[#ffc759] rounded-full text-sm font-medium text-slate-900 mb-10 mt-12 sm:mt-8">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-400 rounded-full text-sm font-medium text-gray-900 mb-10 mt-12 sm:mt-8">
               <MessageSquare size={16} />
-                              <span>Get in touch</span>
+              <span>Get in touch</span>
             </div>
-                         <h2 className="text-3xl lg:text-5xl text-slate-900 dark:text-white leading-tight mb-6 sm:mb-10 normal-case font-semibold">
-              Ready to find your <span>perfect match?</span>
+            <h2 className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 sm:mb-10 normal-case font-semibold">
+              Ready to find your <span style={{ color: '#111827' }}>perfect match?</span>
             </h2>
-            <p className="text-base text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto">
               Whether you're hiring top talent or looking for your next opportunity, 
               let's start the conversation that could change everything.
             </p>
@@ -85,13 +79,13 @@ const Contact = () => {
             <div className="relative">
               {/* Contact Information */}
               <div className="hidden sm:block text-center mb-20 sm:mb-20 -mt-8 relative z-10">
-                <div className="flex items-center justify-center text-white/90">
+                <div className="flex items-center justify-center text-gray-700">
                   <div className="flex items-center space-x-3">
-                    <Mail className="w-5 h-5 text-[#ffc759]" />
+                    <Mail className="w-5 h-5 text-amber-600" />
                     <div className="relative">
                       <a 
                         href="mailto:info@hirewithpom.com" 
-                        className="font-medium hover:text-[#ffc759] transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
+                        className="font-medium hover:text-amber-600 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
                         style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
                         title="Open default email client"
                         onClick={(e) => {
@@ -138,44 +132,47 @@ const Contact = () => {
             </div>
 
               {/* Elegant Glass Container */}
-              <div className="relative bg-transparent backdrop-blur-xl rounded-3xl p-6 sm:p-12 shadow-2xl border border-white/20 -mt-2 sm:-mt-8">
-                {/* Subtle Glass Effect */}
-                <div className="absolute inset-0 bg-white/5 rounded-3xl"></div>
+              <div className="relative bg-white/20 backdrop-blur-xl rounded-3xl p-6 sm:p-12 shadow-2xl border border-white/20 -mt-2 sm:-mt-8">
+                {/* Glass Effect Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-white/10 rounded-3xl"></div>
                 
                 {/* Subtle Background Glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/3 via-transparent to-white/3 rounded-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-100/20 via-transparent to-amber-100/20 rounded-3xl"></div>
+                
+                {/* Glass Reflection Effect */}
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/10 rounded-3xl"></div>
                 
                 <div className="text-center mb-8 sm:mb-12 relative z-10">
-                  <h3 className="text-2xl sm:text-3xl lg:text-4xl text-white mb-4 sm:mb-6 normal-case font-light">
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl text-gray-900 mb-4 sm:mb-6 normal-case font-semibold">
                     Send us a message
-              </h3>
+                  </h3>
                 </div>
 
                 <form className="space-y-6 sm:space-y-8 relative z-10">
                   <div className="grid md:grid-cols-2 gap-4 sm:gap-8">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-white/80 mb-2 sm:mb-3">
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                         Full name
                       </label>
                       <input
                         type="text"
                         id="name"
                         name="name"
-                        className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 font-light transition-all duration-300 focus:outline-none focus:border-white/40 focus:bg-white/15 hover:bg-white/15"
+                        className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
                         placeholder="Enter your full name"
                         required
                       />
                     </div>
                     
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-2 sm:mb-3">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                         Email address
                       </label>
                       <input
                         type="email"
                         id="email"
                         name="email"
-                        className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 font-light transition-all duration-300 focus:outline-none focus:border-white/40 focus:bg-white/15 hover:bg-white/15"
+                        className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
                         placeholder="Enter your email"
                         required
                       />
@@ -183,28 +180,28 @@ const Contact = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-white/80 mb-2 sm:mb-3">
+                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                       Subject
                     </label>
                     <input
                       type="text"
                       id="subject"
                       name="subject"
-                      className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 font-light transition-all duration-300 focus:outline-none focus:border-white/40 focus:bg-white/15 hover:bg-white/15"
+                      className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
                       placeholder="What's this about?"
                       required
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-white/80 mb-2 sm:mb-3">
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                       Message
                     </label>
                     <textarea
                       id="message"
                       name="message"
                       rows={4}
-                      className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 font-light resize-none transition-all duration-300 focus:outline-none focus:border-white/40 focus:bg-white/15 hover:bg-white/15"
+                      className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light resize-none transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
                       placeholder="Tell us about your hiring needs or career goals..."
                       required
                     ></textarea>
@@ -213,13 +210,10 @@ const Contact = () => {
                   <div className="text-center pt-6">
                     <button
                       type="submit"
-                      className="relative overflow-hidden group bg-gradient-to-r from-[#ffc759] via-[#ffb84d] to-[#ffa03a] text-slate-900 font-bold text-base sm:text-lg px-4 sm:px-16 py-3 sm:py-4 rounded-2xl shadow-2xl hover:shadow-[#ffc759]/25 transition-all duration-500 hover:scale-105 hover:-translate-y-1 w-[180px] sm:w-auto min-w-[200px] mx-auto sm:mx-0"
+                      className="btn-primary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px] mx-auto"
                     >
-                      <span className="relative z-10 flex items-center justify-center space-x-3">
-                        <span>Send</span>
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
-                    </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#ffb84d] via-[#ffa03a] to-[#ffc759] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      <span>Send</span>
+                      <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
                     </button>
                   </div>
                 </form>

@@ -1,14 +1,12 @@
-'use client'
-
-import { motion } from 'framer-motion'
-import { ArrowLeft, Calendar, Clock, User, Share2, BookOpen } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, User, BookOpen } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { useState, useEffect, use } from 'react'
 import { BlogPost } from '@/types/blog'
 import { unifiedBlogService } from '@/services/blog'
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
+import ShareButton from '@/components/ShareButton'
 
 interface BlogPostPageProps {
   params: {
@@ -16,43 +14,76 @@ interface BlogPostPageProps {
   }
 }
 
-const BlogPostPage = ({ params }: BlogPostPageProps) => {
-  const { slug } = use(params)
-  const [post, setPost] = useState<BlogPost | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isMounted, setIsMounted] = useState(false)
+// Generate static params for all blog posts
+export async function generateStaticParams() {
+  try {
+    const response = await unifiedBlogService.getPosts({ limit: 100 })
+    return response.posts.map((post) => ({
+      slug: post.slug,
+    }))
+  } catch (error) {
+    console.error('Error generating static params:', error)
+    return []
+  }
+}
 
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        
-        // Try to find the post by slug
-        const response = await unifiedBlogService.getPosts({ limit: 100 })
-        const foundPost = response.posts.find(p => p.slug === slug)
-        
-        if (!foundPost) {
-          setError('Post not found')
-          return
-        }
-        
-        setPost(foundPost)
-      } catch (err) {
-        console.error('Error fetching post:', err)
-        setError('Failed to load article')
-      } finally {
-        setLoading(false)
+// Generate metadata for SEO
+export async function generateMetadata({ params }: BlogPostPageProps) {
+  try {
+    const resolvedParams = await params;
+    const response = await unifiedBlogService.getPosts({ limit: 100 })
+    const post = response.posts.find(p => p.slug === resolvedParams.slug)
+    
+    if (!post) {
+      return {
+        title: 'Article Not Found',
+        description: 'The article you are looking for does not exist.',
       }
     }
 
-    fetchPost()
-  }, [slug])
+    return {
+      title: post.title,
+      description: post.excerpt,
+      openGraph: {
+        title: post.title,
+        description: post.excerpt,
+        images: post.featuredImage ? [post.featuredImage] : [],
+        type: 'article',
+        publishedTime: post.publishedAt,
+        authors: [post.author.name],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: post.title,
+        description: post.excerpt,
+        images: post.featuredImage ? [post.featuredImage] : [],
+      },
+    }
+  } catch (error) {
+    return {
+      title: 'Blog Post',
+      description: 'Read our latest blog post.',
+    }
+  }
+}
+
+const BlogPostPage = async ({ params }: BlogPostPageProps) => {
+  let post: BlogPost | null = null
+  let error: string | null = null
+  let isLoading = false
+
+  try {
+    const resolvedParams = await params;
+    const response = await unifiedBlogService.getPosts({ limit: 100 })
+    post = response.posts.find(p => p.slug === resolvedParams.slug) || null
+    
+    if (!post) {
+      notFound()
+    }
+  } catch (err) {
+    console.error('Error fetching post:', err)
+    error = err instanceof Error ? err.message : 'Failed to load article'
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -62,45 +93,22 @@ const BlogPostPage = ({ params }: BlogPostPageProps) => {
     })
   }
 
-  const handleShare = async () => {
-    if (navigator.share && post) {
-      try {
-        await navigator.share({
-          title: post.title,
-          text: post.excerpt,
-          url: window.location.href
-        })
-      } catch (err) {
-        console.log('Share cancelled or failed')
-      }
-    } else {
-      // Fallback: copy to clipboard
-      try {
-        await navigator.clipboard.writeText(window.location.href)
-        // You could add a toast notification here
-        console.log('URL copied to clipboard')
-      } catch (err) {
-        console.error('Failed to copy URL')
-      }
-    }
-  }
-
-  if (!isMounted) {
-    return null
-  }
-
-  if (loading) {
+  // Loading state
+  if (isLoading) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-amber-400 mx-auto mb-4"></div>
-          <div className="text-xl text-white mb-2">Loading article...</div>
-          <div className="text-gray-400 text-sm">Fetching the latest content</div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#ffc759] mx-auto mb-4"></div>
+          <h1 className="text-white text-xl font-bold mb-2">Loading Article</h1>
+          <p className="text-gray-300">
+            Please wait while we fetch the article content...
+          </p>
         </div>
-      </main>
+      </div>
     )
   }
 
+  // Error state
   if (error || !post) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
@@ -110,15 +118,16 @@ const BlogPostPage = ({ params }: BlogPostPageProps) => {
           <p className="text-gray-300 mb-8">
             The article you're looking for doesn't exist or may have been moved.
           </p>
-          <div className="space-y-3">
-            <Link href="/blog">
-              <button className="btn-primary">
+          <div className="space-y-4">
+            <Link href="/blog" prefetch={true}>
+              <button className="btn-primary w-48">
                 Back to Blog
               </button>
             </Link>
+            <div className="pt-2"></div>
             <Link href="/">
-              <button className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
-                Go Home
+              <button className="bg-gray-900 hover:bg-gray-800 text-[#ffc759] hover:text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 border border-[#ffc759]/30 hover:border-[#ffc759] w-48">
+                Return to Homepage
               </button>
             </Link>
           </div>
@@ -162,39 +171,32 @@ const BlogPostPage = ({ params }: BlogPostPageProps) => {
          <div className="container-custom pt-20 pb-4 md:pt-32 md:pb-16 px-8 md:px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto md:max-w-4xl">
             {/* Back Navigation */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-8"
-            >
+            <div className="mb-8">
               <Link 
                 href="/blog"
+                prefetch={true}
                 className="inline-flex items-center space-x-2 text-[#ffc759] hover:text-white transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
                 style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
               >
                 <ArrowLeft size={20} />
                 <span className="font-medium">Back</span>
               </Link>
-            </motion.div>
+            </div>
 
             {/* Article Header */}
-            <motion.header
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="mb-12"
-            >
+            <header className="mb-12">
               {/* Featured Image */}
               {post.featuredImage && (
                 <div className="mb-8 rounded-2xl overflow-hidden shadow-2xl">
-                  <img
+                  <Image
                     src={post.featuredImage}
                     alt={post.title}
+                    width={800}
+                    height={400}
                     className="w-full h-64 md:h-96 object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                    }}
+                    priority
+                    placeholder="blur"
+                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   />
                 </div>
               )}
@@ -212,35 +214,47 @@ const BlogPostPage = ({ params }: BlogPostPageProps) => {
               {/* Metadata */}
               <div className="flex flex-wrap items-center gap-3 md:gap-6 text-gray-400 mb-8">
                 {/* Author */}
-                <div className="flex items-center space-x-2">
-                  <User size={18} className="text-[#ffc759]" />
-                  <span className="font-medium">{post.author.name}</span>
-                  {post.author.role && (
-                    <span className="text-gray-500">• {post.author.role}</span>
-                  )}
+                <div className="flex items-center space-x-2 min-w-0 md:min-w-auto">
+                  <User size={18} className="text-[#ffc759] flex-shrink-0" />
+                  <div className="min-w-0 flex-1 md:flex-none">
+                    <div className="truncate md:truncate-none">
+                      <span className="font-medium">{post.author.name}</span>
+                      {post.author.role && (
+                        <span className="text-gray-500 font-medium"> • {post.author.role}</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Date */}
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 flex-shrink-0">
                   <Calendar size={18} className="text-[#ffc759]" />
                   <span>{formatDate(post.publishedAt)}</span>
                 </div>
 
                 {/* Reading Time */}
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 flex-shrink-0">
                   <Clock size={18} className="text-[#ffc759]" />
                   <span>{post.readTime} min read</span>
                 </div>
                 
-                {/* Share Button - Mobile only, icon only, right side */}
-                <button
-                  onClick={handleShare}
-                  className="md:hidden flex items-center justify-center w-8 h-8 bg-transparent hover:bg-gray-800 text-[#ffc759] hover:text-white rounded-lg transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent ml-auto"
-                  style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
-                  aria-label="Share this article"
-                >
-                  <Share2 size={16} />
-                </button>
+                {/* Share Button - Mobile only, right side */}
+                <div className="md:hidden flex-shrink-0 ml-auto">
+                  <ShareButton 
+                    title={post.title}
+                    excerpt={post.excerpt}
+                    url={typeof window !== 'undefined' ? window.location.href : ''}
+                  />
+                </div>
+                
+                {/* Share Button - Desktop only, right side */}
+                <div className="hidden md:flex flex-shrink-0 ml-auto">
+                  <ShareButton 
+                    title={post.title}
+                    excerpt={post.excerpt}
+                    url={typeof window !== 'undefined' ? window.location.href : ''}
+                  />
+                </div>
               </div>
 
               {/* Tags */}
@@ -257,15 +271,10 @@ const BlogPostPage = ({ params }: BlogPostPageProps) => {
                 </div>
               )}
 
-            </motion.header>
+            </header>
 
             {/* Article Content */}
-            <motion.article
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="prose prose-lg prose-invert max-w-none"
-            >
+            <article className="prose prose-lg prose-invert max-w-none">
               <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 md:p-12 border border-white/10">
                 <div 
                   className="text-gray-200 leading-relaxed text-sm md:text-lg"
@@ -274,23 +283,21 @@ const BlogPostPage = ({ params }: BlogPostPageProps) => {
                   }}
                 />
               </div>
-            </motion.article>
+            </article>
 
             {/* Footer - Desktop only */}
-            <motion.footer
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="hidden md:block mt-4 md:mt-16 pt-4 md:pt-8 border-t border-gray-800"
-            >
+            <footer className="hidden md:block mt-4 md:mt-16 pt-4 md:pt-8 border-t border-gray-800">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 {/* Author Info */}
                 <div className="flex items-center space-x-4">
                   {post.author.avatar ? (
-                    <img
+                    <Image
                       src={post.author.avatar}
                       alt={post.author.name}
+                      width={48}
+                      height={48}
                       className="w-8 h-8 md:w-12 md:h-12 rounded-full object-cover"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-r from-[#ffc759] to-[#ffb84d] rounded-full flex items-center justify-center">
@@ -301,19 +308,19 @@ const BlogPostPage = ({ params }: BlogPostPageProps) => {
                   <div>
                     <h3 className="text-white font-semibold text-sm md:text-base">{post.author.name}</h3>
                     {post.author.role && (
-                      <p className="text-gray-400 text-xs md:text-sm">{post.author.role}</p>
+                      <p className="text-gray-400 text-sm md:text-base">{post.author.role}</p>
                     )}
                   </div>
                 </div>
 
                 {/* Back to Blog Button */}
-                <Link href="/blog">
+                <Link href="/blog" prefetch={true}>
                   <button className="btn-primary text-sm md:text-base px-4 py-2 md:px-6 md:py-3">
                     Back to Blog
                   </button>
                 </Link>
               </div>
-            </motion.footer>
+            </footer>
           </div>
         </div>
 
