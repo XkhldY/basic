@@ -125,7 +125,7 @@ const Navigation = () => {
       isMounted && currentSection === 'features' 
         ? 'bg-amber-100 border-b border-amber-200/50' 
         : isMounted && currentSection === 'contact'
-          ? 'bg-slate-950/95 backdrop-blur-sm border-b border-slate-800/50'
+          ? 'bg-amber-100 border-b border-amber-200/50'
           : isMounted && isScrolled 
             ? 'bg-slate-950/95 backdrop-blur-sm border-b border-slate-800/50' 
             : 'bg-transparent border-b border-transparent'
@@ -145,7 +145,7 @@ const Navigation = () => {
                 className="relative"
               >
                 <img
-                  src={isMounted && currentSection === 'features' ? "/img/black@2x.png" : "/img/white@2x.png"}
+                  src={isMounted && (currentSection === 'features' || currentSection === 'contact') ? "/img/black@2x.png" : "/img/white@2x.png"}
                   alt="POM Logo"
                   className="w-24 h-24 object-contain transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110"
                   onError={(e) => {
@@ -171,11 +171,9 @@ const Navigation = () => {
                   navigateToSection('features');
                 }}
                 className={`transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer ${
-                  isMounted && currentSection === 'features'
+                  isMounted && (currentSection === 'features' || currentSection === 'contact')
                     ? 'text-gray-800 hover:text-gray-900' 
-                    : isMounted && currentSection === 'contact'
-                      ? 'text-gray-300 hover:text-white'
-                      : isMounted && isScrolled 
+                    : isMounted && isScrolled 
                         ? 'text-gray-300 hover:text-white' 
                         : 'text-white hover:text-gray-200'
                 }`} style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
@@ -187,11 +185,9 @@ const Navigation = () => {
                   navigateToSection('jobs');
                 }}
                 className={`transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer ${
-                  isMounted && currentSection === 'features'
+                  isMounted && (currentSection === 'features' || currentSection === 'contact')
                     ? 'text-gray-800 hover:text-gray-900' 
-                    : isMounted && currentSection === 'contact'
-                      ? 'text-gray-300 hover:text-white'
-                      : isMounted && isScrolled 
+                    : isMounted && isScrolled 
                         ? 'text-gray-300 hover:text-white' 
                         : 'text-white hover:text-gray-200'
                 }`} style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
@@ -199,11 +195,9 @@ const Navigation = () => {
               </Link>
               <Link href="/blog" 
                 className={`transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer ${
-                  isMounted && currentSection === 'features'
+                  isMounted && (currentSection === 'features' || currentSection === 'contact')
                     ? 'text-gray-800 hover:text-gray-900' 
-                    : isMounted && currentSection === 'contact'
-                      ? 'text-gray-300 hover:text-white'
-                      : isMounted && isScrolled 
+                    : isMounted && isScrolled 
                         ? 'text-gray-300 hover:text-white' 
                         : 'text-white hover:text-gray-200'
                 }`} style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
@@ -215,11 +209,9 @@ const Navigation = () => {
                   navigateToSection('contact');
                 }}
                 className={`transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer ${
-                  isMounted && currentSection === 'features'
+                  isMounted && (currentSection === 'features' || currentSection === 'contact')
                     ? 'text-gray-800 hover:text-gray-900' 
-                    : isMounted && currentSection === 'contact'
-                      ? 'text-gray-300 hover:text-white'
-                      : isMounted && isScrolled 
+                    : isMounted && isScrolled 
                         ? 'text-gray-300 hover:text-white' 
                         : 'text-white hover:text-gray-200'
                 }`} style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
@@ -235,6 +227,18 @@ const Navigation = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
+            {/* Sign in button hidden for now */}
+            {/* <Link href="/sign-in">
+              <button className={`font-medium transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer ${
+                isMounted && (currentSection === 'features' || currentSection === 'contact')
+                  ? 'text-gray-800 hover:text-gray-900' 
+                  : isMounted && isScrolled 
+                      ? 'text-gray-300 hover:text-white' 
+                      : 'text-white hover:text-gray-200'
+              }`} style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
+                Sign in
+              </button>
+            </Link> */}
             <Link href="/waitlist">
               <button className="btn-primary">
                 Join the waitlist
@@ -261,7 +265,7 @@ const Navigation = () => {
                  className="relative"
                >
                  <img
-                   src={isMenuOpen ? "/img/white@2x.png" : (isMounted && currentSection === 'features' ? "/img/black@2x.png" : "/img/white@2x.png")}
+                   src={isMenuOpen ? "/img/white@2x.png" : (isMounted && (currentSection === 'features' || currentSection === 'contact') ? "/img/black@2x.png" : "/img/white@2x.png")}
                    alt="POM Logo"
                    className="w-20 h-20 object-contain transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110"
                    onError={(e) => {
@@ -285,7 +289,7 @@ const Navigation = () => {
                                  {isMenuOpen ? (
                    <X size={24} className="text-white" />
                  ) : (
-                   <Menu size={24} className={isMounted && currentSection === 'features' ? 'text-gray-800' : 'text-white'} />
+                   <Menu size={24} className={isMounted && (currentSection === 'features' || currentSection === 'contact') ? 'text-gray-800' : 'text-white'} />
                  )}
               </motion.button>
         </div>
@@ -347,6 +351,12 @@ const Navigation = () => {
                 Contact
               </Link>
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col items-center w-full">
+                {/* Sign in button hidden for now */}
+                {/* <Link href="/sign-in">
+                  <button className="text-white hover:text-gray-200 transition-colors duration-200 px-4 py-2 text-sm font-medium">
+                    Sign in
+                  </button>
+                </Link> */}
                 <Link href="/waitlist">
                   <button className="btn-primary px-4 py-2 text-sm" style={{ width: '140px' }}>
                     Join the waitlist

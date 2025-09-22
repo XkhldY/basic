@@ -233,7 +233,7 @@ export default function BlogPageClient({ initialPosts, initialHasMore = true, ha
             transition={{ duration: 0.8 }}
           >
             <motion.h1
-              className="text-4xl lg:text-6xl font-bold text-white leading-tight normal-case"
+              className="text-4xl lg:text-6xl font-semibold text-white leading-tight normal-case"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
@@ -242,7 +242,7 @@ export default function BlogPageClient({ initialPosts, initialHasMore = true, ha
             </motion.h1>
 
             <motion.p
-              className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-300 max-w-2xl mx-auto"
+              className="text-base sm:text-base md:text-lg lg:text-xl text-white max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
