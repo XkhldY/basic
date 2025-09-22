@@ -253,23 +253,20 @@ const Features = () => {
             <span>Why choose us</span>
           </motion.div>
           <motion.h2
-            className="text-4xl lg:text-6xl font-semibold leading-tight mb-6 normal-case"
+            className="text-4xl lg:text-6xl font-semibold leading-tight mb-6 normal-case text-primary-dark"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            style={{ color: "#111827" }}
           >
-            Everything you need to{" "}
-            <span style={{ color: "#111827" }}>succeed</span>
+            Everything you need to succeed
           </motion.h2>
           <motion.p
-            className="text-base sm:text-base md:text-lg lg:text-xl max-w-2xl mx-auto"
+            className="text-base sm:text-base md:text-lg lg:text-xl max-w-2xl mx-auto text-primary-dark"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-            style={{ color: "#111827" }}
           >
             Our platform provides comprehensive solutions for both employers and
             job seekers, ensuring successful matches and long-term success.
@@ -508,14 +505,13 @@ const Features = () => {
               </div>
             </motion.span>
             <motion.h3
-              className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
+              className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold text-primary-dark"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.1 }}
               transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-              style={{ color: "#111827" }}
             >
-              Wide range of <span style={{ color: "#111827" }}>expertise</span>
+              Wide range of expertise
             </motion.h3>
             <motion.p
               className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto mb-6"
@@ -557,7 +553,7 @@ const Features = () => {
                   {skill.emoji}
                 </motion.span>
                 <motion.span
-                  className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-gray-900"
+                  className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-gray-900 text-primary-light"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
@@ -565,7 +561,6 @@ const Features = () => {
                     delay: 3.6 + index * 0.08,
                     ease: "easeOut",
                   }}
-                  style={{ color: "#374151" }}
                 >
                   {skill.category}
                 </motion.span>
@@ -600,14 +595,13 @@ const Features = () => {
                 </div>
               </motion.span>
               <motion.h3
-                className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold"
+                className="text-3xl lg:text-5xl text-gray-900 leading-tight mb-6 normal-case font-semibold text-primary-dark"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                style={{ color: "#111827" }}
               >
-                Join our <span style={{ color: "#111827" }}>team</span>
+                Join our team
               </motion.h3>
               <motion.p
                 className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mx-auto mb-10"
