@@ -217,3 +217,232 @@ resource "aws_db_instance" "postgres" {
     Type        = "persistent"
   }
 }
+
+# S3 Bucket for development file storage (resumes, documents)
+resource "aws_s3_bucket" "file_storage_dev" {
+  bucket = "${var.project_name}-files-dev-${random_id.bucket_suffix.hex}"
+  
+  tags = {
+    Name        = "${var.project_name}-file-storage-dev"
+    Environment = "dev"
+    Type        = "persistent"
+  }
+}
+
+# Random suffix for bucket names to avoid conflicts
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
+# S3 Bucket for production file storage (resumes, documents)
+resource "aws_s3_bucket" "file_storage_prod" {
+  bucket = "${var.project_name}-files-prod"
+  
+  tags = {
+    Name        = "${var.project_name}-file-storage-prod"
+    Environment = "prod"
+    Type        = "persistent"
+  }
+}
+
+# S3 Bucket Versioning for Dev
+resource "aws_s3_bucket_versioning" "file_storage_dev" {
+  bucket = aws_s3_bucket.file_storage_dev.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# S3 Bucket Versioning for Prod
+resource "aws_s3_bucket_versioning" "file_storage_prod" {
+  bucket = aws_s3_bucket.file_storage_prod.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# S3 Bucket Encryption for Dev
+resource "aws_s3_bucket_server_side_encryption_configuration" "file_storage_dev" {
+  bucket = aws_s3_bucket.file_storage_dev.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# S3 Bucket Encryption for Prod
+resource "aws_s3_bucket_server_side_encryption_configuration" "file_storage_prod" {
+  bucket = aws_s3_bucket.file_storage_prod.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# S3 Bucket Public Access Block for Dev
+resource "aws_s3_bucket_public_access_block" "file_storage_dev" {
+  bucket = aws_s3_bucket.file_storage_dev.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# S3 Bucket Public Access Block for Prod
+resource "aws_s3_bucket_public_access_block" "file_storage_prod" {
+  bucket = aws_s3_bucket.file_storage_prod.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# S3 Bucket Lifecycle Policy for Dev
+resource "aws_s3_bucket_lifecycle_configuration" "file_storage_dev" {
+  bucket = aws_s3_bucket.file_storage_dev.id
+
+  rule {
+    id     = "file_retention"
+    status = "Enabled"
+
+    filter {
+      prefix = ""
+    }
+
+    expiration {
+      days = 3650  # 10 years
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+  }
+}
+
+# S3 Bucket Lifecycle Policy for Prod
+resource "aws_s3_bucket_lifecycle_configuration" "file_storage_prod" {
+  bucket = aws_s3_bucket.file_storage_prod.id
+
+  rule {
+    id     = "file_retention"
+    status = "Enabled"
+
+    filter {
+      prefix = ""
+    }
+
+    expiration {
+      days = 3650  # 10 years
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+  }
+}
+
+# IAM Policy for S3 file access (both dev and prod)
+resource "aws_iam_policy" "s3_file_access" {
+  name = "${var.project_name}-s3-file-access"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.file_storage_dev.arn,
+          "${aws_s3_bucket.file_storage_dev.arn}/*",
+          aws_s3_bucket.file_storage_prod.arn,
+          "${aws_s3_bucket.file_storage_prod.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# IAM User for Marie (Account ID: 154989746316)
+resource "aws_iam_user" "marie_deployer" {
+  name = "${var.project_name}-marie-deployer"
+  
+  tags = {
+    Name        = "${var.project_name}-marie-deployer"
+    Environment = var.environment
+    Type        = "iam"
+    Owner       = "Marie"
+    AccountID   = "154989746316"
+  }
+}
+
+# IAM Policy for Marie's deployment access
+resource "aws_iam_user_policy" "marie_deployer_policy" {
+  name = "${var.project_name}-marie-deployer-policy"
+  user = aws_iam_user.marie_deployer.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:*",
+          "rds:*",
+          "vpc:*",
+          "subnet:*",
+          "route-table:*",
+          "internet-gateway:*",
+          "security-group:*",
+          "secretsmanager:*",
+          "s3:*",
+          "kms:*",
+          "cloudwatch:*",
+          "logs:*",
+          "elasticache:*",
+          "iam:PassRole",
+          "iam:GetRole",
+          "iam:GetUser",
+          "iam:GetPolicy",
+          "iam:GetPolicyVersion",
+          "iam:ListAttachedUserPolicies",
+          "iam:ListUserPolicies"
+        ]
+        Resource = "*"
+      },
+
+    ]
+  })
+}
+
+# Access keys for Marie
+resource "aws_iam_access_key" "marie_deployer" {
+  user = aws_iam_user.marie_deployer.name
+}
+
+# IAM Group for deployers (optional - for future team members)
+resource "aws_iam_group" "deployers" {
+  name = "${var.project_name}-deployers"
+}
+
+# Add Marie to the deployers group
+resource "aws_iam_user_group_membership" "marie_deployers" {
+  user   = aws_iam_user.marie_deployer.name
+  groups = [aws_iam_group.deployers.name]
+}
+
+# Attach the existing S3 file access policy to Marie
+resource "aws_iam_user_policy_attachment" "marie_s3_access" {
+  user       = aws_iam_user.marie_deployer.name
+  policy_arn = aws_iam_policy.s3_file_access.arn
+}

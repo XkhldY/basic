@@ -6,6 +6,7 @@ backend/.venv
 
 # Build artifacts
 frontend/.next
+frontend/public/favicon.ico
 
 # Development files
 .claude
@@ -65,3 +66,11 @@ backend/job_platform.db
 terraform-compute/job-platform-key
 terraform-persistent/.terraform.tfstate.lock.info
 temp_env
+frontend/test-results/
+frontend/TESTING-RESUME-UPLOAD.md
+frontend/tests/
+DEPLOYMENT_S3_GUIDE.md
+.env.production
+.bmad-core
+.cursor
+web-bundles

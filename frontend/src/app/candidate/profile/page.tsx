@@ -3,10 +3,11 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { User, Mail, Globe, Edit, Save, X, Phone, MapPin, Linkedin, Github, Calendar, DollarSign, Briefcase, Award, Languages, Building } from 'lucide-react';
+import { User, Mail, Globe, Edit, Save, X, Phone, MapPin, Linkedin, Github, Calendar, DollarSign, Briefcase, Award, Languages, Building, File } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { TagsInput } from '@/components/forms/TagsInput';
 import { ProfileCompletion } from '@/components/ProfileCompletion';
+import { ResumeUploadSection } from '@/components/ResumeUploadSection';
 
 // TODO(human): Import the new validation hooks and form components:
 // import { useProfileValidation } from '@/hooks/useProfileValidation';
@@ -171,7 +172,7 @@ export default function CandidateProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -281,7 +282,7 @@ export default function CandidateProfilePage() {
                         type="tel"
                         value={profileData.phone_number}
                         onChange={(e) => setProfileData({ ...profileData, phone_number: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                         placeholder="+1 (555) 123-4567"
                       />
                     ) : (
@@ -301,7 +302,7 @@ export default function CandidateProfilePage() {
                         type="date"
                         value={profileData.date_of_birth}
                         onChange={(e) => setProfileData({ ...profileData, date_of_birth: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                       />
                     ) : (
                       <div className="flex items-center text-gray-900">
@@ -320,7 +321,7 @@ export default function CandidateProfilePage() {
                         type="text"
                         value={profileData.location}
                         onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                         placeholder="City, State, Country"
                       />
                     ) : (
@@ -340,7 +341,7 @@ export default function CandidateProfilePage() {
                         type="text"
                         value={profileData.professional_title}
                         onChange={(e) => setProfileData({ ...profileData, professional_title: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                         placeholder="e.g. Senior Software Engineer"
                       />
                     ) : (
@@ -365,7 +366,7 @@ export default function CandidateProfilePage() {
                       <select
                         value={profileData.experience_level}
                         onChange={(e) => setProfileData({ ...profileData, experience_level: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                       >
                         <option value="">Select experience level</option>
                         <option value="entry">Entry Level (0-2 years)</option>
@@ -388,7 +389,7 @@ export default function CandidateProfilePage() {
                         type="number"
                         value={profileData.years_of_experience}
                         onChange={(e) => setProfileData({ ...profileData, years_of_experience: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                         placeholder="5"
                         min="0"
                         max="50"
@@ -406,7 +407,7 @@ export default function CandidateProfilePage() {
                       <select
                         value={profileData.education_level}
                         onChange={(e) => setProfileData({ ...profileData, education_level: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                       >
                         <option value="">Select education level</option>
                         <option value="high_school">High School</option>
@@ -429,7 +430,7 @@ export default function CandidateProfilePage() {
                       <select
                         value={profileData.preferred_work_type}
                         onChange={(e) => setProfileData({ ...profileData, preferred_work_type: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                       >
                         <option value="">Select work type</option>
                         <option value="remote">Remote</option>
@@ -450,7 +451,7 @@ export default function CandidateProfilePage() {
                         type="number"
                         value={profileData.current_salary}
                         onChange={(e) => setProfileData({ ...profileData, current_salary: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                         placeholder="75000"
                         min="0"
                       />
@@ -471,7 +472,7 @@ export default function CandidateProfilePage() {
                         type="number"
                         value={profileData.expected_salary}
                         onChange={(e) => setProfileData({ ...profileData, expected_salary: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                         placeholder="85000"
                         min="0"
                       />
@@ -657,7 +658,7 @@ export default function CandidateProfilePage() {
                       <select
                         value={profileData.work_schedule_preference}
                         onChange={(e) => setProfileData({ ...profileData, work_schedule_preference: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                       >
                         <option value="">Select schedule preference</option>
                         <option value="full_time">Full-time</option>
@@ -678,7 +679,7 @@ export default function CandidateProfilePage() {
                       <select
                         value={profileData.remote_work_preference}
                         onChange={(e) => setProfileData({ ...profileData, remote_work_preference: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                       >
                         <option value="">Select remote preference</option>
                         <option value="fully_remote">Fully Remote</option>
@@ -699,7 +700,7 @@ export default function CandidateProfilePage() {
                       <select
                         value={profileData.travel_willingness}
                         onChange={(e) => setProfileData({ ...profileData, travel_willingness: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                       >
                         <option value="">Select travel willingness</option>
                         <option value="none">No Travel</option>
@@ -730,7 +731,7 @@ export default function CandidateProfilePage() {
                         type="url"
                         value={profileData.linkedin_url}
                         onChange={(e) => setProfileData({ ...profileData, linkedin_url: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                         placeholder="https://linkedin.com/in/yourprofile"
                       />
                     ) : user?.linkedin_url ? (
@@ -759,7 +760,7 @@ export default function CandidateProfilePage() {
                         type="url"
                         value={profileData.github_url}
                         onChange={(e) => setProfileData({ ...profileData, github_url: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                         placeholder="https://github.com/yourusername"
                       />
                     ) : user?.github_url ? (
@@ -788,7 +789,7 @@ export default function CandidateProfilePage() {
                         type="url"
                         value={profileData.portfolio_url}
                         onChange={(e) => setProfileData({ ...profileData, portfolio_url: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                         placeholder="https://yourportfolio.com"
                       />
                     ) : user?.portfolio_url ? (
@@ -807,6 +808,30 @@ export default function CandidateProfilePage() {
                       <p className="text-gray-500">No portfolio URL specified</p>
                     )}
                   </div>
+                </div>
+              </section>
+
+              {/* Resume Upload Section */}
+              <section>
+                <h3 className="text-lg font-medium text-gray-900 mb-6 flex items-center">
+                  <File className="h-5 w-5 mr-2 text-blue-600" />
+                  Resume Upload
+                </h3>
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <ResumeUploadSection 
+                    user={user}
+                    onResumeUpdate={async () => {
+                      // Refresh user data after resume update without page reload
+                      try {
+                        const response = await apiClient.get('/api/auth/profile');
+                        updateUser(response.data);
+                        // Also refresh profile completion data
+                        loadProfileCompletion();
+                      } catch (error) {
+                        console.error('Failed to refresh user data:', error);
+                      }
+                    }}
+                  />
                 </div>
               </section>
 

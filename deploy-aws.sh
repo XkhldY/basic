@@ -143,7 +143,7 @@ deploy_app() {
     cat > frontend/public/config.js << EOF
 // Production configuration - automatically generated during deployment
 window.APP_CONFIG = {
-  API_URL: 'http://api.pom100.com',
+  API_URL: 'https://api.pom100.com',
   ENVIRONMENT: 'production'
 };
 EOF
@@ -159,17 +159,23 @@ DB_NAME=jobplatform
 DB_SECRET_ARN=$DB_SECRET_ARN
 ENVIRONMENT=production
 DEBUG=false
-NEXT_PUBLIC_API_URL=http://api.pom100.com
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000,http://pom100.com,http://www.pom100.com
+NEXT_PUBLIC_API_URL=https://api.pom100.com
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000,http://pom100.com,http://www.pom100.com,https://pom100.com,https://www.pom100.com
 EOF
+    
+    # Fix backend CORS configuration for production
+    print_status "Fixing backend CORS configuration..."
+    cp backend/config.py backend/config.py.backup
+    sed -i 's|default='\''http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000'\''|default='\''http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000,https://pom100.com,https://www.pom100.com'\''|' backend/config.py
     
     # Create deployment package
     print_status "Creating deployment package..."
-    tar --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='__pycache__' --exclude='.env.local' \
+    tar --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='frontend/test-results' --exclude='frontend/tests' --exclude='__pycache__' --exclude='.env.local' \
         -czf deploy.tar.gz frontend/ backend/ docker-compose.prod.yml .env
     
     # Restore original config and clean up temporary files
     mv frontend/public/config.js.backup frontend/public/config.js
+    mv backend/config.py.backup backend/config.py
     rm -f .env
     
     # Upload to EC2

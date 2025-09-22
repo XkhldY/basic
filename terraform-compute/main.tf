@@ -168,6 +168,33 @@ resource "aws_iam_role_policy" "ec2_secrets_policy" {
   })
 }
 
+# IAM Policy for S3 file access
+resource "aws_iam_role_policy" "ec2_s3_policy" {
+  name = "${var.project_name}-ec2-s3-policy"
+  role = aws_iam_role.ec2_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          data.terraform_remote_state.persistent.outputs.s3_bucket_arn_dev,
+          "${data.terraform_remote_state.persistent.outputs.s3_bucket_arn_dev}/*",
+          data.terraform_remote_state.persistent.outputs.s3_bucket_arn_prod,
+          "${data.terraform_remote_state.persistent.outputs.s3_bucket_arn_prod}/*"
+        ]
+      }
+    ]
+  })
+}
+
 # IAM Instance Profile
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "${var.project_name}-ec2-profile"
@@ -183,7 +210,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 # EC2 Instance for Frontend + Backend
 resource "aws_instance" "app_server" {
   ami                    = "ami-0866a3c8686eaeeba" # Ubuntu 22.04 LTS (us-east-1)
-  instance_type          = "t3.micro"              # Free tier eligible
+  instance_type          = "t3.small"              # Free tier eligible
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.app_sg.id]
   subnet_id              = data.terraform_remote_state.persistent.outputs.public_subnet_id

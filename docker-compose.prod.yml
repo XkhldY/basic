@@ -42,6 +42,7 @@ services:
       - ENVIRONMENT=production
       - DEBUG=false
       - PYTHONUNBUFFERED=1
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME:-job-platform-files-prod}
     env_file:
       - .env
     restart: unless-stopped

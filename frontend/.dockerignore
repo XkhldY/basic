@@ -35,6 +35,8 @@ __tests__/
 **/*.spec.js
 **/*.spec.ts
 **/*.spec.tsx
+tests/
+test-results/
 
 # ESLint
 .eslintcache
@@ -105,3 +107,6 @@ temp/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Generated files
+public/favicon.ico

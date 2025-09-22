@@ -27,7 +27,7 @@ const Hero = () => {
               {/* Main Heading */}
               <div className="space-y-6">
                 <motion.h1
-                  className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl font-semibold text-gray-900 dark:text-white leading-tight normal-case"
+                  className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl font-semibold text-white leading-tight normal-case"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.3 }}
@@ -37,7 +37,7 @@ const Hero = () => {
                   <span>top talent</span>
                 </motion.h1>
                 <motion.p
-                  className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8"
+                  className="text-base sm:text-lg lg:text-xl text-gray-200 max-w-3xl mx-auto mb-8"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.5 }}

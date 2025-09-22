@@ -15,6 +15,12 @@ export interface User {
   linkedin_url?: string;
   github_url?: string;
   
+  // Resume fields
+  resume_url?: string;
+  resume_file_name?: string;
+  resume_uploaded_at?: string;
+  resume_file_size?: number;
+  
   // Candidate-specific fields
   professional_title?: string;
   experience_level?: string;

@@ -75,7 +75,7 @@ const CookiesBanner = () => {
          <div className="ml-2 mr-0">
            {!showPreferences ? (
                            // Main Banner
-                           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                                       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
                <div className="flex items-center gap-3">
                  <div className="flex-shrink-0">
                    <div className="w-8 h-8 bg-amber-500/20 rounded-full flex items-center justify-center">
@@ -92,7 +92,7 @@ const CookiesBanner = () => {
                  </div>
                </div>
                
-               <div className="flex gap-2 flex-shrink-0 justify-center sm:justify-start">
+                               <div className="flex gap-2 flex-shrink-0 justify-center sm:justify-end">
                                                                                            <button
                       onClick={() => setShowPreferences(true)}
                       className="flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-300 bg-slate-800/40 hover:bg-slate-700/60 rounded-md transition-colors duration-200 backdrop-blur-sm focus:outline-none focus:ring-0"

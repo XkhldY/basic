@@ -73,3 +73,66 @@ output "persistent_infrastructure_summary" {
     db_security_group  = aws_security_group.db_sg.id
   }
 }
+
+# S3 File Storage outputs
+output "s3_bucket_name_dev" {
+  description = "Name of the S3 bucket for development file storage"
+  value       = aws_s3_bucket.file_storage_dev.bucket
+}
+
+output "s3_bucket_arn_dev" {
+  description = "ARN of the S3 bucket for development file storage"
+  value       = aws_s3_bucket.file_storage_dev.arn
+}
+
+output "s3_bucket_name_prod" {
+  description = "Name of the S3 bucket for production file storage"
+  value       = aws_s3_bucket.file_storage_prod.bucket
+}
+
+output "s3_bucket_arn_prod" {
+  description = "ARN of the S3 bucket for production file storage"
+  value       = aws_s3_bucket.file_storage_prod.arn
+}
+
+output "s3_file_access_policy_arn" {
+  description = "ARN of the IAM policy for S3 file access"
+  value       = aws_iam_policy.s3_file_access.arn
+}
+
+# Marie's IAM User outputs
+output "marie_iam_user_name" {
+  description = "Name of Marie's IAM user"
+  value       = aws_iam_user.marie_deployer.name
+}
+
+output "marie_iam_user_arn" {
+  description = "ARN of Marie's IAM user"
+  value       = aws_iam_user.marie_deployer.arn
+}
+
+output "marie_access_key_id" {
+  description = "Access Key ID for Marie's deployment access"
+  value       = aws_iam_access_key.marie_deployer.id
+}
+
+output "marie_secret_access_key" {
+  description = "Secret Access Key for Marie's deployment access"
+  value       = aws_iam_access_key.marie_deployer.secret
+  sensitive   = true
+}
+
+output "marie_deployer_policy_arn" {
+  description = "ARN of Marie's deployment policy"
+  value       = aws_iam_user_policy.marie_deployer_policy.id
+}
+
+output "deployers_group_name" {
+  description = "Name of the deployers IAM group"
+  value       = aws_iam_group.deployers.name
+}
+
+output "deployers_group_arn" {
+  description = "ARN of the deployers IAM group"
+  value       = aws_iam_group.deployers.arn
+}
