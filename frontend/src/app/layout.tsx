@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
@@ -28,11 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${instrumentSans.className} antialiased`}>
-        <ClerkProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </ClerkProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

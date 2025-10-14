@@ -1,10 +1,20 @@
 "use client";
 
-import { Waitlist } from "@clerk/nextjs";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function WaitlistPage() {
+  const [email, setEmail] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you would typically send the email to your backend
+    console.log("Waitlist signup:", email);
+    setIsSubmitted(true);
+  };
+
   return (
     <>
       <style
@@ -37,31 +47,47 @@ export default function WaitlistPage() {
 
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="w-full max-w-md">
-            <Waitlist
-              appearance={{
-                elements: {
-                  card: "bg-white/10 backdrop-blur-sm shadow-2xl border border-white/20 rounded-t-2xl rounded-b-none p-8 pb-10",
-                  rootBox: "p-0 m-0",
-                  header: "p-0 m-0 mb-4",
-                  form: "p-0 m-0",
-                  footer: "bg-transparent shadow-none border-0 p-0 m-0 mt-0",
-                  footerAction: "bg-transparent shadow-none border-0 hidden",
-                  footerPages:
-                    "bg-transparent shadow-none border-0 p-0 m-0 -mt-1",
-                  footerActionPages: "bg-transparent shadow-none border-0",
-                  formButtonPrimary:
-                    "w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 font-semibold py-3 px-6 rounded-xl transition-all duration-200 border-0 mt-0 mb-4",
-                  formFieldInput:
-                    "w-full bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:bg-white/20 focus:border-white/40 rounded-xl px-4 py-3 transition-all duration-200",
-                  formFieldRow: "mb-0",
-                  headerTitle: "text-white text-2xl font-bold mb-3",
-                  headerSubtitle: "text-gray-300 text-center leading-relaxed",
-                  formFieldLabel: "text-white font-medium mb-2",
-                  footerActionText: "text-gray-400",
-                  footerActionLink: "text-amber-400 hover:text-amber-300",
-                },
-              }}
-            />
+            <div className="bg-white/10 backdrop-blur-sm shadow-2xl border border-white/20 rounded-t-2xl rounded-b-none p-8 pb-10">
+              <div className="text-center mb-6">
+                <h1 className="text-white text-2xl font-bold mb-3">Join the Waitlist</h1>
+                <p className="text-gray-300 text-center leading-relaxed">
+                  Be the first to know when we launch new features and opportunities.
+                </p>
+              </div>
+              
+              {!isSubmitted ? (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="email" className="text-white font-medium mb-2 block">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      required
+                      className="w-full bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:bg-white/20 focus:border-white/40 rounded-xl px-4 py-3 transition-all duration-200"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 font-semibold py-3 px-6 rounded-xl transition-all duration-200 border-0 mt-0 mb-4"
+                  >
+                    Join Waitlist
+                  </button>
+                </form>
+              ) : (
+                <div className="text-center">
+                  <div className="text-amber-400 text-4xl mb-4">✓</div>
+                  <h2 className="text-white text-xl font-bold mb-2">You're on the list!</h2>
+                  <p className="text-gray-300">
+                    Thank you for joining our waitlist. We'll notify you when we have updates.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
