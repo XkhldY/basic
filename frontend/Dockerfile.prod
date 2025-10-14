@@ -18,14 +18,17 @@ COPY . .
 # Set Node.js memory limit to prevent build hanging
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Build the application
-RUN npm run build
-
-# Set production environment
+# Set build-time environment variables
 ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+
+# Build the application
+RUN npm run build
 
 EXPOSE 3000
 
