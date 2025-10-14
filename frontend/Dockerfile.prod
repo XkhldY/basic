@@ -7,7 +7,7 @@ RUN apk add --no-cache curl
 
 # Install dependencies
 COPY package*.json ./
-RUN npm ci --no-audit --no-fund
+RUN npm ci --no-audit --no-fund || npm install react-markdown remark-gfm
 
 # Copy source code
 COPY . .
