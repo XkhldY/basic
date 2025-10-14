@@ -276,8 +276,7 @@ const Navigation = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            {/* Commented out Sign in button for now
-            <Link href="/auth">
+            <Link href="/sign-in">
               <button className={`font-medium transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 ${
                 isMounted && currentSection === 'features'
                   ? 'text-gray-800 hover:text-gray-900' 
@@ -287,10 +286,15 @@ const Navigation = () => {
               }`} style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
                 Sign in
               </button>
-            </Link> */}
+            </Link>
+            <Link href="/auth">
+              <button className="btn-primary">Get started</button>
+            </Link>
+            {/* Commented out waitlist button
             <Link href="/waitlist">
               <button className="btn-primary">Join the waitlist</button>
             </Link>
+            */}
           </motion.div>
         </div>
       </nav>
@@ -433,13 +437,18 @@ const Navigation = () => {
               >
                 Contact
               </Link>
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col items-center w-full">
-                {/* Sign in button hidden for now */}
-                {/* <Link href="/sign-in">
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col items-center w-full space-y-3">
+                <Link href="/sign-in">
                   <button className="text-white hover:text-gray-200 transition-colors duration-200 px-4 py-2 text-sm font-medium">
                     Sign in
                   </button>
-                </Link> */}
+                </Link>
+                <Link href="/auth">
+                  <button className="btn-primary px-4 py-2 text-sm">
+                    Get started
+                  </button>
+                </Link>
+                {/* Commented out waitlist button
                 <Link href="/waitlist">
                   <button
                     className="btn-primary px-4 py-2 text-sm"
@@ -448,6 +457,7 @@ const Navigation = () => {
                     Join the waitlist
                   </button>
                 </Link>
+                */}
               </div>
             </div>
           </div>
