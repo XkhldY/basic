@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/Navigation';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
+import LatestBlogPosts from '@/components/LatestBlogPosts';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
@@ -41,6 +42,10 @@ export default function Home() {
 
       <AnimateOnScroll type="fade-up" amount={0.01} once={false} duration={0.8}>
         <Features />
+      </AnimateOnScroll>
+
+      <AnimateOnScroll type="fade-up" amount={0.2}>
+        <LatestBlogPosts />
       </AnimateOnScroll>
 
       <AnimateOnScroll type="fade-up" amount={0.2}>

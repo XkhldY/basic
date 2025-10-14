@@ -1,0 +1,755 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Calendar, ArrowRight, Search, X } from 'lucide-react';
+import { BlogPost } from '@/types/blog';
+import { unifiedBlogService } from '@/services/blog';
+import Link from 'next/link';
+import Image from 'next/image';
+
+interface BlogPageClientProps {
+  initialPosts: BlogPost[];
+  initialHasMore?: boolean;
+  hasError?: boolean;
+  errorMessage?: string;
+}
+
+export default function BlogPageClient({ initialPosts, initialHasMore = true, hasError = false, errorMessage = '' }: BlogPageClientProps) {
+  const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(hasError ? errorMessage : null);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [currentOffset, setCurrentOffset] = useState(initialPosts.length); // Track actual offset
+  const [showAllArticles, setShowAllArticles] = useState(false);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const postsPerPage = 5; // Desktop version
+  const mobilePostsPerPage = 3; // Mobile carousel version
+
+  // Filter posts based on search query
+  const filteredPosts = posts.filter(post => 
+    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.author.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const loadMorePosts = async () => {
+    if (loadingMore || !hasMore) return;
+
+    try {
+      setLoadingMore(true);
+      console.log('🔄 Loading more posts:', { currentOffset, postsPerPage, currentPostsLength: posts.length });
+      
+      const response = await unifiedBlogService.getPosts({
+        limit: postsPerPage,
+        offset: currentOffset
+      });
+      
+      console.log('📦 Response received:', { 
+        postsReturned: response.posts.length, 
+        total: response.total,
+        firstPostTitle: response.posts[0]?.title,
+        lastPostTitle: response.posts[response.posts.length - 1]?.title
+      });
+      
+      setPosts(prevPosts => [...prevPosts, ...response.posts]);
+      setCurrentOffset(prevOffset => prevOffset + response.posts.length);
+      // Check if there are more posts available
+      // If we got fewer posts than requested, or if we've reached the total, there are no more
+      const hasMorePosts = response.posts.length === postsPerPage && response.posts.length < response.total;
+      setHasMore(hasMorePosts);
+      
+      console.log('✅ Updated state:', { 
+        newPostsLength: posts.length + response.posts.length,
+        newOffset: currentOffset + response.posts.length,
+        hasMore: hasMorePosts,
+        postsReturned: response.posts.length,
+        postsPerPage,
+        total: response.total
+      });
+    } catch (err) {
+      console.error('Error loading more posts:', err);
+      setError('Failed to load more articles. Please try again.');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const showAllArticlesHandler = async () => {
+    if (loadingMore) return;
+    
+    try {
+      setLoadingMore(true);
+      setShowAllArticles(true);
+      
+      // Load first batch of articles (5 more)
+      const response = await unifiedBlogService.getPosts({
+        limit: postsPerPage,
+        offset: currentOffset
+      });
+      
+      setPosts(prevPosts => [...prevPosts, ...response.posts]);
+      setCurrentOffset(prevOffset => prevOffset + response.posts.length);
+      // Check if there are more posts available
+      const hasMorePosts = response.posts.length === postsPerPage && response.posts.length < response.total;
+      setHasMore(hasMorePosts);
+    } catch (err) {
+      console.error('Error loading more articles:', err);
+      setError('Failed to load articles. Please try again.');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // Handle carousel scroll to update active dot
+  const handleCarouselScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const cardElement = e.currentTarget.firstElementChild as HTMLElement;
+    if (!cardElement) return;
+    
+    const cardWidth = cardElement.offsetWidth;
+    const gap = 24; // Corresponds to space-x-6 (1.5rem = 24px)
+    const newIndex = Math.round(e.currentTarget.scrollLeft / (cardWidth + gap));
+    setCurrentCardIndex(Math.min(newIndex, mobilePostsPerPage - 1));
+  };
+
+  // Load more articles for infinite scroll
+  const loadMoreArticles = async () => {
+    if (loadingMore || !hasMore) return;
+    
+    try {
+      setLoadingMore(true);
+      
+      const response = await unifiedBlogService.getPosts({
+        limit: postsPerPage,
+        offset: currentOffset
+      });
+      
+      setPosts(prevPosts => [...prevPosts, ...response.posts]);
+      setCurrentOffset(prevOffset => prevOffset + response.posts.length);
+      // Check if there are more posts available
+      const hasMorePosts = response.posts.length === postsPerPage && response.posts.length < response.total;
+      setHasMore(hasMorePosts);
+    } catch (err) {
+      console.error('Error loading more articles:', err);
+      setError('Failed to load more articles. Please try again.');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // Intersection Observer for infinite scroll on mobile
+  useEffect(() => {
+    if (!showAllArticles) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (target.isIntersecting && hasMore && !loadingMore) {
+          loadMoreArticles();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const sentinel = document.getElementById('mobile-scroll-sentinel');
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
+
+    return () => {
+      if (sentinel) {
+        observer.unobserve(sentinel);
+      }
+    };
+  }, [showAllArticles, hasMore, loadingMore, posts.length]);
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="text-red-400 text-6xl mb-4">⚠️</div>
+          <div className="text-xl text-white mb-4">Unable to load articles</div>
+          <div className="text-gray-400 mb-6">{error}</div>
+          <div className="space-y-3">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="btn-primary px-6 py-2 mr-3"
+            >
+              Try Again
+            </button>
+            <button 
+              onClick={() => window.history.back()} 
+              className="px-6 py-2 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-colors duration-300"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <>
+      {/* Error State */}
+      {error && (
+        <div className="pt-32 pb-4 md:pt-48 md:pb-16 relative z-10">
+          <div className="container-custom">
+            <div className="text-center max-w-4xl mx-auto space-y-6">
+              <div className="text-red-400 text-6xl mb-4">⚠️</div>
+              <h1 className="text-white text-2xl font-bold mb-4">Unable to Load Articles</h1>
+              <p className="text-gray-300 mb-8">
+                {error}
+              </p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="btn-primary"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content - only show if no error */}
+      {!error && (
+        <>
+      <section className={`pt-32 pb-4 md:pt-48 md:pb-16 relative z-10 ${showAllArticles ? 'md:block hidden' : ''}`}>
+        <div className="container-custom">
+          <motion.div
+            className="text-center max-w-4xl mx-auto space-y-3 md:space-y-6"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.h1
+              className="text-4xl lg:text-6xl font-semibold text-white leading-tight normal-case"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Stay informed with latest industry insights
+            </motion.h1>
+
+            <motion.p
+              className="text-base sm:text-base md:text-lg lg:text-xl text-white max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+            >
+              Discover industry trends, career insights, and professional development tips 
+              from our expert network of talent and employers.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Search Bar */}
+      <section className={`pt-4 pb-4 md:pb-8 relative z-10 ${showAllArticles ? 'md:block hidden' : ''}`}>
+        <div className="container-custom">
+          <div className="max-w-2xl mx-auto md:max-w-2xl w-80 md:w-auto">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search articles by title, content, or author"
+                aria-describedby="search-results-count"
+                className="w-full pl-10 pr-10 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all duration-300"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors duration-300 z-10"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+            {searchQuery && (
+              <div id="search-results-count" className="mt-2 text-sm text-gray-400 text-center">
+                {filteredPosts.length} article{filteredPosts.length !== 1 ? 's' : ''} found
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Blog Posts Section */}
+      <section className="pt-8 pb-16 md:py-16 relative z-10">
+        <div className="container-custom">
+          {/* No Results Message */}
+          {searchQuery && filteredPosts.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-gray-400 text-6xl mb-4">🔍</div>
+              <div className="text-white text-xl mb-4">No articles found</div>
+              <div className="text-gray-400 mb-6">
+                We couldn't find any articles matching "{searchQuery}".<br />
+                Try adjusting your search terms or browse all articles.
+              </div>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search and show all articles"
+                  className="btn-primary px-6 py-2 mr-3"
+                >
+                  Clear search
+                </button>
+                <button
+                  onClick={() => setShowAllArticles(true)}
+                  aria-label="Browse all articles"
+                  className="px-6 py-2 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-colors duration-300"
+                >
+                  Browse all articles
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Mobile: Horizontal Carousel */}
+          {!showAllArticles && (
+            <div className="md:hidden">
+              <div 
+                className="flex space-x-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-4 py-4"
+                style={{ 
+                  scrollBehavior: 'smooth',
+                  scrollSnapType: 'x mandatory'
+                }}
+                onScroll={handleCarouselScroll}
+              >
+                {filteredPosts.slice(0, mobilePostsPerPage).map((post, index) => (
+                  <motion.article
+                    key={post.id}
+                    className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-6 hover:border-amber-300/50 hover:bg-white/20 transition-all duration-500 group snap-center flex flex-col"
+                    style={{ scrollSnapAlign: 'center' }}
+                    initial={{ opacity: 0, x: 30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, amount: 0.1 }}
+                    transition={{ 
+                      duration: 0.8, 
+                      delay: index * 0.1, 
+                      ease: "easeOut" 
+                    }}
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    role="article"
+                    aria-labelledby={`mobile-title-${post.id}`}
+                    aria-describedby={`mobile-excerpt-${post.id}`}
+                  >
+                    {/* Article Picture */}
+                    <div className="w-full h-48 rounded-xl overflow-hidden mb-6">
+                      {post.featuredImage ? (
+                        <Image
+                          src={post.featuredImage}
+                          alt={post.title}
+                          width={320}
+                          height={192}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                          placeholder="blur"
+                          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center">
+                          <div className="text-white/60 text-sm">Article picture</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <h2 id={`mobile-title-${post.id}`} className="text-xl font-bold text-white mb-4 group-hover:text-gray-200 transition-colors duration-300 line-clamp-2">
+                      {post.title}
+                    </h2>
+
+                    {/* Author and Date */}
+                    <div className="flex items-center justify-between mb-4">
+                      {/* Author */}
+                      <p className="text-sm text-gray-400">
+                        By <span className="text-white font-medium">{post.author.name}</span>
+                      </p>
+
+                      {/* Date */}
+                      <div className="flex items-center space-x-1 text-sm text-gray-400">
+                        <Calendar size={14} />
+                        <span>{formatDate(post.publishedAt)}</span>
+                      </div>
+                    </div>
+
+                    {/* Article's first lines */}
+                    <p id={`mobile-excerpt-${post.id}`} className="text-gray-300 leading-relaxed group-hover:text-gray-200 transition-colors duration-300 line-clamp-3 flex-grow">
+                      {post.excerpt}
+                    </p>
+
+                    {/* Reading Time and Dots - positioned at bottom with same margin as image */}
+                    <div className="flex items-center justify-between mt-6">
+                      {/* Reading Time */}
+                      <div className="text-sm text-gray-400 bg-white/10 px-3 py-1 rounded-full">
+                        {post.readTime} min read
+                      </div>
+                      
+                      {/* Carousel Dots */}
+                      <div className="flex space-x-2" role="tablist" aria-label="Article navigation">
+                        {filteredPosts.slice(0, mobilePostsPerPage).map((_, dotIndex) => (
+                          <button
+                            key={dotIndex}
+                            role="tab"
+                            aria-selected={dotIndex === index}
+                            aria-label={`Go to article ${dotIndex + 1}`}
+                            className={`w-2 h-2 rounded-full transition-all duration-500 cursor-pointer ${
+                              dotIndex === index 
+                                ? 'bg-amber-400 scale-110' 
+                                : 'bg-white/30 hover:bg-white/50'
+                            }`}
+                            onClick={() => {
+                              const container = document.querySelector('.overflow-x-auto') as HTMLElement;
+                              if (container) {
+                                const firstCard = container.firstElementChild as HTMLElement;
+                                if (firstCard) {
+                                  const cardWidth = firstCard.offsetWidth;
+                                  const gap = 24; // space-x-6 = 1.5rem = 24px
+                                  container.scrollTo({
+                                    left: dotIndex * (cardWidth + gap),
+                                    behavior: 'smooth'
+                                  });
+                                }
+                              }
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Read More Button */}
+                    <div className="mt-4 flex justify-center">
+                      <Link 
+                        href={`/blog/${post.slug}`}
+                        prefetch={true}
+                        className="focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
+                        style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                      >
+                        <div className="flex items-center space-x-1 text-amber-400 group-hover:text-amber-300 transition-colors duration-200 cursor-pointer">
+                          <span className="text-sm font-medium">Read more</span>
+                          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
+                        </div>
+                      </Link>
+                    </div>
+                  </motion.article>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Desktop: Vertical List */}
+          <div className="hidden md:block space-y-12">
+            {filteredPosts.map((post, index) => (
+              <motion.article
+                key={post.id}
+                className="bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-8 hover:border-amber-300/50 hover:bg-white/20 transition-all duration-300 group"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ 
+                  duration: 0.6, 
+                  delay: index * 0.1, 
+                  ease: "easeOut" 
+                }}
+                whileHover={{ scale: 1.01 }}
+                role="article"
+                aria-labelledby={`desktop-title-${post.id}`}
+                aria-describedby={`desktop-excerpt-${post.id}`}
+              >
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Article Picture */}
+                  <div className="md:w-1/3">
+                    {post.featuredImage ? (
+                      <div className="w-full h-48 md:h-64 rounded-xl overflow-hidden">
+                        <Image
+                          src={post.featuredImage}
+                          alt={post.title}
+                          width={400}
+                          height={256}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          placeholder="blur"
+                          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-48 md:h-64 rounded-xl bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center">
+                        <div className="text-white/60 text-sm">Article picture</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Article Content */}
+                  <div className="md:w-2/3 flex flex-col justify-between">
+                    <div>
+                      {/* Title */}
+                      <h2 id={`desktop-title-${post.id}`} className="text-xl md:text-3xl font-bold text-white mb-4 group-hover:text-gray-200 transition-colors duration-200 text-justify">
+                        {post.title}
+                      </h2>
+
+                      {/* Author and Date */}
+                      <div className="flex items-center justify-between mb-6">
+                        {/* Author */}
+                        <p className="text-sm text-gray-400">
+                          By <span className="text-white font-medium">{post.author.name}</span>
+                        </p>
+
+                        {/* Date */}
+                        <div className="flex items-center space-x-1 text-sm text-gray-400">
+                          <Calendar size={14} />
+                          <span>{formatDate(post.publishedAt)}</span>
+                        </div>
+                      </div>
+
+                      {/* Article's first lines */}
+                      <p className="text-gray-300 leading-relaxed group-hover:text-gray-200 transition-colors duration-200 mb-6">
+                        {post.excerpt}
+                      </p>
+                    </div>
+
+                    {/* Read Time and Read More */}
+                    <div className="flex items-center justify-between">
+                      {/* Read Time */}
+                      <div className="text-sm text-gray-400 bg-white/10 px-2 py-1 rounded-full">
+                        {post.readTime} min read
+                      </div>
+                      
+                      <Link 
+                        href={`/blog/${post.slug}`}
+                        prefetch={true}
+                        className="focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
+                        style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                      >
+                        <div className="flex items-center space-x-1 text-amber-400 group-hover:text-amber-300 transition-colors duration-200 cursor-pointer">
+                          <span className="text-sm font-medium">Read more</span>
+                          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+
+          {/* Desktop: Load More Button */}
+          {hasMore && (
+            <motion.div
+              className="text-center mt-12 hidden md:block"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <button
+                onClick={loadMorePosts}
+                disabled={loadingMore}
+                aria-label={loadingMore ? "Loading more articles" : "Load more articles"}
+                className="btn-primary px-8 py-3 flex items-center justify-center space-x-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loadingMore ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Loading more...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Load more articles</span>
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            </motion.div>
+          )}
+
+          {/* Mobile: Back Button */}
+          {showAllArticles && (
+            <div className="md:hidden mb-6 pt-12 max-w-80 mx-auto">
+              <button
+                onClick={() => setShowAllArticles(false)}
+                aria-label="Back to carousel view"
+                className="flex items-center space-x-2 text-amber-400 hover:text-amber-300 transition-colors duration-300"
+              >
+                <ArrowRight size={16} className="rotate-180" />
+                <span className="text-sm font-medium">Back</span>
+              </button>
+            </div>
+          )}
+
+          {/* Mobile: All Articles Vertical */}
+          {showAllArticles && (
+            <div className="md:hidden space-y-8 max-w-80 mx-auto">
+              {filteredPosts.map((post, index) => (
+                <motion.article
+                  key={post.id}
+                  className="bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-6 hover:border-amber-300/50 hover:bg-white/20 transition-all duration-300 group"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    delay: index * 0.1, 
+                    ease: "easeOut" 
+                  }}
+                  whileHover={{ scale: 1.01 }}
+                  role="article"
+                  aria-labelledby={`mobile-vertical-title-${post.id}`}
+                  aria-describedby={`mobile-vertical-excerpt-${post.id}`}
+                >
+                  <div className="flex flex-col gap-4">
+                    {/* Article Picture */}
+                    <div className="w-full h-48 rounded-xl overflow-hidden">
+                      {post.featuredImage ? (
+                        <Image
+                          src={post.featuredImage}
+                          alt={post.title}
+                          width={320}
+                          height={192}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          placeholder="blur"
+                          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                        />
+                      ) : (
+                        <div className="w-full h-48 rounded-xl bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center">
+                          <div className="text-white/60 text-sm">Article picture</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Article Content */}
+                    <div className="flex flex-col justify-between">
+                      <div>
+                        {/* Title */}
+                        <h2 id={`mobile-vertical-title-${post.id}`} className="text-xl font-bold text-white mb-4 group-hover:text-gray-200 transition-colors duration-200 text-justify">
+                          {post.title}
+                        </h2>
+
+                        {/* Author and Date */}
+                        <div className="flex items-center justify-between mb-4">
+                          {/* Author */}
+                          <p className="text-sm text-gray-400">
+                            By <span className="text-white font-medium">{post.author.name}</span>
+                          </p>
+
+                          {/* Date */}
+                          <div className="flex items-center space-x-1 text-sm text-gray-400">
+                            <Calendar size={14} />
+                            <span>{formatDate(post.publishedAt)}</span>
+                          </div>
+                        </div>
+
+                      {/* Article's first lines */}
+                      <p id={`mobile-vertical-excerpt-${post.id}`} className="text-gray-300 leading-relaxed group-hover:text-gray-200 transition-colors duration-200 mb-4">
+                        {post.excerpt}
+                      </p>
+                      </div>
+
+                      {/* Read Time */}
+                      <div className="text-sm text-gray-400 bg-white/10 px-2 py-1 rounded-full self-start">
+                        {post.readTime} min read
+                      </div>
+                    </div>
+
+                    {/* Read More Button */}
+                    <div className="mt-4 flex justify-center">
+                      <Link 
+                        href={`/blog/${post.slug}`}
+                        prefetch={true}
+                        className="focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
+                        style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                      >
+                        <div className="flex items-center space-x-1 text-amber-400 group-hover:text-amber-300 transition-colors duration-200 cursor-pointer">
+                          <span className="text-sm font-medium">Read more</span>
+                          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </motion.article>
+              ))}
+              
+              {/* Scroll Sentinel for Infinite Scroll */}
+              <div id="mobile-scroll-sentinel" className="h-4"></div>
+              
+              {/* Loading Indicator */}
+              {loadingMore && (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400 mx-auto mb-4"></div>
+                  <div className="text-white mb-2">Loading more articles...</div>
+                  <div className="text-gray-400 text-sm">Please wait while we fetch the latest content</div>
+                </div>
+              )}
+
+              {/* Mobile: No More Articles Message */}
+              {!hasMore && posts.length > 0 && (
+                <div className="text-center mt-8">
+                  <p className="text-gray-400 text-sm">
+                    You've reached the end of our articles. Check back soon for more insights!
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Mobile: See All Articles Button */}
+          {!showAllArticles && filteredPosts.length > mobilePostsPerPage && (
+            <motion.div
+              className="text-center mt-8 md:hidden"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <button
+                onClick={showAllArticlesHandler}
+                disabled={loadingMore}
+                aria-label={loadingMore ? "Loading more articles" : "See all articles"}
+                className="btn-primary px-8 py-3 flex items-center justify-center space-x-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform duration-300"
+              >
+                {loadingMore ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Loading more...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>See all articles</span>
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            </motion.div>
+          )}
+
+          {/* Desktop: No More Posts Message */}
+          {!hasMore && posts.length > 0 && (
+            <div className="text-center mt-12 hidden md:block">
+              <p className="text-gray-400 text-sm">
+                You've reached the end of our articles. Check back soon for more insights!
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+        </>
+      )}
+    </>
+  );
+}
