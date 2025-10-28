@@ -73,6 +73,20 @@ class UserResponse(UserBase):
     experience_level: Optional[str] = None
     skills: Optional[str] = None
     portfolio_url: Optional[str] = None
+
+class UserPublicProfile(BaseModel):
+    id: int
+    name: str
+    user_type: str
+    company_name: Optional[str] = None
+    industry: Optional[str] = None
+    company_description: Optional[str] = None
+    company_website: Optional[str] = None
+    company_logo_url: Optional[str] = None
+    professional_title: Optional[str] = None
+
+    class Config:
+        orm_mode = True
     admin_role: Optional[str] = None
     permissions: Optional[str] = None
     department: Optional[str] = None

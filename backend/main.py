@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
-from routers import auth, admin, jobs, settings, applications, messages, uploads
-from models import user, audit_log, system_settings, job, application, message
+from routers import auth, admin, jobs, settings, applications, messages, uploads, reviews
+from models import user, audit_log, system_settings, job, application, message, review
 from config import settings as config
 
 # Create database tables
@@ -31,6 +31,7 @@ app.include_router(settings.router)
 app.include_router(applications.router)
 app.include_router(messages.router)
 app.include_router(uploads.router)
+app.include_router(reviews.router)
 
 @app.get("/")
 def read_root():

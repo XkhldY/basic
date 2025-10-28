@@ -33,6 +33,8 @@ export default function JobsPage() {
   const [locationTypeFilter, setLocationTypeFilter] = useState('');
   const [experienceLevelFilter, setExperienceLevelFilter] = useState('');
   const [salaryMinFilter, setSalaryMinFilter] = useState('');
+  const [salaryMaxFilter, setSalaryMaxFilter] = useState('');
+  const [industryFilter, setIndustryFilter] = useState('');
   const [companyFilter, setCompanyFilter] = useState('');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
@@ -44,7 +46,7 @@ export default function JobsPage() {
 
   useEffect(() => {
     loadJobs();
-  }, [searchTerm, locationFilter, employmentTypeFilter, locationTypeFilter, experienceLevelFilter, salaryMinFilter, companyFilter]);
+  }, [searchTerm, locationFilter, employmentTypeFilter, locationTypeFilter, experienceLevelFilter, salaryMinFilter, salaryMaxFilter, industryFilter, companyFilter]);
 
   const loadJobs = async () => {
     setJobsLoading(true);
@@ -56,6 +58,8 @@ export default function JobsPage() {
       if (locationTypeFilter) params.append('location_type', locationTypeFilter);
       if (experienceLevelFilter) params.append('experience_level', experienceLevelFilter);
       if (salaryMinFilter) params.append('salary_min', salaryMinFilter);
+      if (salaryMaxFilter) params.append('salary_max', salaryMaxFilter);
+      if (industryFilter) params.append('industry', industryFilter);
       if (companyFilter) params.append('company', companyFilter);
       
       const response = await apiClient.get(`/api/jobs?${params.toString()}`);
@@ -189,7 +193,7 @@ export default function JobsPage() {
           {/* Advanced Filters */}
           {showAdvancedFilters && (
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Experience Level</label>
                   <select
@@ -213,6 +217,28 @@ export default function JobsPage() {
                     placeholder="50000"
                     value={salaryMinFilter}
                     onChange={(e) => setSalaryMinFilter(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Maximum Salary</label>
+                  <input
+                    type="number"
+                    placeholder="120000"
+                    value={salaryMaxFilter}
+                    onChange={(e) => setSalaryMaxFilter(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Industry</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Technology"
+                    value={industryFilter}
+                    onChange={(e) => setIndustryFilter(e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full"
                   />
                 </div>
