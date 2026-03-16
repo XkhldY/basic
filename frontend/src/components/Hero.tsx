@@ -32,9 +32,9 @@ const Hero = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.3 }}
                 >
-                  Find your dream job or
+                  AI-powered matching for
                   <br />
-                  <span>top talent</span>
+                  <span>dream jobs and top talent</span>
                 </motion.h1>
                 <motion.p
                   className="text-base sm:text-lg lg:text-xl text-gray-200 max-w-3xl mx-auto mb-8"
@@ -43,7 +43,7 @@ const Hero = () => {
                   transition={{ duration: 1, delay: 0.5 }}
                 >
                   <strong>We get it.</strong> Finding the right job or hiring
-                  the perfect candidate is challenging. Our platform connects{" "}
+                  the perfect candidate is challenging. Our <strong>AI-driven</strong> platform connects{" "}
                   <strong>employers</strong> with{" "}
                   <strong>talented professionals</strong> seamlessly.
                 </motion.p>
@@ -74,17 +74,16 @@ const Hero = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.9 }}
               >
-                <Link href="/auth">
+                <Link href="/jobs">
                   <motion.button 
                     className="btn-primary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px]"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <span>Get started</span>
+                    <span>Browse jobs</span>
                     <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
                   </motion.button>
                 </Link>
-                
                 {/* Commented out waitlist button
                 <motion.button
                   onClick={() => (window.location.href = "/waitlist")}
@@ -121,22 +120,26 @@ const Hero = () => {
           }}
         />
 
-        {/* Floating Particles */}
+        {/* Floating Particles - deterministic per index to avoid hydration mismatch */}
         <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1.5 h-1.5 bg-blue-400/60 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${
-                  3 + Math.random() * 4
-                }s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 2}s`,
-              }}
-            />
-          ))}
+          {[...Array(20)].map((_, i) => {
+            const left = ((i * 17 + 7) % 97) / 97 * 100;
+            const top = ((i * 23 + 11) % 97) / 97 * 100;
+            const duration = 3 + ((i * 13 + 5) % 97) / 97 * 4;
+            const delay = ((i * 31 + 19) % 97) / 97 * 2;
+            return (
+              <div
+                key={i}
+                className="absolute w-1.5 h-1.5 bg-blue-400/60 rounded-full"
+                style={{
+                  left: `${left}%`,
+                  top: `${top}%`,
+                  animation: `float ${duration}s ease-in-out infinite`,
+                  animationDelay: `${delay}s`,
+                }}
+              />
+            );
+          })}
         </div>
 
         {/* Subtle Noise Texture */}

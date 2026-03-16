@@ -1,36 +1,33 @@
 'use client';
 
-import { ClerkProvider } from "@clerk/nextjs";
-import { AuthProvider } from "@/contexts/AuthContext";
+import dynamic from 'next/dynamic';
+import type { ReactNode } from 'react';
+import { AuthProvider } from '@/contexts/AuthContext';
+
+const ClerkProvider = dynamic(
+  () => import('@clerk/nextjs').then((m) => m.ClerkProvider),
+  { ssr: false }
+);
 
 interface ProvidersProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function Providers({ children }: ProvidersProps) {
-  // Check if Clerk is configured
   const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  
-  // Only use Clerk if key exists, is not a placeholder, and has valid format
-  const shouldUseClerk = clerkPublishableKey && 
-                         clerkPublishableKey !== 'your_clerk_publishable_key_here' &&
-                         clerkPublishableKey.startsWith('pk_');
-  
-  if (shouldUseClerk) {
-    // Use Clerk if properly configured
+  const shouldUseClerk = Boolean(
+    clerkPublishableKey &&
+    clerkPublishableKey !== 'your_clerk_publishable_key_here' &&
+    clerkPublishableKey.startsWith('pk_')
+  );
+
+  if (shouldUseClerk && ClerkProvider) {
     return (
       <ClerkProvider publishableKey={clerkPublishableKey}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </ClerkProvider>
     );
   }
-  
-  // Fallback to custom AuthProvider if Clerk is not configured
-  return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
-  );
+
+  return <AuthProvider>{children}</AuthProvider>;
 }

@@ -52,11 +52,18 @@ resource "aws_security_group" "app_sg" {
   vpc_id      = data.terraform_remote_state.persistent.outputs.vpc_id
   description = "Security group for application server"
 
-  # SSH access
+  # SSH access (standard and alternate port for networks that block 22)
   ingress {
     description = "SSH"
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_ssh_cidr_blocks
+  }
+  ingress {
+    description = "SSH alternate (2222)"
+    from_port   = 2222
+    to_port     = 2222
     protocol    = "tcp"
     cidr_blocks = var.allowed_ssh_cidr_blocks
   }
@@ -168,6 +175,12 @@ resource "aws_iam_role_policy" "ec2_secrets_policy" {
   })
 }
 
+# Allow EC2 to be reached via AWS Systems Manager (Session Manager) - no SSH port needed
+resource "aws_iam_role_policy_attachment" "ec2_ssm" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 # IAM Policy for S3 file access
 resource "aws_iam_role_policy" "ec2_s3_policy" {
   name = "${var.project_name}-ec2-s3-policy"
@@ -229,8 +242,20 @@ resource "aws_instance" "app_server" {
     }
   }
 
-  # Minimal user data - just log readiness
-  user_data = base64encode("#!/bin/bash\necho 'EC2 ready for deployment' > /var/log/ec2-ready.log")
+  # User data: enable SSH on port 22 and 2222 (2222 for networks that block 22) and log readiness
+  user_data = base64encode(<<-EOT
+#!/bin/bash
+set -e
+echo 'EC2 ready for deployment' > /var/log/ec2-ready.log
+# Ensure SSH listens on 22 and 2222 (some networks block 22)
+if ! grep -q '^Port 2222' /etc/ssh/sshd_config 2>/dev/null; then
+  sed -i 's/^#Port 22/Port 22/' /etc/ssh/sshd_config
+  echo 'Port 2222' >> /etc/ssh/sshd_config
+  systemctl restart ssh || true
+  echo 'SSH ports 22 and 2222 enabled' >> /var/log/ec2-ready.log
+fi
+EOT
+  )
 
   # Force recreation when user data changes
   user_data_replace_on_change = true

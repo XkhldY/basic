@@ -1,9 +1,10 @@
-import { ArrowLeft, Calendar, Clock, User, BookOpen } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, User } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { BlogPost } from '@/types/blog'
 import { unifiedBlogService } from '@/services/blog'
+import { getStaticPostBySlug, getAllStaticBlogSlugs } from '@/data/blog'
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 import ShareButton from '@/components/ShareButton'
@@ -16,32 +17,54 @@ interface BlogPostPageProps {
   }
 }
 
-// Generate static params for all blog posts
+// Normalized post shape for rendering (from static data or API)
+type RenderedPost = {
+  title: string
+  excerpt: string
+  publishedAt: string
+  readTime: number
+  author: { name: string; role: string; avatar?: string }
+  content: string
+  featuredImage?: string
+  tags?: string[]
+}
+
+// Generate static params for static blog posts (and optionally API posts)
 export async function generateStaticParams() {
-  try {
-    const response = await unifiedBlogService.getPosts({ limit: 100 })
-    return response.posts.map((post) => ({
-      slug: post.slug,
-    }))
-  } catch (error) {
-    console.error('Error generating static params:', error)
-    return []
-  }
+  const staticSlugs = getAllStaticBlogSlugs()
+  return staticSlugs.map((slug) => ({ slug }))
 }
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: BlogPostPageProps) {
   try {
-    const resolvedParams = await params;
-    const post = await unifiedBlogService.getPost(resolvedParams.slug);
-    
+    const resolvedParams = await params
+    const staticPost = getStaticPostBySlug(resolvedParams.slug)
+    if (staticPost) {
+      return {
+        title: staticPost.title,
+        description: staticPost.excerpt,
+        openGraph: {
+          title: staticPost.title,
+          description: staticPost.excerpt,
+          type: 'article',
+          publishedTime: staticPost.publishedAt,
+          authors: [staticPost.author.name],
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title: staticPost.title,
+          description: staticPost.excerpt,
+        },
+      }
+    }
+    const post = await unifiedBlogService.getPost(resolvedParams.slug)
     if (!post) {
       return {
         title: 'Article Not Found',
         description: 'The article you are looking for does not exist.',
       }
     }
-
     return {
       title: post.title,
       description: post.excerpt,
@@ -60,7 +83,7 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
         images: post.featuredImage ? [post.featuredImage] : [],
       },
     }
-  } catch (error) {
+  } catch {
     return {
       title: 'Blog Post',
       description: 'Read our latest blog post.',
@@ -69,61 +92,59 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
 }
 
 const BlogPostPage = async ({ params }: BlogPostPageProps) => {
-  let post: BlogPost | null = null
-  let error: string | null = null
+  const resolvedParams = await params
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const shareUrl = `${baseUrl}/blog/${resolvedParams.slug}`
 
-  // Construct the full URL for sharing
-  const resolvedParams = await params;
-  const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}` 
-    : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const shareUrl = `${baseUrl}/blog/${resolvedParams.slug}`;
+  // Prefer static blog post (hirewithpom-style content)
+  const staticPost = getStaticPostBySlug(resolvedParams.slug)
+  let post: RenderedPost | null = null
 
-  try {
-    post = await unifiedBlogService.getPost(resolvedParams.slug);
-    
-    if (!post) {
-      notFound()
+  if (staticPost) {
+    post = {
+      title: staticPost.title,
+      excerpt: staticPost.excerpt,
+      publishedAt: staticPost.publishedAt,
+      readTime: staticPost.readTime,
+      author: { name: staticPost.author.name, role: staticPost.author.role },
+      content: staticPost.content,
+      featuredImage: staticPost.featuredImage,
+      tags: [staticPost.category],
     }
-  } catch (err) {
-    console.error('Error fetching post:', err)
-    error = err instanceof Error ? err.message : 'Failed to load article'
+  } else {
+    try {
+      const apiPost = await unifiedBlogService.getPost(resolvedParams.slug)
+      if (apiPost) {
+        post = {
+          title: apiPost.title,
+          excerpt: apiPost.excerpt,
+          publishedAt: apiPost.publishedAt,
+          readTime: apiPost.readTime,
+          author: apiPost.author,
+          content: apiPost.content,
+          featuredImage: apiPost.featuredImage,
+          tags: apiPost.tags,
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching post:', err)
+    }
+  }
+
+  if (!post) {
+    notFound()
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const normalized = dateString.includes('T') ? dateString : dateString + 'T12:00:00Z'
+    return new Date(normalized).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'UTC',
     })
-  }
-
-  // Error state
-  if (error || !post) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="text-red-400 text-6xl mb-4">📄</div>
-          <h1 className="text-white text-2xl font-bold mb-4">Article Not Found</h1>
-          <p className="text-gray-300 mb-8">
-            The article you're looking for doesn't exist or may have been moved.
-          </p>
-          <div className="space-y-4">
-            <Link href="/blog" prefetch={true}>
-              <button className="btn-primary w-48">
-                Back to Blog
-              </button>
-            </Link>
-            <div className="pt-2"></div>
-            <Link href="/">
-              <button className="bg-gray-900 hover:bg-gray-800 text-[#ffc759] hover:text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 border border-[#ffc759]/30 hover:border-[#ffc759] w-48">
-                Return to Homepage
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (

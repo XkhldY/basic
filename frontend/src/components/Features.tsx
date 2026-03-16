@@ -16,8 +16,18 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import { JOBS } from "@/data/jobs";
 
 const Features = () => {
+  // Use actual jobs from /jobs page (show first 6); each links to job detail
+  const landingJobs = JOBS.slice(0, 6).map((j) => ({
+    title: j.title,
+    type: j.employmentType,
+    date: j.date,
+    location: j.location,
+    slug: j.slug,
+    tags: [j.employmentType, j.location],
+  }));
   const benefits = [
     {
       icon: Users,
@@ -166,30 +176,6 @@ const Features = () => {
     },
   ];
 
-  const jobs = [
-    {
-      title: "Senior Frontend Developer",
-      type: "Full-time",
-      date: "2023-10-27",
-      location: "Remote",
-      tags: ["React", "TypeScript", "Next.js", "Tailwind CSS", "GraphQL"],
-    },
-    {
-      title: "Backend Engineer",
-      type: "Full-time",
-      date: "2023-10-26",
-      location: "Remote",
-      tags: ["Node.js", "Express.js", "MongoDB", "AWS"],
-    },
-    {
-      title: "Mobile Developer (React Native)",
-      type: "Full-time",
-      date: "2023-10-25",
-      location: "Remote",
-      tags: ["React Native", "Redux", "TypeScript", "Firebase"],
-    },
-  ];
-
   return (
     <section
       id="features"
@@ -213,20 +199,26 @@ const Features = () => {
         />
       </div>
 
-      {/* Visible Floating Elements */}
+      {/* Visible Floating Elements - deterministic per index to avoid hydration mismatch */}
       <div className="absolute inset-0">
-        {[...Array(80)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float ${4 + Math.random() * 2}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 2.5}s`,
-            }}
-          />
-        ))}
+        {[...Array(80)].map((_, i) => {
+          const left = ((i * 17 + 7) % 97) / 97 * 100;
+          const top = ((i * 23 + 11) % 97) / 97 * 100;
+          const duration = 4 + ((i * 13 + 5) % 97) / 97 * 2;
+          const delay = ((i * 31 + 19) % 97) / 97 * 2.5;
+          return (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
+              style={{
+                left: `${left}%`,
+                top: `${top}%`,
+                animation: `float ${duration}s ease-in-out infinite`,
+                animationDelay: `${delay}s`,
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* Visible Mesh Flow */}
@@ -624,72 +616,73 @@ const Features = () => {
               </motion.p>
             </motion.div>
 
-            {/* Jobs Grid */}
+            {/* Jobs Grid - actual jobs from /jobs, link to job detail page */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-              {jobs.map((job, index) => (
-                <motion.div
-                  key={job.title}
-                  className="bg-white/90 rounded-3xl p-6 shadow-lg border border-amber-200/30 hover:shadow-xl transition-all duration-200 group hover:-translate-y-1 hover:bg-white hover:border-amber-300/50"
-                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{
-                    duration: 0.5,
-                    delay: 4.8 + index * 0.2,
-                  }}
-                  whileHover={{
-                    scale: 1.02,
-                    y: -3,
-                  }}
-                >
+              {landingJobs.map((job, index) => (
+                <Link key={job.slug} href={`/jobs/${job.slug}`}>
                   <motion.div
-                    className="flex items-center justify-between mb-4"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 5.0 + index * 0.2 }}
+                    className="bg-white/90 rounded-3xl p-6 shadow-lg border border-amber-200/30 hover:shadow-xl transition-all duration-200 group hover:-translate-y-1 hover:bg-white hover:border-amber-300/50 h-full block"
+                    initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: 4.8 + index * 0.2,
+                    }}
+                    whileHover={{
+                      scale: 1.02,
+                      y: -3,
+                    }}
                   >
-                    <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full">
-                      {job.type}
-                    </span>
-                    <span className="text-xs text-gray-500">{job.date}</span>
+                    <motion.div
+                      className="flex items-center justify-between mb-4"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 5.0 + index * 0.2 }}
+                    >
+                      <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full">
+                        {job.type}
+                      </span>
+                      <span className="text-xs text-gray-500">{job.date}</span>
+                    </motion.div>
+                    <motion.h4
+                      className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-gray-800 transition-colors duration-200"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 5.2 + index * 0.2 }}
+                    >
+                      {job.title}
+                    </motion.h4>
+                    <motion.p
+                      className="text-sm text-gray-600 mb-3"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 5.4 + index * 0.2 }}
+                    >
+                      {job.location}
+                    </motion.p>
+                    <motion.div
+                      className="flex flex-wrap gap-2"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 5.6 + index * 0.2 }}
+                    >
+                      {job.tags.map((tag, tagIndex) => (
+                        <motion.span
+                          key={tagIndex}
+                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-xl"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{
+                            duration: 0.2,
+                            delay: 5.8 + index * 0.2 + tagIndex * 0.1,
+                          }}
+                        >
+                          {tag}
+                        </motion.span>
+                      ))}
+                    </motion.div>
                   </motion.div>
-                  <motion.h4
-                    className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-gray-800 transition-colors duration-200"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 5.2 + index * 0.2 }}
-                  >
-                    {job.title}
-                  </motion.h4>
-                  <motion.p
-                    className="text-sm text-gray-600 mb-3"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 5.4 + index * 0.2 }}
-                  >
-                    {job.location}
-                  </motion.p>
-                  <motion.div
-                    className="flex flex-wrap gap-2"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 5.6 + index * 0.2 }}
-                  >
-                    {job.tags.map((tag, tagIndex) => (
-                      <motion.span
-                        key={tagIndex}
-                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-xl"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{
-                          duration: 0.2,
-                          delay: 5.8 + index * 0.2 + tagIndex * 0.1,
-                        }}
-                      >
-                        {tag}
-                      </motion.span>
-                    ))}
-                  </motion.div>
-                </motion.div>
+                </Link>
               ))}
             </div>
 

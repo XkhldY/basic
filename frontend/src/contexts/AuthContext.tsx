@@ -98,26 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = !!user;
 
   useEffect(() => {
-    // Check if user is logged in on app start
-    checkAuthStatus();
+    // Auth disabled: no backend auth check (focus on landing, jobs, blog)
+    setLoading(false);
   }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const token = Cookies.get('access_token');
-      if (token) {
-        const response = await apiClient.get('/api/auth/me');
-        setUser(response.data);
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      // Clear invalid tokens
-      Cookies.remove('access_token');
-      Cookies.remove('refresh_token');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const login = async (email: string, password: string) => {
     try {

@@ -42,7 +42,9 @@ export default function LatestBlogPosts({ className = '' }: LatestBlogPostsProps
   }, []);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const normalized = dateString.includes('T') ? dateString : dateString + 'T12:00:00Z'
+    return new Date(normalized).toLocaleDateString('en-US', {
+      timeZone: 'UTC',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -70,18 +72,19 @@ export default function LatestBlogPosts({ className = '' }: LatestBlogPostsProps
         
         {/* Visible Floating Elements */}
         <div className="absolute inset-0">
-          {[...Array(80)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${4 + Math.random() * 2}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 2.5}s`
-              }}
-            />
-              ))}
+          {[...Array(80)].map((_, i) => {
+            const left = ((i * 17 + 7) % 97) / 97 * 100;
+            const top = ((i * 23 + 11) % 97) / 97 * 100;
+            const duration = 4 + ((i * 13 + 5) % 97) / 97 * 2;
+            const delay = ((i * 31 + 19) % 97) / 97 * 2.5;
+            return (
+              <div
+                key={i}
+                className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
+                style={{ left: `${left}%`, top: `${top}%`, animation: `float ${duration}s ease-in-out infinite`, animationDelay: `${delay}s` }}
+              />
+            );
+          })}
             </div>
         
         {/* Visible Mesh Flow */}
@@ -141,18 +144,19 @@ export default function LatestBlogPosts({ className = '' }: LatestBlogPostsProps
         
         {/* Visible Floating Elements */}
         <div className="absolute inset-0">
-          {[...Array(80)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${4 + Math.random() * 2}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 2.5}s`
-              }}
-            />
-              ))}
+          {[...Array(80)].map((_, i) => {
+            const left = ((i * 17 + 7) % 97) / 97 * 100;
+            const top = ((i * 23 + 11) % 97) / 97 * 100;
+            const duration = 4 + ((i * 13 + 5) % 97) / 97 * 2;
+            const delay = ((i * 31 + 19) % 97) / 97 * 2.5;
+            return (
+              <div
+                key={i}
+                className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
+                style={{ left: `${left}%`, top: `${top}%`, animation: `float ${duration}s ease-in-out infinite`, animationDelay: `${delay}s` }}
+              />
+            );
+          })}
             </div>
         
         {/* Visible Mesh Flow */}
@@ -235,18 +239,19 @@ export default function LatestBlogPosts({ className = '' }: LatestBlogPostsProps
         
         {/* Visible Floating Elements */}
         <div className="absolute inset-0">
-          {[...Array(80)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${4 + Math.random() * 2}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 2.5}s`
-              }}
-            />
-              ))}
+          {[...Array(80)].map((_, i) => {
+            const left = ((i * 17 + 7) % 97) / 97 * 100;
+            const top = ((i * 23 + 11) % 97) / 97 * 100;
+            const duration = 4 + ((i * 13 + 5) % 97) / 97 * 2;
+            const delay = ((i * 31 + 19) % 97) / 97 * 2.5;
+            return (
+              <div
+                key={i}
+                className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
+                style={{ left: `${left}%`, top: `${top}%`, animation: `float ${duration}s ease-in-out infinite`, animationDelay: `${delay}s` }}
+              />
+            );
+          })}
             </div>
         
         {/* Visible Mesh Flow */}
@@ -301,18 +306,19 @@ export default function LatestBlogPosts({ className = '' }: LatestBlogPostsProps
         
         {/* Floating Particles */}
         <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1.5 h-1.5 bg-blue-400/60 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${3 + Math.random() * 4}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 2}s`
-              }}
-            />
-          ))}
+          {[...Array(20)].map((_, i) => {
+            const left = ((i * 17 + 7) % 97) / 97 * 100;
+            const top = ((i * 23 + 11) % 97) / 97 * 100;
+            const duration = 3 + ((i * 13 + 5) % 97) / 97 * 4;
+            const delay = ((i * 31 + 19) % 97) / 97 * 2;
+            return (
+              <div
+                key={i}
+                className="absolute w-1.5 h-1.5 bg-blue-400/60 rounded-full"
+                style={{ left: `${left}%`, top: `${top}%`, animation: `float ${duration}s ease-in-out infinite`, animationDelay: `${delay}s` }}
+              />
+            );
+          })}
         </div>
         
         {/* Subtle Noise Texture */}

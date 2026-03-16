@@ -21,19 +21,29 @@ tar -xzf /tmp/deploy.tar.gz
 rm -f /tmp/deploy.tar.gz
 
 echo "🔐 Retrieving database credentials from AWS Secrets Manager..."
-# Get database credentials from Secrets Manager
-DB_SECRET_ARN=$(grep "DB_SECRET_ARN=" .env | cut -d'=' -f2)
+export AWS_REGION=${AWS_REGION:-us-east-1}
+DB_SECRET_ARN=$(grep "DB_SECRET_ARN=" .env | cut -d'=' -f2- | tr -d ' \r\n')
 if [ -n "$DB_SECRET_ARN" ]; then
-    DB_SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id "$DB_SECRET_ARN" --query SecretString --output text 2>/dev/null || echo "")
+    echo "  Using secret: ${DB_SECRET_ARN:0:60}..."
+    # Use --output json and jq to get SecretString so we never mix stderr into the JSON
+    RAW=$(aws secretsmanager get-secret-value --secret-id "$DB_SECRET_ARN" --region "$AWS_REGION" --output json 2>&1) || true
+    if echo "$RAW" | grep -q "AccessDeniedException\|ResourceNotFoundException\|InvalidRequestException"; then
+        DB_SECRET_JSON=""
+    else
+        DB_SECRET_JSON=$(echo "$RAW" | jq -r '.SecretString // empty' 2>/dev/null)
+    fi
     
     if [ -n "$DB_SECRET_JSON" ]; then
-        # AWS-managed RDS secrets only contain username and password
-        # Host and database name come from terraform outputs and variables
-        DB_USER=$(echo "$DB_SECRET_JSON" | jq -r .username)
-        DB_PASSWORD=$(echo "$DB_SECRET_JSON" | jq -r .password)
-        DB_HOST=$(grep "DB_HOST=" .env | cut -d'=' -f2)  # From terraform output (RDS endpoint)
-        DB_PORT=$(grep "DB_PORT=" .env | cut -d'=' -f2)  # Port from .env
-        DB_NAME="jobplatform"  # From terraform variables (var.db_name)
+        # RDS-managed secret JSON: username, password (and optionally engine, host, port)
+        DB_USER=$(echo "$DB_SECRET_JSON" | jq -r '.username // empty')
+        DB_PASSWORD=$(echo "$DB_SECRET_JSON" | jq -r '.password // empty')
+        if [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ]; then
+            echo "❌ Secret missing .username or .password (check RDS managed secret format)"
+            exit 1
+        fi
+        DB_HOST=$(grep "DB_HOST=" .env | cut -d'=' -f2- | tr -d ' \r\n')
+        DB_PORT=$(grep "DB_PORT=" .env | cut -d'=' -f2- | tr -d ' \r\n')
+        DB_NAME="jobplatform"
         
         echo "✅ Database credentials assembled:"
         echo "  DB_USER: $DB_USER"
@@ -56,6 +66,8 @@ if [ -n "$DB_SECRET_ARN" ]; then
         echo "✅ Database credentials retrieved from Secrets Manager"
     else
         echo "❌ Failed to retrieve database secret from Secrets Manager"
+        echo "   AWS error/output: $DB_SECRET_JSON"
+        echo "   Check: 1) EC2 IAM role has secretsmanager:GetSecretValue, 2) DB_SECRET_ARN in .env is correct, 3) AWS_REGION (e.g. us-east-1)"
         exit 1
     fi
 else

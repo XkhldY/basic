@@ -5,7 +5,7 @@ on:
     inputs:
       branch:
         description: 'Branch to deploy'
-        required: true
+        required: false
         default: 'main'
         type: string
 
@@ -21,7 +21,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.inputs.branch }}
+        ref: ${{ github.event.inputs.branch || 'main' }}
         
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4

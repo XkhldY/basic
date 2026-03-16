@@ -13,7 +13,9 @@ interface BlogCardProps {
 
 const BlogCard = ({ post, variant = 'default', index = 0 }: BlogCardProps) => {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const normalized = dateString.includes('T') ? dateString : dateString + 'T12:00:00Z'
+    return new Date(normalized).toLocaleDateString('en-US', {
+      timeZone: 'UTC',
       year: 'numeric',
       month: 'long',
       day: 'numeric'

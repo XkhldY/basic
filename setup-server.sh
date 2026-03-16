@@ -232,6 +232,14 @@ sudo systemctl restart nginx
 
 echo "✅ Nginx configured for pom100.com → :3000 and api.pom100.com → :8000"
 
+echo "📦 Installing AWS CLI and jq (for deploy Secrets Manager)..."
+sudo apt-get install -y jq unzip 2>/dev/null || true
+if ! command -v aws >/dev/null 2>&1; then
+  (cd /tmp && curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip && unzip -q -o awscliv2.zip && sudo ./aws/install -i /usr/local/aws-cli -b /usr/local/bin)
+  rm -rf /tmp/awscliv2.zip /tmp/aws 2>/dev/null || true
+fi
+echo "✅ AWS CLI and jq ready"
+
 echo "🔒 Setting up SSL certificates with Let's Encrypt..."
 # Install certbot
 sudo apt-get install -y certbot python3-certbot-nginx

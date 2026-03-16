@@ -1,46 +1,104 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
-import { Mail, MessageSquare, ArrowRight } from 'lucide-react'
-import Link from 'next/link'
-import { useState } from 'react'
+import { motion } from "framer-motion";
+import { Mail, MessageSquare, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { useState, FormEvent } from "react";
+import emailjs from "@emailjs/browser";
 
 const Contact = () => {
-  const [showEmailFallback, setShowEmailFallback] = useState(false)
+  const [showEmailFallback, setShowEmailFallback] = useState(false);
+  const [formStatus, setFormStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    const name = (data.get("name") || "").toString();
+    const email = (data.get("email") || "").toString();
+    const subject =
+      (data.get("subject") || "").toString() || "New message from POM website";
+    const message = (data.get("message") || "").toString();
+
+    const bodyLines = [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      "",
+      "Message:",
+      message,
+    ];
+
+    const mailto = `mailto:info@hirewithpom.com?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(bodyLines.join("\n"))}`;
+
+    setFormStatus("sending");
+
+    const SERVICE_ID = "service_dibbpv4";
+    const TEMPLATE_ID = "template_t0wd279";
+    const PUBLIC_KEY = "dGtoCNbwjmMgdKtVW";
+
+    emailjs
+      .sendForm(SERVICE_ID, TEMPLATE_ID, form, PUBLIC_KEY)
+      .then(() => {
+        setFormStatus("sent");
+        form.reset();
+      })
+      .catch((error) => {
+        console.error("EmailJS error", error);
+        // Fallback: open user's email client so the message can still be sent
+        window.location.href = mailto;
+        setFormStatus("sent");
+      });
+  };
 
   return (
-    <section id="contact" className="pt-0 sm:pt-12 pb-12 sm:pb-16 bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 relative overflow-hidden">
+    <section
+      id="contact"
+      className="pt-0 sm:pt-12 pb-12 sm:pb-16 bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50 relative overflow-hidden"
+    >
       {/* Background with Subtle Animations */}
       <div className="absolute inset-0 bg-gradient-to-b from-amber-50 via-amber-100 to-amber-50" />
-      
+
       {/* Visible but Elegant Geometric Patterns */}
       <div className="absolute inset-0 opacity-40">
         {/* Clear Grid Pattern - Matching spacing but keeping amber theme */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
             linear-gradient(rgba(251, 191, 36, 0.25) 1px, transparent 1px),
             linear-gradient(90deg, rgba(251, 191, 36, 0.25) 1px, transparent 1px)
           `,
-          backgroundSize: '40px 40px'
-        }} />
+            backgroundSize: "40px 40px",
+          }}
+        />
       </div>
-      
-      {/* Visible Floating Elements */}
+
+      {/* Visible Floating Elements - deterministic per index to avoid hydration mismatch */}
       <div className="absolute inset-0">
-        {[...Array(80)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float ${4 + Math.random() * 2}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 2.5}s`
-            }}
-          />
-            ))}
-          </div>
-      
+        {[...Array(80)].map((_, i) => {
+          const left = (((i * 41 + 3) % 97) / 97) * 100;
+          const top = (((i * 29 + 17) % 97) / 97) * 100;
+          const duration = 4 + (((i * 19 + 7) % 97) / 97) * 2;
+          const delay = (((i * 53 + 11) % 97) / 97) * 2.5;
+          return (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-amber-300/25 rounded-full"
+              style={{
+                left: `${left}%`,
+                top: `${top}%`,
+                animation: `float ${duration}s ease-in-out infinite`,
+                animationDelay: `${delay}s`,
+              }}
+            />
+          );
+        })}
+      </div>
+
       {/* Visible Mesh Flow */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/15 to-transparent animate-mesh-flow" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-200/20 to-transparent animate-mesh-flow-reverse" />
@@ -48,7 +106,7 @@ const Contact = () => {
       <div className="container-custom relative z-10">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <motion.div 
+          <motion.div
             className="text-center mb-12 sm:mb-20"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -63,13 +121,13 @@ const Contact = () => {
               Ready to find your perfect match?
             </h2>
             <p className="text-base sm:text-base md:text-lg lg:text-xl max-w-2xl mx-auto text-primary-dark">
-              Whether you're hiring top talent or looking for your next opportunity, 
-              let's start the conversation that could change everything.
+              Whether you&apos;re hiring top talent or looking for your next opportunity,
+              let&apos;s start the conversation that could change everything.
             </p>
           </motion.div>
 
           {/* Contact Information */}
-              <motion.div
+          <motion.div
             className="max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -83,21 +141,21 @@ const Contact = () => {
                   <div className="flex items-center space-x-3">
                     <Mail className="w-5 h-5 text-amber-600" />
                     <div className="relative">
-                      <a 
-                        href="mailto:info@hirewithpom.com" 
+                      <a
+                        href="mailto:info@hirewithpom.com"
                         className="font-medium hover:text-amber-600 transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent"
-                        style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                        style={{ outline: "none", WebkitTapHighlightColor: "transparent" }}
                         title="Open default email client"
                         onClick={(e) => {
                           e.preventDefault();
-                          console.log('Email link clicked - opening Gmail...');
-                          
+                          console.log("Email link clicked - opening Gmail...");
+
                           // Open Gmail with pre-filled email
                           const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=info@hirewithpom.com&su=Contact%20Request&body=Hello,%0D%0A%0D%0AI%20would%20like%20to%20get%20in%20touch%20with%20you.%0D%0A%0D%0ABest%20regards`;
-                          
+
                           // Open in new tab
-                          window.open(gmailUrl, '_blank');
-                          
+                          window.open(gmailUrl, "_blank");
+
                           // Show success message briefly
                           setShowEmailFallback(true);
                           setTimeout(() => setShowEmailFallback(false), 3000);
@@ -105,27 +163,27 @@ const Contact = () => {
                       >
                         info@hirewithpom.com
                       </a>
-                      
-                                             {/* Success message */}
-                       {showEmailFallback && (
-                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-green-600 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
-                           <div className="flex items-center space-x-2">
-                             <span>✅</span>
-                             <span>Gmail opened! Email pre-filled with info@hirewithpom.com</span>
-                           </div>
-                           <div className="text-center mt-1">
-                             <button
-                               onClick={() => {
-                                 navigator.clipboard.writeText('info@hirewithpom.com');
-                                 setShowEmailFallback(false);
-                               }}
-                               className="text-green-200 hover:text-white text-xs underline"
-                             >
-                               Copy email to clipboard
-                             </button>
-                           </div>
-                         </div>
-                       )}
+
+                      {/* Success message */}
+                      {showEmailFallback && (
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-green-600 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            <span>✅</span>
+                            <span>Gmail opened! Email pre-filled with info@hirewithpom.com</span>
+                          </div>
+                          <div className="text-center mt-1">
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText("info@hirewithpom.com");
+                                setShowEmailFallback(false);
+                              }}
+                              className="text-green-200 hover:text-white text-xs underline"
+                            >
+                              Copy email to clipboard
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -135,87 +193,103 @@ const Contact = () => {
               <div className="relative bg-white/20 backdrop-blur-xl rounded-3xl p-6 sm:p-12 shadow-2xl border border-white/20 -mt-2 sm:-mt-8">
                 {/* Glass Effect Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-white/10 rounded-3xl"></div>
-                
+
                 {/* Subtle Background Glow */}
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-100/20 via-transparent to-amber-100/20 rounded-3xl"></div>
-                
+
                 {/* Glass Reflection Effect */}
                 <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/10 rounded-3xl"></div>
-                
+
                 <div className="text-center mb-8 sm:mb-12 relative z-10">
                   <h3 className="text-2xl sm:text-3xl lg:text-4xl text-gray-900 mb-4 sm:mb-6 normal-case font-semibold">
-                    Send us a message
+                    {formStatus === "sent" ? "Message Sent" : "Send us a message"}
                   </h3>
                 </div>
 
-                <form className="space-y-6 sm:space-y-8 relative z-10">
-                  <div className="grid md:grid-cols-2 gap-4 sm:gap-8">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
-                        Full name
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
-                        placeholder="Enter your full name"
-                        required
-                      />
+                <form className="space-y-6 sm:space-y-8 relative z-10" onSubmit={handleSubmit}>
+                  {formStatus !== "sent" && (
+                    <>
+                      <div className="grid md:grid-cols-2 gap-4 sm:gap-8">
+                        <div>
+                          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+                            Full name
+                          </label>
+                          <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
+                            placeholder="Enter your full name"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+                            Email address
+                          </label>
+                          <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
+                            placeholder="Enter your email"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+                          Subject
+                        </label>
+                        <input
+                          type="text"
+                          id="subject"
+                          name="subject"
+                          className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
+                          placeholder="What's this about?"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+                          Message
+                        </label>
+                        <textarea
+                          id="message"
+                          name="message"
+                          rows={4}
+                          className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light resize-none transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
+                          placeholder="Tell us about your hiring needs or career goals..."
+                          required
+                        ></textarea>
+                      </div>
+                    </>
+                  )}
+
+                  {formStatus !== "sent" && (
+                    <div className="text-center pt-6 space-y-3">
+                      <button
+                        type="submit"
+                        className="btn-primary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px] mx-auto disabled:opacity-60 disabled:cursor-default"
+                        disabled={formStatus === "sending"}
+                      >
+                        <span>{formStatus === "sending" ? "Sending..." : "Send"}</span>
+                        <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
+                      </button>
+                      {formStatus === "error" && (
+                        <p className="text-sm text-red-600">
+                          Something went wrong while sending. Please try again or email{" "}
+                          <a href="mailto:info@hirewithpom.com" className="underline">
+                            info@hirewithpom.com
+                          </a>
+                          .
+                        </p>
+                      )}
                     </div>
-                    
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
-                        Email address
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
-                        placeholder="Enter your email"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
-                      Subject
-                    </label>
-                    <input
-                      type="text"
-                      id="subject"
-                      name="subject"
-                      className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
-                      placeholder="What's this about?"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
-                      Message
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={4}
-                      className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-white border border-amber-200/30 rounded-2xl text-gray-900 placeholder-gray-500 font-light resize-none transition-all duration-300 focus:outline-none focus:border-amber-300/50 focus:bg-white hover:bg-white hover:border-amber-200/40"
-                      placeholder="Tell us about your hiring needs or career goals..."
-                      required
-                    ></textarea>
-                  </div>
-
-                  <div className="text-center pt-6">
-                    <button
-                      type="submit"
-                      className="btn-primary text-base sm:text-lg px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px] mx-auto"
-                    >
-                      <span>Send</span>
-                      <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
-                    </button>
-                  </div>
+                  )}
                 </form>
               </div>
             </div>

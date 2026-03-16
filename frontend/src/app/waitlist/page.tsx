@@ -4,7 +4,25 @@ import { Waitlist } from "@clerk/nextjs";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = clerkKey && clerkKey.startsWith("pk_") && clerkKey !== "your_clerk_publishable_key_here";
+
 export default function WaitlistPage() {
+  if (!hasClerk) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center p-4">
+        <Link href="/" className="absolute top-6 left-6 text-white/70 hover:text-white flex items-center gap-2">
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-sm font-medium">Back to home</span>
+        </Link>
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 text-white text-center max-w-md">
+          <h2 className="text-xl font-bold mb-2">Join the waitlist</h2>
+          <p className="text-gray-300">Sign up is coming soon. Check back later!</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <style
@@ -25,7 +43,6 @@ export default function WaitlistPage() {
         }}
       />
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 relative">
-        {/* Back button */}
         <Link
           href="/"
           className="back-button absolute top-6 left-6 z-10 flex items-center space-x-2 text-white/70 hover:text-white transition-colors duration-200 group no-underline border-0 outline-none focus:outline-none"
