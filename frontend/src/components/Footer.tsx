@@ -10,10 +10,6 @@ const Footer = () => {
   }
 
   const footerLinks = {
-    platform: [
-      { name: 'For Employers', href: '/employer' },
-      { name: 'For Candidates', href: '/candidate' }
-    ],
     support: [
       { name: 'Privacy Policy', href: '#' },
       { name: 'Terms of Service', href: '#' }
@@ -61,28 +57,6 @@ const Footer = () => {
                 Connecting talented professionals with amazing opportunities. 
                 Our platform makes job hunting and hiring simple, efficient, and successful.
               </p>
-            </motion.div>
-
-            {/* Platform Links */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              viewport={{ once: true }}
-            >
-                             <h4 className="text-xs sm:text-base font-semibold mb-2 sm:mb-4 text-white">Platform</h4>
-               <ul className="space-y-1.5 sm:space-y-2 mb-0 sm:mb-4">
-                {footerLinks.platform.map((link) => (
-                  <li key={link.name}>
-                                         <Link 
-                       href={link.href}
-                       className="text-gray-300 dark:text-gray-400 hover:text-white transition-colors duration-200 text-xs sm:text-sm"
-                     >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
             </motion.div>
 
             {/* Contact & Social */}
