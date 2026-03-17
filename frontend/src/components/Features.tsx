@@ -345,13 +345,13 @@ const Features = () => {
             </button>
           </Link>
           */}
-          <button 
+          {/* <button 
             onClick={() => window.location.href = '/waitlist'}
             className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 flex items-center justify-center space-x-2 group w-[180px] sm:w-[200px] h-[48px] sm:h-[56px] mx-auto"
           >
             <span>Join waitlist</span>
             <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-200" size={18} />
-          </button>
+          </button> */}
         </motion.div>
 
         {/* Testimonials Section */}
