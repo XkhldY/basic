@@ -74,3 +74,4 @@ DEPLOYMENT_S3_GUIDE.md
 .bmad-core
 .cursor
 web-bundles
+.blackboxcli/
