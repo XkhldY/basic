@@ -6,8 +6,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-your_clerk_publishable_key_here}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
     ports:
       - "3000:3000"
     environment:
@@ -19,42 +18,11 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    depends_on:
-      backend:
-        condition: service_healthy
-
-  backend:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile.prod
-    ports:
-      - "8000:8000"
-    environment:
-      - ENVIRONMENT=production
-      - DEBUG=false
-      - PYTHONUNBUFFERED=1
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME:-job-platform-files-prod}
-    env_file:
-      - .env
-    restart: unless-stopped
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 5s
+      start_period: 30s
     logging:
       driver: "json-file"
       options:
@@ -64,5 +32,3 @@ services:
 networks:
   app-network:
     driver: bridge
-
-# Note: PostgreSQL is external (AWS RDS) in production

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
-import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +18,9 @@ export const metadata: Metadata = {
     shortcut: '/img/icon- white bg- dark logo.png',
     apple: '/img/icon- white bg- dark logo.png',
   },
+  other: {
+    "google-adsense-account": "ca-pub-4040445036727842",
+  },
 };
 
 export default function RootLayout({
@@ -28,10 +30,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4040445036727842"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={`${instrumentSans.className} antialiased`}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        {children}
       </body>
     </html>
   );

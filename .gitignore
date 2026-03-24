@@ -75,3 +75,4 @@ DEPLOYMENT_S3_GUIDE.md
 .cursor
 web-bundles
 .blackboxcli/
+tfplan
