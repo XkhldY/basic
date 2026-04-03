@@ -34,3 +34,15 @@ variable "allowed_ssh_cidr_blocks" {
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
+
+variable "domain_name" {
+  description = "Primary public domain for frontend and API"
+  type        = string
+  default     = "hirewithpom.com"
+}
+
+variable "create_route53_zone" {
+  description = "Whether to create Route53 hosted zone and DNS records"
+  type        = bool
+  default     = true
+}

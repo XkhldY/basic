@@ -1,5 +1,5 @@
 # Infrastructure - VPC + EC2 Frontend Deployment
-# Single unified Terraform configuration for pom100.com frontend on EC2
+# Single unified Terraform configuration for hirewithpom.com frontend on EC2
 
 terraform {
   required_version = ">= 1.0"

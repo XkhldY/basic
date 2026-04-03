@@ -121,13 +121,13 @@ const Footer = () => {
               </motion.div>
 
               {/* Legal Links */}
-                             <motion.div 
-                 className="flex items-center space-x-4 sm:space-x-6"
-                 initial={{ opacity: 0, y: 20 }}
-                 whileInView={{ opacity: 1, y: 0 }}
-                 transition={{ duration: 0.8, delay: 0.1 }}
-                 viewport={{ once: true }}
-               >
+              <motion.div 
+                className="flex items-center space-x-4 sm:space-x-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                viewport={{ once: true }}
+              >
                 <Link 
                   href="/privacy-policy"
                   target="_blank"
@@ -135,6 +135,12 @@ const Footer = () => {
                   className="text-gray-400 dark:text-gray-500 hover:text-white transition-colors duration-200 text-xs"
                 >
                   Privacy Policy
+                </Link>
+                <Link 
+                  href="/privacy"
+                  className="text-gray-400 dark:text-gray-500 hover:text-white transition-colors duration-200 text-xs"
+                >
+                  Privacy, Deception &amp; Device Abuse
                 </Link>
                 <Link 
                   href="#"

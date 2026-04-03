@@ -395,6 +395,17 @@ const Navigation = () => {
                 Blog
               </Link>
               <Link
+                href="/privacy"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors duration-200 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer text-right"
+                style={{
+                  outline: "none",
+                  WebkitTapHighlightColor: "transparent",
+                }}
+              >
+                Privacy
+              </Link>
+              <Link
                 href="/#contact"
                 onClick={(e) => {
                   e.preventDefault();

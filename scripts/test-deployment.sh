@@ -14,8 +14,8 @@ echo "=== Testing deployment (EC2: $EC2_IP) ==="
 echo ""
 
 # 1. Frontend (public URL)
-echo -n "1. Frontend https://pom100.com ... "
-CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://pom100.com 2>/dev/null || echo "000")
+echo -n "1. Frontend https://hirewithpom.com ... "
+CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://hirewithpom.com 2>/dev/null || echo "000")
 if [ "$CODE" = "200" ]; then
   echo "OK (HTTP $CODE)"
 else
@@ -23,8 +23,8 @@ else
 fi
 
 # 2. API health
-echo -n "2. API https://api.pom100.com/health ... "
-BODY=$(curl -s --connect-timeout 10 https://api.pom100.com/health 2>/dev/null || echo "")
+echo -n "2. API https://api.hirewithpom.com/health ... "
+BODY=$(curl -s --connect-timeout 10 https://api.hirewithpom.com/health 2>/dev/null || echo "")
 if echo "$BODY" | grep -q "healthy"; then
   echo "OK (healthy)"
 else

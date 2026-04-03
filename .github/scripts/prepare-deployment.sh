@@ -27,7 +27,7 @@ cp frontend/public/config.js frontend/public/config.js.backup
 cat > frontend/public/config.js << 'CONFIG_EOF'
 // Production configuration - automatically generated during deployment
 window.APP_CONFIG = {
-  API_URL: 'https://api.pom100.com',
+  API_URL: 'https://api.hirewithpom.com',
   ENVIRONMENT: 'production'
 };
 CONFIG_EOF
@@ -43,8 +43,8 @@ DB_NAME=jobplatform
 DB_SECRET_ARN=$DB_SECRET_ARN
 ENVIRONMENT=production
 DEBUG=false
-NEXT_PUBLIC_API_URL=https://api.pom100.com
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000,http://pom100.com,http://www.pom100.com,https://pom100.com,https://www.pom100.com
+NEXT_PUBLIC_API_URL=https://api.hirewithpom.com
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000,http://hirewithpom.com,http://www.hirewithpom.com,https://hirewithpom.com,https://www.hirewithpom.com
 ENV_EOF
 
 # Create deployment package
@@ -56,4 +56,4 @@ tar --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='front
 mv frontend/public/config.js.backup frontend/public/config.js
 rm -f .env
 
-echo "✅ Deployment package created: deploy.tar.gz"
+echo "✅ Deployment package created: deploy.tar.gz"ated: deploy.tar.gz"

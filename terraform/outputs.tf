@@ -24,7 +24,7 @@ output "ec2_instance_id" {
 }
 
 output "ec2_public_ip" {
-  description = "Elastic (static) public IP — point pom100.com A record here"
+  description = "Elastic (static) public IP — point hirewithpom.com A record here"
   value       = aws_eip.app_server.public_ip
 }
 
@@ -42,7 +42,7 @@ output "application_urls" {
   description = "URLs to access the frontend"
   value = {
     http     = "http://${aws_eip.app_server.public_ip}"
-    https    = "https://pom100.com"
+    https    = "https://${var.domain_name}"
     dev_port = "http://${aws_eip.app_server.public_ip}:3000"
   }
 }
@@ -52,11 +52,30 @@ output "deployment_info" {
   value = {
     ec2_instance_id = aws_instance.app_server.id
     elastic_ip      = aws_eip.app_server.public_ip
-    domain          = "pom100.com"
+    domain          = var.domain_name
     ssh_key         = "${var.project_name}-key"
     ssh_command     = "ssh -i ~/.ssh/${var.project_name}-key ubuntu@${aws_eip.app_server.public_ip}"
-    frontend_url    = "https://pom100.com"
+    frontend_url    = "https://${var.domain_name}"
   }
+}
+
+output "route53_hosted_zone_id" {
+  description = "Route53 hosted zone ID for the primary domain"
+  value       = var.create_route53_zone ? aws_route53_zone.primary[0].zone_id : null
+}
+
+output "route53_name_servers" {
+  description = "Authoritative Route53 nameservers to set at GoDaddy"
+  value       = var.create_route53_zone ? aws_route53_zone.primary[0].name_servers : []
+}
+
+output "route53_records" {
+  description = "Primary DNS records managed by Route53"
+  value = var.create_route53_zone ? {
+    apex = aws_route53_record.apex_a[0].fqdn
+    www  = aws_route53_record.www_cname[0].fqdn
+    api  = aws_route53_record.api_a[0].fqdn
+  } : {}
 }
 
 # ---------------------------------------------------------------------------

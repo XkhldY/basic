@@ -18,9 +18,9 @@ const getApiBaseUrl = () => {
     // In production, try to detect if we're running on AWS
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
-      // If we're on pom100.com, use api.pom100.com
-      if (hostname === 'pom100.com' || hostname === 'www.pom100.com') {
-        return 'https://api.pom100.com';
+      // If we're on hirewithpom.com, use api.hirewithpom.com
+      if (hostname === 'hirewithpom.com' || hostname === 'www.hirewithpom.com') {
+        return 'https://api.hirewithpom.com';
       }
       // For other domains, use the same hostname with port 8000
       if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
